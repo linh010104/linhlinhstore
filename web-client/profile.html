@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông tin cá nhân</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fa-solid fa-arrow-left me-2"></i> TRANG CHỦ
+            </a>
+            <div class="d-flex align-items-center gap-3" id="authArea"></div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow border-0 rounded-4">
+                    <div class="card-header bg-white py-3 text-center">
+                        <h4 class="fw-bold text-primary mb-0">
+                            <i class="fa-solid fa-user-pen me-2"></i> Hồ sơ cá nhân
+                        </h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="profile-form">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted small">Tên đăng nhập</label>
+                                <input type="text" id="username" class="form-control bg-light" disabled>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Họ và tên</label>
+                                <input type="text" id="fullname" class="form-control" placeholder="Nhập họ tên...">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Email</label>
+                                <input type="email" id="email" class="form-control" placeholder="Nhập email...">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Số điện thoại</label>
+                                <input type="text" id="phone" class="form-control" placeholder="Nhập số điện thoại...">
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary rounded-pill fw-bold py-2">
+                                    <i class="fa-solid fa-floppy-disk me-2"></i> LƯU THAY ĐỔI
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Vui lòng đăng nhập!");
+                window.location.href = "login.html";
+                return;
+            }
+
+            // 1. Tải thông tin user
+            fetch("http://localhost:3000/api/auth/profile", {
+                headers: { "Authorization": "Bearer " + token }
+            })
+            .then(res => res.json())
+            .then(user => {
+                if (user.message) {
+                    alert("Lỗi: " + user.message);
+                    return;
+                }
+                // Điền vào form
+                document.getElementById("username").value = user.username;
+                document.getElementById("fullname").value = user.full_name || "";
+                document.getElementById("email").value = user.email || "";
+                document.getElementById("phone").value = user.phone || "";
+            })
+            .catch(err => console.error(err));
+
+            // 2. Xử lý lưu thay đổi
+            document.getElementById("profile-form").addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                const data = {
+                    full_name: document.getElementById("fullname").value,
+                    email: document.getElementById("email").value,
+                    phone: document.getElementById("phone").value
+                };
+
+                fetch("http://localhost:3000/api/auth/profile", {
+                    method: "PUT",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + token 
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(res => res.json())
+                .then(response => {
+                    alert(response.message);
+                    // Cập nhật lại tên hiển thị trên menu (nếu có)
+                    location.reload(); 
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Có lỗi xảy ra khi cập nhật!");
+                });
+            });
+        });
+    </script>
+</body>
+</html>

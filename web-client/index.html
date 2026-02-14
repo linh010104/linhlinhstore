@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINHLINH Store - Chuyên đồ công nghệ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fa-solid fa-laptop-code me-2"></i>LINHLINH STORE
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <form class="d-flex mx-auto w-50 my-2 my-lg-0" onsubmit="event.preventDefault(); searchProduct();">
+                    <input id="search-input" class="form-control me-2 rounded-pill border-0 shadow-sm" type="search" placeholder="Tìm kiếm Laptop, iPhone..." aria-label="Search">
+                    <button class="btn btn-warning rounded-pill px-4 fw-bold text-dark" type="button" onclick="searchProduct()">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </form>
+
+                <div class="d-flex align-items-center gap-3" id="authArea">
+                    <a href="login.html" class="btn btn-light btn-sm fw-bold rounded-pill px-3">Đăng nhập</a>
+                    <a href="register.html" class="btn btn-outline-light btn-sm rounded-pill px-3">Đăng ký</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="heroCarousel" class="carousel slide carousel-fade shadow-lg" data-bs-ride="carousel" data-bs-interval="4000">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+        </div>
+
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=1600&auto=format&fit=crop&q=80" class="d-block w-100" alt="Laptop Gaming">
+                <div class="carousel-caption d-none d-md-block">
+                    <h2 class="text-white text-uppercase">Laptop Gaming Đỉnh Cao</h2>
+                    <p class="text-white-50 fs-5">Cấu hình khủng - Chiến mọi tựa game AAA mượt mà.</p>
+                    <a href="#main-area" class="btn btn-accent btn-lg shadow mt-3 rounded-pill">KHÁM PHÁ NGAY</a>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="https://images.unsplash.com/photo-1556656793-08538906a9f8?w=1600&auto=format&fit=crop&q=80" class="d-block w-100" alt="Smartphone">
+                <div class="carousel-caption d-none d-md-block">
+                    <h2 class="text-white text-uppercase">Smartphone Thời Thượng</h2>
+                    <p class="text-white-50 fs-5">Thiết kế sang trọng - Camera đỉnh cao bắt trọn khoảnh khắc.</p>
+                    <a href="#main-area" class="btn btn-accent btn-lg shadow mt-3 rounded-pill">MUA NGAY</a>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1600&auto=format&fit=crop&q=80" class="d-block w-100" alt="Phụ kiện">
+                <div class="carousel-caption d-none d-md-block">
+                    <h2 class="text-white text-uppercase">Phụ Kiện Chính Hãng</h2>
+                    <p class="text-white-50 fs-5">Nâng tầm trải nghiệm công nghệ của bạn.</p>
+                    <a href="#main-area" class="btn btn-accent btn-lg shadow mt-3 rounded-pill">XEM THÊM</a>
+                </div>
+            </div>
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+    </div>
+
+    <main class="container my-5" id="main-area">
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <div class="card shadow border-0 category-card">
+                    <div class="card-header py-3 text-uppercase">
+                        <i class="fa-solid fa-bars me-2"></i> Danh Mục
+                    </div>
+                    <ul class="list-group list-group-flush" id="category-list">
+                        <li class="list-group-item text-center py-3 text-muted">Đang tải danh mục...</li>
+                    </ul>
+                </div>
+                
+                <div class="promo-box animate-fade-in">
+                    <i class="fa-solid fa-gift fa-3x mb-3 text-warning"></i>
+                    <h4>ƯU ĐÃI THÀNH VIÊN</h4>
+                    <p class="mb-3">Đăng ký ngay để nhận voucher giảm giá <strong>10%</strong> cho đơn hàng đầu tiên.</p>
+                    <a href="register.html" class="btn btn-outline-light btn-sm rounded-pill px-4 fw-bold">Đăng ký ngay</a>
+                </div>
+            </div>
+
+            <div class="col-lg-9">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold text-dark border-start border-5 border-primary ps-3" id="page-title">
+                        Tất cả sản phẩm
+                    </h3>
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle shadow-sm rounded-pill px-3" type="button" data-bs-toggle="dropdown">
+                            Sắp xếp
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Giá thấp đến cao</a></li>
+                            <li><a class="dropdown-item" href="#">Giá cao đến thấp</a></li>
+                            <li><a class="dropdown-item" href="#">Mới nhất</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div id="product-list" class="row g-4">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2 text-muted">Đang tải sản phẩm...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5 class="fw-bold text-warning mb-3">VỀ LINHLINH STORE</h5>
+                    <p class="small text-white-50">
+                        Chuyên cung cấp các thiết bị điện tử chính hãng, Laptop, Smartphone với chế độ bảo hành dài hạn và dịch vụ số 1 Việt Nam.
+                    </p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5 class="fw-bold text-warning mb-3">LIÊN HỆ</h5>
+                    <ul class="list-unstyled text-white-50 small">
+                        <li class="mb-2"><i class="fa-solid fa-location-dot me-2"></i> 62 Đường Khuất Duy Tiến, Bắc Ninh</li>
+                        <li class="mb-2"><i class="fa-solid fa-phone me-2"></i> 0966.694.299</li>
+                        <li class="mb-2"><i class="fa-solid fa-envelope me-2"></i> veresbaby0108@gmail.com</li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5 class="fw-bold text-warning mb-3">THEO DÕI</h5>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-white fs-4 hover-scale"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" class="text-white fs-4 hover-scale"><i class="fa-brands fa-tiktok"></i></a>
+                        <a href="#" class="text-white fs-4 hover-scale"><i class="fa-brands fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <div class="text-center small text-white-50">
+                &copy; 2026 LINHLINH Store. All rights reserved. Design by LinhLinh.
+            </div>
+        </div>
+    </footer>
+
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fa-solid fa-truck-fast me-2"></i> Thông Tin Đặt Hàng
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="checkout-form">
+                        <input type="hidden" id="direct-buy-product-id" value="">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Người nhận <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fa-solid fa-user"></i></span>
+                                <input type="text" id="order-name" class="form-control" placeholder="Họ và tên" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Số điện thoại <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fa-solid fa-phone"></i></span>
+                                <input type="tel" id="order-phone" class="form-control" placeholder="09xxxxxxx" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Địa chỉ giao hàng <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fa-solid fa-map-location-dot"></i></span>
+                                <textarea id="order-address" class="form-control" rows="2" placeholder="Số nhà, đường, phường/xã..." required></textarea>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Thanh toán</label>
+                            <select id="payment-method" class="form-select">
+                                <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+                                <option value="BANKING">Chuyển khoản ngân hàng</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Ghi chú</label>
+                            <input type="text" id="order-note" class="form-control" placeholder="Lời nhắn cho shop...">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" onclick="processOrder()" class="btn btn-danger fw-bold rounded-pill px-4 shadow">
+                        <i class="fa-solid fa-paper-plane me-2"></i> Xác Nhận
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/product.js"></script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+/* File: css/style.css - PHIÊN BẢN PREMIUM */
+
+/* 1. CẤU HÌNH CHUNG & BIẾN MÀU SẮC */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto:wght@300;400;500&display=swap');
+
+:root {
+    --primary-color: #0a192f; /* Xanh đen đậm sang trọng */
+    --secondary-color: #172a45; /* Xanh đen nhạt hơn cho nền phụ */
+    --accent-color: #ff6b35; /* Cam cháy nổi bật cho nút mua */
+    --text-light: #ccd6f6; /* Màu chữ sáng */
+    --text-dark: #333333;
+    --bg-light: #f4f7f6; /* Nền xám rất nhạt */
+    --card-shadow: 0 10px 30px -15px rgba(2, 12, 27, 0.2);
+    --hover-shadow: 0 20px 30px -10px rgba(2, 12, 27, 0.3);
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand, .btn {
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* 2. NAVBAR (MENU) - Gọn gàng, hiện đại */
+.navbar {
+    background-color: var(--primary-color) !important;
+    padding: 1rem 0;
+}
+
+.navbar-brand {
+    font-weight: 800;
+    letter-spacing: 1px;
+    font-size: 1.4rem;
+}
+
+#search-input {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+#search-input::placeholder { color: rgba(255, 255, 255, 0.6); }
+#search-input:focus {
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+    border-color: var(--accent-color);
+}
+
+/* 3. HERO CAROUSEL (Banner trượt xịn xò) */
+#heroCarousel {
+    margin-top: -20px; /* Kéo lên đè nhẹ vào navbar */
+    margin-bottom: 40px;
+}
+
+.carousel-item {
+    height: 500px; /* Chiều cao cố định */
+    background-color: var(--secondary-color); /* Màu nền dự phòng */
+}
+
+.carousel-item img {
+    object-fit: cover; /* Ảnh phủ kín không méo */
+    height: 100%;
+    opacity: 0.8; /* Làm tối ảnh đi một chút để nổi chữ */
+}
+
+.carousel-caption {
+    bottom: 30%;
+    text-align: left;
+    left: 10%;
+}
+
+.carousel-caption h2 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+}
+
+.carousel-caption p {
+    font-size: 1.3rem;
+    font-weight: 300;
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
+}
+
+/* Nút bấm chung */
+.btn-accent {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    font-weight: 700;
+    padding: 10px 30px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+
+.btn-accent:hover {
+    background-color: #e55a2b;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px -10px rgba(255, 107, 53, 0.5);
+}
+
+/* 4. PRODUCT CARD (Card sản phẩm được làm lại) */
+.card {
+    border: none;
+    border-radius: 8px;
+    background: white;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-7px);
+    box-shadow: var(--hover-shadow);
+}
+
+.card-img-top {
+    height: 240px;
+    object-fit: contain; /* Ảnh sản phẩm điện tử nên dùng contain để thấy hết */
+    padding: 20px;
+    background: white;
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05); /* Phóng to ảnh nhẹ khi hover */
+}
+
+.card-body {
+    padding: 1.5rem;
+    background: white;
+    border-top: 1px solid #eee;
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.price-tag {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+/* Nút Mua trong card */
+.card .btn-primary {
+    background-color: var(--primary-color);
+    border: none;
+    width: 100%;
+    border-radius: 4px;
+    font-weight: 600;
+}
+.card .btn-primary:hover { background-color: var(--accent-color); }
+
+/* 5. SIDEBAR & DANH MỤC */
+.category-card .card-header {
+    background-color: var(--secondary-color);
+    color: var(--text-light);
+    font-weight: 700;
+    border-bottom: none;
+}
+
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid #eee;
+    padding: 12px 20px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.list-group-item:hover {
+    background-color: #f8f9fa;
+    color: var(--accent-color);
+    padding-left: 25px; /* Hiệu ứng dịch sang phải */
+}
+
+/* Banner phụ mới */
+.promo-box {
+    background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+    color: var(--text-light);
+    border-radius: 8px;
+    padding: 30px 20px;
+    text-align: center;
+    margin-top: 30px;
+    box-shadow: var(--card-shadow);
+}
+.promo-box h4 { font-weight: 800; color: var(--accent-color); }
+.promo-box p { font-size: 0.9rem; opacity: 0.8; }
+
+/* 6. FOOTER */
+footer {
+    background-color: var(--secondary-color);
+    color: var(--text-light);
+    margin-top: 80px;
+    padding-top: 60px;
+}
+footer h5 { color: white; font-weight: 700; }
+footer .text-white-50 { color: #a8b2d1 !important; }
+footer hr { border-color: rgba(255,255,255,0.1); }
+
+/* 7. MODAL */
+.modal-header { background-color: var(--primary-color); color: white; }
+.btn-close-white { filter: invert(1); }

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký - LinhLinh Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow mb-5">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fa-solid fa-laptop-code me-2"></i>LINHLINH STORE
+            </a>
+            <a href="index.html" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                <i class="fa-solid fa-arrow-left me-2"></i> Về trang chủ
+            </a>
+        </div>
+    </nav>
+
+    <div class="container d-flex justify-content-center align-items-center flex-grow-1 mb-5">
+        <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 500px; width: 100%;">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold text-primary">TẠO TÀI KHOẢN MỚI</h3>
+                    <p class="text-muted small">Trải nghiệm mua sắm công nghệ đỉnh cao</p>
+                </div>
+
+                <form onsubmit="event.preventDefault(); register();">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Họ và tên <span class="text-danger">*</span></label>
+                        <input type="text" id="full_name" class="form-control bg-light" placeholder="Nguyễn Văn A" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Tên đăng nhập <span class="text-danger">*</span></label>
+                        <input type="text" id="username" class="form-control bg-light" placeholder="username123" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-muted">Email</label>
+                            <input type="email" id="email" class="form-control bg-light" placeholder="email@vidu.com">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-muted">Số điện thoại</label>
+                            <input type="tel" id="phone" class="form-control bg-light" placeholder="09xxxxxxx">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted">Mật khẩu <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
+                            <input type="password" id="password" class="form-control bg-light border-start-0" placeholder="********" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow">
+                        <i class="fa-solid fa-user-plus me-2"></i> ĐĂNG KÝ NGAY
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <span class="text-muted small">Đã có tài khoản?</span>
+                    <a href="login.html" class="fw-bold text-decoration-none text-primary">Đăng nhập tại đây</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-auto py-3 text-center text-white-50 small bg-primary">
+        &copy; 2026 LinhLinh Store. All rights reserved.
+    </footer>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>
