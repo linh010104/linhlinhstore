@@ -6,7 +6,7 @@
     <title>LINHLINH Store - Chuyên đồ công nghệ</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css"> 
 </head>
 <body>
 
@@ -136,7 +136,7 @@
                 <div class="col-md-4 mb-4">
                     <h5 class="fw-bold text-warning mb-3">LIÊN HỆ</h5>
                     <ul class="list-unstyled text-white-50 small">
-                        <li class="mb-2"><i class="fa-solid fa-location-dot me-2"></i> 62 Đường Khuất Duy Tiến, Bắc Ninh</li>
+                        <li class="mb-2"><i class="fa-solid fa-location-dot me-2"></i> 62 Đường Khuất Duy Tiến, Hà Nội</li>
                         <li class="mb-2"><i class="fa-solid fa-phone me-2"></i> 0966.694.299</li>
                         <li class="mb-2"><i class="fa-solid fa-envelope me-2"></i> veresbaby0108@gmail.com</li>
                     </ul>
@@ -214,8 +214,134 @@
         </div>
     </div>
 
+    <div id="ai-chat-wrapper">
+        <button id="btn-open-chat">
+            <i class="fa-solid fa-robot"></i>
+        </button>
+
+        <div id="chat-window">
+            <div class="chat-header">
+                <span><i class="fa-solid fa-headset me-2"></i> Trợ lý AI linhlinhstore</span>
+                <button id="btn-close-chat"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div id="chat-content">
+            </div>
+            
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Nhập câu hỏi tại đây...">
+                <button id="btn-send"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnOpen = document.getElementById('btn-open-chat');
+            const btnClose = document.getElementById('btn-close-chat');
+            const windowChat = document.getElementById('chat-window');
+            const chatContent = document.getElementById('chat-content');
+            const chatInput = document.getElementById('chat-input');
+            const btnSend = document.getElementById('btn-send');
+
+            // --- BẮT ĐẦU: XỬ LÝ CÂU CHÀO THÔNG MINH KHI VỪA MỞ TRANG ---
+            const currentUserId = localStorage.getItem('userId');
+            const currentUserName = localStorage.getItem('userName'); 
+
+            let initialMessage = "";
+
+            if (currentUserId) {
+                // Khách quen đã đăng nhập
+                const nameToGreet = currentUserName ? currentUserName : "anh/chị";
+                initialMessage = `Dạ em chào ${nameToGreet}! Chào mừng quay trở lại LINHLINH Store. Hôm nay mình đang nhắm tới món đồ công nghệ nào để em tư vấn ạ?`;
+            } else {
+                // Khách lạ chưa có tài khoản
+                initialMessage = `Dạ em chào anh/chị! Em là AI trợ lý của LINHLINH Store.<br><br>
+                🎁 <i>Bật mí nhỏ: Shop đang có <b>Voucher giảm 10%</b> cho khách tạo tài khoản mới đó ạ!</i><br><br>
+                Anh/chị đang tìm mua Laptop, Điện thoại hay Phụ kiện để em tư vấn cho mình luôn nha?`;
+            }
+
+            // Bơm câu chào vào giao diện
+            const welcomeDiv = document.createElement('div');
+            welcomeDiv.className = 'msg-ai';
+            welcomeDiv.innerHTML = initialMessage;
+            chatContent.appendChild(welcomeDiv);
+            // --- KẾT THÚC: CÂU CHÀO THÔNG MINH ---
+
+
+            // Xử lý bật tắt khung chat
+            btnOpen.addEventListener('click', () => {
+                windowChat.style.display = 'flex';
+                btnOpen.style.display = 'none';
+            });
+
+            btnClose.addEventListener('click', () => {
+                windowChat.style.display = 'none';
+                btnOpen.style.display = 'block';
+            });
+
+            // Hàm nối tin nhắn
+            function appendMessage(text, type) {
+                const div = document.createElement('div');
+                div.className = type === 'user' ? 'msg-user' : 'msg-ai';
+                div.innerHTML = text; 
+                chatContent.appendChild(div);
+                chatContent.scrollTop = chatContent.scrollHeight; 
+            }
+
+            // Gửi tin nhắn qua API AI
+            async function sendMessage() {
+                const message = chatInput.value.trim();
+                if (!message) return;
+
+                appendMessage(message, 'user');
+                chatInput.value = '';
+
+                const typingId = 'typing-' + Date.now();
+                const typingDiv = document.createElement('div');
+                typingDiv.id = typingId;
+                typingDiv.className = 'typing-indicator';
+                typingDiv.innerText = 'Trợ lý đang suy nghĩ...';
+                chatContent.appendChild(typingDiv);
+                chatContent.scrollTop = chatContent.scrollHeight;
+
+                try {
+                    const response = await fetch('http://localhost:3000/api/chatbot/consult', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            message: message,
+                            userId: currentUserId || null // Lấy luôn ID đang có truyền lên server
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    document.getElementById(typingId).remove();
+                    appendMessage(data.reply, 'ai');
+
+                } catch (error) {
+                    console.error("Lỗi gọi API AI:", error);
+                    document.getElementById(typingId).remove();
+                    appendMessage("Xin lỗi, hệ thống AI đang bảo trì. Vui lòng thử lại sau!", 'ai');
+                }
+            }
+
+            btnSend.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/product.js"></script>
+    <script src="js/config.js"></script>
+<script src="js/utils.js"></script>
 </body>
 </html>

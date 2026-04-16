@@ -83,35 +83,79 @@ exports.userChangeStatus = (req, res) => {
     });
 };
 function deductInventory(orderId) {
-    // B1: Lấy danh sách sản phẩm trong đơn
-    const sqlGetItems = "SELECT product_id, quantity FROM order_items WHERE order_id = ?";
-    
-    db.query(sqlGetItems, [orderId], (err, items) => {
-        if (err) return console.error("Lỗi lấy sp để trừ kho:", err);
-        
-        if (items.length === 0) {
-            console.log("-> Đơn hàng không có sản phẩm nào để trừ kho.");
-            return;
-        }
+    // Phải xin một kết nối riêng biệt (connection) từ db pool để làm Transaction
+    db.getConnection((err, connection) => {
+        if (err) return console.error("Lỗi lấy connection từ MySQL:", err);
 
-        // B2: Duyệt từng món để trừ
-        items.forEach(item => {
-            console.log(`-> Trừ kho: SP ${item.product_id} giảm ${item.quantity}`);
-            
-            const sqlDeduct = `
-                UPDATE inventory 
-                SET quantity = quantity - ?, updated_at = NOW() 
-                WHERE product_id = ?
-            `;
-            
-            db.query(sqlDeduct, [item.quantity, item.product_id], (err) => {
-                if (err) console.error(`Lỗi SQL trừ kho SP ${item.product_id}:`, err);
-                else {
-                    // Ghi log
-                    const sqlLog = "INSERT INTO inventory_logs (product_id, change_qty, reason) VALUES (?, ?, ?)";
-                    db.query(sqlLog, [item.product_id, -item.quantity, `Xuất bán đơn hàng #${orderId}`]);
+        // BẮT ĐẦU KÍCH HOẠT LÁ CHẮN TRANSACTION
+        connection.beginTransaction(async (err) => {
+            if (err) {
+                connection.release();
+                return console.error("Lỗi khởi tạo Transaction:", err);
+            }
+            try {
+                // B1: Lấy danh sách sản phẩm trong đơn (Dùng Promise để tránh callback hell)
+                const sqlGetItems = "SELECT product_id, quantity FROM order_items WHERE order_id = ?";
+                
+                const getItems = () => new Promise((resolve, reject) => {
+                    connection.query(sqlGetItems, [orderId], (err, results) => {
+                        if (err) reject(err);
+                        else resolve(results);
+                    });
+                });
+
+                const items = await getItems();
+
+                if (items.length === 0) {
+                    console.log(`-> Đơn hàng #${orderId} không có sản phẩm để trừ.`);
+                    connection.rollback(() => connection.release());
+                    return;
                 }
-            });
+
+                // B2: Cập nhật tồn kho và ghi log (Chạy song song tất cả các lệnh trong Transaction)
+                const updatePromises = items.map(item => {
+                    return new Promise((resolve, reject) => {
+                        const sqlDeduct = `
+                            UPDATE inventory 
+                            SET quantity = quantity - ?, updated_at = NOW() 
+                            WHERE product_id = ?
+                        `;
+                        connection.query(sqlDeduct, [item.quantity, item.product_id], (err) => {
+                            if (err) return reject(err);
+                            
+                            // Nếu trừ kho thành công, ghi luôn log xuất hàng
+                            const sqlLog = "INSERT INTO inventory_logs (product_id, change_qty, reason) VALUES (?, ?, ?)";
+                            connection.query(sqlLog, [item.product_id, -item.quantity, `Xuất bán đơn hàng #${orderId}`], (errLog) => {
+                                if (errLog) reject(errLog);
+                                else resolve();
+                            });
+                        });
+                    });
+                });
+
+                // Chờ tất cả các lệnh UPDATE và INSERT chạy xong
+                await Promise.all(updatePromises);
+
+                // B3: CHỐT GIAO DỊCH (Lưu vĩnh viễn vào Database)
+                connection.commit((err) => {
+                    if (err) {
+                        return connection.rollback(() => {
+                            console.error("Lỗi lúc Commit, ĐÃ HỦY TOÀN BỘ:", err);
+                            connection.release();
+                        });
+                    }
+                    console.log(`-> [SUCCESS] Đã trừ kho & ghi log thành công cho đơn #${orderId}`);
+                    connection.release(); // Trả connection lại cho pool
+                });
+
+            } catch (error) {
+                // NẾU CÓ BẤT KỲ LỖI NÀO XẢY RA (ví dụ: mất mạng, sai cú pháp SQL) 
+                // -> QUAY XE (Rollback) LẠI TRẠNG THÁI BAN ĐẦU!
+                connection.rollback(() => {
+                    console.error("Cảnh báo: Có lỗi xảy ra, ĐÃ ROLLBACK toàn bộ thao tác trừ kho!", error);
+                    connection.release();
+                });
+            }
         });
     });
 }

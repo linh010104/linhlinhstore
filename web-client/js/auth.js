@@ -1,9 +1,3 @@
-/* File: js/auth.js */
-
-// ============================================================
-// 1. CÁC HÀM XÁC THỰC (ĐĂNG NHẬP, ĐĂNG KÝ, ĐĂNG XUẤT)
-// ============================================================
-
 function login() {
     const usernameVal = document.getElementById("username").value;
     const passwordVal = document.getElementById("password").value;
@@ -13,12 +7,14 @@ function login() {
         return;
     }
 
-    fetch("http://localhost:3000/api/auth/login-web", {
+    // Đã đổi URL thành /login và thêm biến clientType
+    fetch("http://localhost:3000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             username: usernameVal,
-            password: passwordVal
+            password: passwordVal,
+            clientType: "WEB" // Khai báo rõ đây là người dùng từ Web
         })
     })
     .then(res => res.json())

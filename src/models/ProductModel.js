@@ -1,41 +1,41 @@
 const db = require('../config/db');
 
 exports.getAll = (filters, callback) => {
-  
-  // Xử lý trường hợp nếu gọi hàm mà quên truyền filters (để tránh lỗi)
   if (typeof filters === 'function') {
     callback = filters;
-    filters = {}; // Gán filters là rỗng nếu không có
+    filters = {}; 
   }
 
+  // 🚀 TỐI ƯU TỐC ĐỘ: Dùng LEFT JOIN kết hợp Sub-query ở FROM thay vì SELECT lồng nhau
   let sql = `
     SELECT 
       p.*,
       c.name AS category_name,
       b.name AS brand_name,
-      -- SỬA Ở ĐÂY: Thêm ORDER BY id DESC để lấy ảnh mới thêm vào sau cùng
-      (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY id DESC LIMIT 1) AS image_url
+      pi.image_url
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
     LEFT JOIN brands b ON p.brand_id = b.id
+    LEFT JOIN (
+        SELECT product_id, image_url 
+        FROM product_images 
+        WHERE id IN (SELECT MAX(id) FROM product_images GROUP BY product_id)
+    ) pi ON p.id = pi.product_id
     WHERE p.status = 1
   `;
   
   const params = [];
 
-  // 1. Nếu có từ khóa tìm kiếm (keyword)
   if (filters && filters.keyword) {
     sql += " AND (p.name LIKE ? OR p.sku LIKE ?)";
     params.push(`%${filters.keyword}%`, `%${filters.keyword}%`);
   }
 
-  // 2. Nếu có lọc theo danh mục (categoryId)
   if (filters && filters.categoryId) {
     sql += " AND p.category_id = ?";
     params.push(filters.categoryId);
   }
 
-  // Sắp xếp mới nhất lên đầu
   sql += " ORDER BY p.created_at DESC";
 
   db.query(sql, params, callback);
@@ -97,11 +97,15 @@ exports.getById = (id, callback) => {
       p.*, 
       c.name AS category_name, 
       b.name AS brand_name,
-      -- SỬA CẢ Ở ĐÂY NỮA:
-      (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY id DESC LIMIT 1) AS image_url
+      pi.image_url
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
     LEFT JOIN brands b ON p.brand_id = b.id
+    LEFT JOIN (
+        SELECT product_id, image_url 
+        FROM product_images 
+        WHERE id IN (SELECT MAX(id) FROM product_images GROUP BY product_id)
+    ) pi ON p.id = pi.product_id
     WHERE p.id = ?
   `;
   db.query(sql, [id], callback);

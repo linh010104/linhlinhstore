@@ -19,6 +19,7 @@ const statsRoutes = require('./routes/StatsRoutes');
 const inventoryRoutes = require('./routes/InventoryRoutes'); 
 const aiRoutes = require('./routes/ai/ai.route');
 const importRoutes = require('./routes/ai/import.route'); 
+const chatbotRoutes = require('./routes/ai/chatbot.route');
 
 const app = express();
 
@@ -38,6 +39,18 @@ app.use('/api/inventory', inventoryRoutes);
 
 app.use('/api/ai', aiRoutes);
 app.use('/api/import', importRoutes); 
+app.use('/api/chatbot', chatbotRoutes);
+
+// app.use(express.static(path.join(__dirname, 'web-client')));
+app.use((err, req, res, next) => {
+    // 1. Chỉ in lỗi chi tiết ở màn hình Terminal của Dev (Server)
+    console.error("🔥 Lỗi Hệ Thống (Đã được chặn):", err.stack || err);
+    
+    // 2. Trả về cho Frontend (Người dùng) một câu chung chung, bảo mật tuyệt đối
+    res.status(500).json({ 
+        message: "Lỗi máy chủ nội bộ. Hệ thống đang bảo trì, vui lòng thử lại sau!" 
+    });
+});
 
 app.use(express.static('web-client'));
 app.listen(process.env.PORT, () => {

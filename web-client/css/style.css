@@ -209,3 +209,114 @@ footer hr { border-color: rgba(255,255,255,0.1); }
 /* 7. MODAL */
 .modal-header { background-color: var(--primary-color); color: white; }
 .btn-close-white { filter: invert(1); }
+
+/* =========================================
+   GIAO DIỆN AI CHATBOT TƯ VẤN
+   ========================================= */
+#ai-chat-wrapper {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+#btn-open-chat {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+#btn-open-chat:hover {
+    transform: scale(1.1);
+    background-color: #0b5ed7;
+}
+#chat-window {
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+}
+.chat-header {
+    background: #0d6efd;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+.chat-header button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+#chat-content {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 0.9rem;
+}
+.msg-ai {
+    background: #e9ecef;
+    color: #212529;
+    padding: 10px 15px;
+    border-radius: 15px 15px 15px 0;
+    max-width: 85%;
+    align-self: flex-start;
+}
+.msg-user {
+    background: #0d6efd;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 15px 15px 0 15px;
+    max-width: 85%;
+    align-self: flex-end;
+}
+.chat-input-area {
+    padding: 15px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 10px;
+    background: white;
+}
+#chat-input {
+    flex: 1;
+    border: 1px solid #ced4da;
+    border-radius: 20px;
+    padding: 8px 15px;
+    outline: none;
+}
+#chat-input:focus {
+    border-color: #0d6efd;
+}
+#btn-send {
+    background: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.typing-indicator { font-style: italic; color: #6c757d; font-size: 0.8rem; align-self: flex-start;}

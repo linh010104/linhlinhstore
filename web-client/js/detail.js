@@ -1,9 +1,9 @@
-/* File: js/detail.js - Bản Fix Lỗi Ảnh */
+/* File: js/detail.js */
 
 let currentProductId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Lấy ID từ URL
+    // Lấy ID từ URL
     const params = new URLSearchParams(window.location.search);
     currentProductId = params.get("id");
 
@@ -16,15 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
     loadProductDetail();
 });
 
-// Hàm lấy đường dẫn ảnh chuẩn (Dựa theo code cũ của ông)
-function getImgPath(urlFromDb) {
-    if (!urlFromDb) return 'https://via.placeholder.com/500?text=No+Image';
-    // Nếu trong DB lưu đường dẫn tương đối (ví dụ /uploads/abc.jpg) thì nối thêm localhost vào
-    return `http://localhost:3000${urlFromDb}`;
-}
-
 function loadProductDetail() {
-    fetch(`http://localhost:3000/api/products/${currentProductId}`)
+    fetch(`${CONFIG.BASE_URL}/products/${currentProductId}`)
         .then(res => res.json())
         .then(data => {
             if (!data || data.message) {
@@ -34,22 +27,21 @@ function loadProductDetail() {
 
             // --- ĐIỀN THÔNG TIN ---
             document.getElementById("detail-name").innerText = data.name;
-            document.getElementById("breadcrumb-name").innerText = data.name;
+            if(document.getElementById("breadcrumb-name")) {
+                document.getElementById("breadcrumb-name").innerText = data.name;
+            }
             
-            // Danh mục
             const catName = data.category_name || "Sản phẩm";
             document.getElementById("detail-category").innerText = catName;
 
-            // Giá
             const price = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data.price);
             document.getElementById("detail-price").innerText = price;
 
-            // Mô tả
             document.getElementById("detail-desc").innerText = data.description || "Chưa có mô tả chi tiết.";
             
-            // --- ẢNH (Dùng hàm mới sửa) ---
-            // Code cũ dùng data.image_url, nên ở đây ta cũng dùng thế
-            document.getElementById("detail-img").src = getImgPath(data.image_url);
+            // --- ẢNH ---
+            const imgUrl = data.image_url ? `${CONFIG.IMAGE_BASE_URL}${data.image_url}` : "https://via.placeholder.com/500?text=No+Image";
+            document.getElementById("detail-img").src = imgUrl;
 
             // --- TẢI SẢN PHẨM TƯƠNG TỰ ---
             loadRelatedProducts(data.category_id);
@@ -60,11 +52,11 @@ function loadProductDetail() {
 // Hàm tải sản phẩm liên quan
 function loadRelatedProducts(catId) {
     const container = document.getElementById("related-products");
+    if (!container) return; // Tránh lỗi nếu trang không có thẻ này
     
-    fetch("http://localhost:3000/api/products")
+    fetch(`${CONFIG.BASE_URL}/products`)
     .then(res => res.json())
     .then(all => {
-        // Lọc sản phẩm cùng loại trừ chính nó
         const related = all.filter(p => p.category_id == catId && p.id != currentProductId).slice(0, 4);
 
         container.innerHTML = "";
@@ -75,14 +67,14 @@ function loadRelatedProducts(catId) {
 
         related.forEach(p => {
              const price = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.price);
-             const img = getImgPath(p.image_url); // Dùng lại hàm lấy ảnh chuẩn
+             const imgUrl = p.image_url ? `${CONFIG.IMAGE_BASE_URL}${p.image_url}` : "https://via.placeholder.com/300x300";
              
              container.innerHTML += `
                 <div class="col-6 col-md-3">
                     <div class="card h-100 shadow-sm border-0">
                         <a href="detail.html?id=${p.id}">
                             <div class="p-3" style="height: 180px; display: flex; align-items: center; justify-content: center;">
-                                <img src="${img}" class="img-fluid" style="max-height: 100%;" alt="${p.name}">
+                                <img src="${imgUrl}" class="img-fluid" style="max-height: 100%;" alt="${p.name}">
                             </div>
                         </a>
                         <div class="card-body p-2 text-center">
@@ -107,7 +99,7 @@ function changeQty(amount) {
     input.value = val;
 }
 
-// Thêm vào giỏ (Logic cũ nhưng gắn vào nút mới)
+// Thêm vào giỏ từ chi tiết
 function addToCartFromDetail() {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -116,7 +108,7 @@ function addToCartFromDetail() {
     }
     const qty = parseInt(document.getElementById("qty-input").value);
 
-    fetch("http://localhost:3000/api/cart/add", { // Dùng đúng link API cũ của ông
+    fetch(`${CONFIG.BASE_URL}/cart/add`, { 
         method: "POST", 
         headers: { "Content-Type": "application/json", "Authorization": "Bearer "+token },
         body: JSON.stringify({ productId: currentProductId, quantity: qty })
@@ -129,7 +121,7 @@ function addToCartFromDetail() {
     .catch(e => console.error(e));
 }
 
-// Mua ngay (Gọi modal)
+// Mua ngay
 function buyNowFromDetail() {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -138,7 +130,6 @@ function buyNowFromDetail() {
     }
     document.getElementById("direct-buy-product-id").value = currentProductId;
     
-    // Mở modal Bootstrap
     if(typeof bootstrap !== 'undefined') {
         const modal = new bootstrap.Modal(document.getElementById('checkoutModal'));
         modal.show();

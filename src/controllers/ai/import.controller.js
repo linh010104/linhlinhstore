@@ -1,5 +1,5 @@
+/* File: import.controller.js */
 const mongoose = require('mongoose');
-// Gọi kết nối MySQL (Sửa lại đường dẫn này nếu file config db của ông tên khác)
 const db = require('../../config/db'); 
 
 const createImportInvoice = async (req, res) => {
@@ -8,7 +8,7 @@ const createImportInvoice = async (req, res) => {
 
     try {
         // ==========================================
-        // PHẦN 1: LƯU HÓA ĐƠN THUẾ VÀO MONGODB (TIẾNG VIỆT)
+        // PHẦN 1: LƯU HÓA ĐƠN THUẾ VÀO MONGODB
         // ==========================================
         const mongoDb = mongoose.connection.db; 
         const danhSachHangHoa = items.map(item => ({
@@ -31,52 +31,65 @@ const createImportInvoice = async (req, res) => {
         await mongoDb.collection('hoa_don_nhap').insertOne(hoaDonTiengViet);
 
         // ==========================================
-        // PHẦN 2: CẬP NHẬT KHO BÊN MYSQL
+        // PHẦN 2: CẬP NHẬT KHO BÊN MYSQL (TÌM KIẾM THÔNG MINH + BẢO MẬT)
         // ==========================================
         for (const hang of items) {
             const tenSP = hang.product_name;
             const soLuongNhap = hang.quantity;
 
-            // 1. Tìm product_id trong bảng products (Tìm gần đúng bằng chữ đầu)
-            const [productRows] = await db.promise().query(
-                "SELECT id FROM products WHERE name LIKE ?", [`%${tenSP}%`]
-            );
+            // 1. Tách tên sản phẩm thành các từ khóa nhỏ để tìm kiếm linh hoạt hơn
+            const keywords = tenSP.split(' ').filter(k => k.trim() !== '');
+
+            let queryStr = "SELECT id, name FROM products WHERE 1=1";
+            let queryParams = [];
+
+            // 2. Chống SQL Injection và nối chuỗi tìm kiếm cho từng từ khóa
+            for (const word of keywords) {
+                const safeWord = word.replace(/[%_]/g, '\\$&'); // Vá lỗ hổng Wildcard Injection
+                queryStr += " AND name LIKE ?";
+                queryParams.push(`%${safeWord}%`);
+            }
+
+            // 3. Thực thi tìm kiếm
+            const [productRows] = await db.promise().query(queryStr, queryParams);
 
             if (productRows.length > 0) {
                 const productId = productRows[0].id;
+                const dbProductName = productRows[0].name;
 
-                // 2. Kiểm tra xem đã có trong bảng inventory chưa
+                // Log ra Terminal để ông dễ theo dõi xem nó match với sp nào
+                console.log(`✅ [THÀNH CÔNG] AI quét: "${tenSP}" -> Khớp với DB: "${dbProductName}" (ID: ${productId})`);
+
+                // Kiểm tra xem đã có trong bảng inventory chưa
                 const [invRows] = await db.promise().query(
                     "SELECT id FROM inventory WHERE product_id = ?", [productId]
                 );
 
                 if (invRows.length > 0) {
-                    // Đã có -> Cộng dồn số lượng
                     await db.promise().query(
                         "UPDATE inventory SET quantity = quantity + ?, updated_at = NOW() WHERE product_id = ?",
                         [soLuongNhap, productId]
                     );
                 } else {
-                    // Chưa có -> Tạo mới dòng trong kho
                     await db.promise().query(
                         "INSERT INTO inventory (product_id, quantity, updated_at) VALUES (?, ?, NOW())",
                         [productId, soLuongNhap]
                     );
                 }
 
-                // 3. Ghi log lịch sử nhập hàng vào inventory_logs
+                // Ghi log lịch sử nhập hàng
                 await db.promise().query(
                     "INSERT INTO inventory_logs (product_id, change_qty, reason, created_at) VALUES (?, ?, ?, NOW())",
                     [productId, soLuongNhap, "Nhập hàng tự động bằng AI"]
                 );
             } else {
-                console.log(`⚠️ Bỏ qua: Không tìm thấy SP '${tenSP}' trong MySQL để cập nhật kho.`);
+                console.log(`⚠️ [THẤT BẠI] Bỏ qua: Không tìm thấy sản phẩm nào chứa các chữ "${tenSP}" trong MySQL.`);
             }
         }
 
         res.status(200).json({ 
             success: true, 
-            message: "✅ Đỉnh cao: Đã lưu Hóa đơn Thuế vào MongoDB và Cập nhật Tồn kho vào MySQL!" 
+            message: "✅ Đỉnh cao: Đã lưu Hóa đơn Thuế vào MongoDB và Cập nhật Tồn kho vào MySQL an toàn!" 
         });
 
     } catch (error) {
