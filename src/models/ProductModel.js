@@ -42,26 +42,32 @@ exports.getAll = (filters, callback) => {
 };
 
 exports.create = (data, callback) => {
+  // Thêm import_price, stock_quantity và specifications vào câu lệnh INSERT
   const sql = `
     INSERT INTO products
-    (name, sku, price, description, warranty_month, category_id, brand_id, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    (name, sku, price, import_price, stock_quantity, description, specifications, warranty_month, category_id, brand_id, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
   db.query(sql, [
     data.name,
     data.sku,
     data.price,
+    data.import_price || 0,       // Thêm giá nhập (mặc định là 0 nếu client không gửi)
+    data.stock_quantity || 0,     // Thêm số lượng tồn (thay cho bảng inventory cũ)
     data.description,
+    data.specifications || '',    // Thêm thông số kỹ thuật
     data.warranty_month,
     data.category_id,
     data.brand_id,
     data.status ?? 1
   ], callback);
 };
+
 exports.update = (id, data, callback) => {
+  // Bổ sung các trường mới vào câu lệnh UPDATE
   const sql = `
     UPDATE products
-    SET name=?, sku=?, price=?, description=?, warranty_month=?,
+    SET name=?, sku=?, price=?, import_price=?, stock_quantity=?, description=?, specifications=?, warranty_month=?,
         category_id=?, brand_id=?, status=?
     WHERE id=?
   `;
@@ -69,7 +75,10 @@ exports.update = (id, data, callback) => {
     data.name,
     data.sku,
     data.price,
+    data.import_price,      // Cập nhật giá nhập
+    data.stock_quantity,    // Cập nhật số lượng tồn
     data.description,
+    data.specifications,    // Cập nhật thông số
     data.warranty_month,
     data.category_id,
     data.brand_id,

@@ -1,5 +1,4 @@
-/* File: src/controllers/InventoryController.js */
-const Inventory = require('../models/InventoryModel'); // <--- Gọi Model
+const Inventory = require('../models/InventoryModel');
 
 exports.getInventory = (req, res) => {
     Inventory.getAll((err, result) => {
@@ -16,24 +15,12 @@ exports.importGoods = (req, res) => {
         return res.status(400).json({ message: "Dữ liệu không hợp lệ" });
     }
 
-    // Kiểm tra xem đã có trong kho chưa
-    Inventory.findByProductId(productId, (err, result) => {
+    // Cộng dồn thẳng vào bảng products
+    Inventory.updateStock(productId, qty, (err) => {
         if (err) return res.status(500).json(err);
-
-        if (result.length === 0) {
-            // Chưa có -> Tạo mới
-            Inventory.create(productId, qty, (err) => {
-                if (err) return res.status(500).json(err);
-                Inventory.log(productId, qty, "Nhập hàng lần đầu");
-                res.json({ message: "Tạo kho và nhập hàng thành công" });
-            });
-        } else {
-            // Đã có -> Cộng dồn
-            Inventory.updateStock(productId, qty, (err) => {
-                if (err) return res.status(500).json(err);
-                Inventory.log(productId, qty, "Nhập thêm hàng");
-                res.json({ message: "Cập nhật số lượng thành công" });
-            });
-        }
+        
+        // Ghi log
+        Inventory.log(productId, qty, "Nhập kho thủ công");
+        res.json({ message: "Nhập kho thành công!" });
     });
 };

@@ -1,99 +1,69 @@
-/* File: src/controllers/StatsController.js */
+/* File: src/controllers/StatsController.js - CẬP NHẬT THỐNG KÊ THEO SẢN PHẨM */
 const db = require('../config/db');
 const mongoose = require('mongoose'); 
 
 exports.getRevenue = (req, res) => {
     const { startDate, endDate } = req.query;
-
-    if (!startDate || !endDate) {
-        return res.status(400).json({ message: "Vui lòng chọn đầy đủ ngày!" });
-    }
-
-    const sql = `
-        SELECT 
-            o.id, o.receiver_name, o.created_at, o.total_amount, o.payment_method,
-            p.name as product_name, oi.quantity
-        FROM orders o
-        JOIN order_items oi ON o.id = oi.order_id
-        JOIN products p ON oi.product_id = p.id
-        WHERE o.status = 'DONE' 
-        AND o.created_at BETWEEN ? AND ?
-        ORDER BY o.created_at DESC
-    `;
+    if (!startDate || !endDate) return res.status(400).json({ message: "Vui lòng chọn ngày!" });
 
     const start = startDate + " 00:00:00";
     const end = endDate + " 23:59:59";
 
-    db.query(sql, [start, end], async (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Lỗi server MySQL" });
-        }
+    // Truy vấn MySQL: Nhóm theo sản phẩm để lấy số lượng, doanh thu và lợi nhuận
+    const sql = `
+        SELECT 
+            p.id, p.name, p.specifications,
+            c.name as category_name, 
+            b.name as brand_name,
+            SUM(oi.quantity) as sold_quantity,
+            SUM(oi.quantity * p.price) as total_revenue,
+            SUM(oi.quantity * (p.price - p.import_price)) as total_profit
+        FROM order_items oi
+        JOIN orders o ON oi.order_id = o.id
+        JOIN products p ON oi.product_id = p.id
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN brands b ON p.brand_id = b.id
+        WHERE o.status = 'DONE' 
+        AND o.created_at BETWEEN ? AND ?
+        GROUP BY p.id
+        ORDER BY total_profit DESC
+    `;
 
-        // --- A. XỬ LÝ DOANH THU TỪ MYSQL ---
-        const ordersMap = new Map();
+    db.query(sql, [start, end], async (err, productStats) => {
+        if (err) return res.status(500).json({ error: err.message });
 
-        result.forEach(row => {
-            if (!ordersMap.has(row.id)) {
-                ordersMap.set(row.id, {
-                    id: row.id,
-                    receiver_name: row.receiver_name,
-                    created_at: row.created_at,
-                    total_amount: parseFloat(row.total_amount),
-                    payment_method: row.payment_method,
-                    products: [] 
-                });
-            }
-            const productStr = `${row.product_name} (x${row.quantity})`;
-            ordersMap.get(row.id).products.push(productStr);
+        let totalRev = 0;
+        let totalProf = 0;
+        productStats.forEach(p => {
+            totalRev += parseFloat(p.total_revenue);
+            totalProf += parseFloat(p.total_profit);
         });
 
-        const finalOrders = Array.from(ordersMap.values()).map(order => ({
-            ...order,
-            product_list: order.products.join(', ') 
-        }));
-
-        let totalRevenue = 0;
-        finalOrders.forEach(o => totalRevenue += o.total_amount);
-
-        // --- B. XỬ LÝ CHI PHÍ & THUẾ TỪ MONGODB ---
+        // Lấy dữ liệu chi phí nhập hàng từ MongoDB để tính Tổng vốn
         let totalImportCost = 0;
         let totalVatPaid = 0;
-        let danhSachHoaDon = []; // <--- ĐÃ FIX: Khai báo mảng rỗng ở ngoài để ai cũng thấy
-
         try {
             const mongoDb = mongoose.connection.db;
-            const queryStart = new Date(start);
-            const queryEnd = new Date(end);
-
-            // Tìm và gán vào biến ở ngoài
-            danhSachHoaDon = await mongoDb.collection('hoa_don_nhap').find({
-                ngay_nhap: {
-                    $gte: queryStart,
-                    $lte: queryEnd
-                }
+            const invoices = await mongoDb.collection('hoa_don_nhap').find({
+                ngay_nhap: { $gte: new Date(start), $lte: new Date(end) }
             }).toArray();
 
-            danhSachHoaDon.forEach(inv => {
+            invoices.forEach(inv => {
                 totalImportCost += inv.tong_thanh_toan || 0;
                 totalVatPaid += inv.tien_thue_vat || 0;
             });
-            
-        } catch (mongoErr) {
-            console.error("Lỗi khi truy vấn MongoDB:", mongoErr);
-        }
+        } catch (mErr) { console.error(mErr); }
 
-        // --- C. ĐÓNG GÓI TOÀN BỘ KẾT QUẢ GỬI CHO JAVA ---
         res.json({
             success: true,
             summary: {
-                totalRevenue: totalRevenue,
-                totalOrders: finalOrders.length,
-                totalImportCost: totalImportCost, 
-                totalVatPaid: totalVatPaid        
+                totalRevenue: totalRev,
+                totalProfit: totalProf,
+                totalImportCost: totalImportCost,
+                totalVatPaid: totalVatPaid,
+                totalProducts: productStats.length
             },
-            orders: finalOrders,
-            invoices: danhSachHoaDon // <--- Gửi thẳng mảng này về cho Java làm Excel
+            product_stats: productStats
         });
     });
 };

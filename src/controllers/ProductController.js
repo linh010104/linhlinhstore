@@ -69,3 +69,12 @@ exports.getDetail = (req, res) => {
     res.json(result[0]);
   });
 };
+exports.checkExistence = (req, res) => {
+    const { names } = req.body; // Mảng tên sản phẩm từ AI
+    const sql = "SELECT name FROM products WHERE name IN (?)";
+    db.query(sql, [names], (err, results) => {
+        if (err) return res.status(500).json(err);
+        const existingNames = results.map(r => r.name);
+        res.json({ existingNames });
+    });
+};
