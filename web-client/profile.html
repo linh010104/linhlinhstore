@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Thông tin cá nhân</title>
+    <title>Thông tin cá nhân & Bảo mật</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -21,7 +21,8 @@
     <div class="container my-5">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
-                <div class="card shadow border-0 rounded-4">
+                
+                <div class="card shadow border-0 rounded-4 mb-4">
                     <div class="card-header bg-white py-3 text-center">
                         <h4 class="fw-bold text-primary mb-0">
                             <i class="fa-solid fa-user-pen me-2"></i> Hồ sơ cá nhân
@@ -57,6 +58,37 @@
                         </form>
                     </div>
                 </div>
+
+                <div class="card shadow border-0 rounded-4">
+                    <div class="card-header bg-white py-3 text-center border-bottom-0">
+                        <h4 class="fw-bold text-danger mb-0">
+                            <i class="fa-solid fa-shield-halved me-2"></i> Đổi Mật Khẩu
+                        </h4>
+                    </div>
+                    <div class="card-body p-4 pt-2">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Mật khẩu hiện tại</label>
+                            <input type="password" id="old-password" class="form-control" placeholder="Nhập mật khẩu cũ...">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Mật khẩu mới</label>
+                            <input type="password" id="new-password" class="form-control" placeholder="Nhập mật khẩu mới...">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Xác nhận mật khẩu mới</label>
+                            <input type="password" id="confirm-password" class="form-control" placeholder="Nhập lại mật khẩu mới...">
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="button" class="btn btn-danger rounded-pill fw-bold py-2" onclick="updatePassword()">
+                                <i class="fa-solid fa-key me-2"></i> CẬP NHẬT MẬT KHẨU
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -91,7 +123,7 @@
             })
             .catch(err => console.error(err));
 
-            // 2. Xử lý lưu thay đổi
+            // 2. Xử lý lưu thay đổi thông tin (không đụng đến mật khẩu)
             document.getElementById("profile-form").addEventListener("submit", (e) => {
                 e.preventDefault();
 
@@ -112,7 +144,6 @@
                 .then(res => res.json())
                 .then(response => {
                     alert(response.message);
-                    // Cập nhật lại tên hiển thị trên menu (nếu có)
                     location.reload(); 
                 })
                 .catch(err => {

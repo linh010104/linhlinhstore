@@ -6,8 +6,6 @@ function login() {
         alert("Vui lòng nhập tài khoản và mật khẩu");
         return;
     }
-
-    // Đã đổi URL thành /login và thêm biến clientType
     fetch("http://localhost:3000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -35,7 +33,6 @@ function login() {
 }
 
 function register() {
-    // Lấy dữ liệu từ form
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
     const fullName = document.getElementById("full_name").value;
@@ -243,4 +240,53 @@ function processOrder() {
         }
     })
     .catch(err => console.error(err));
+}
+function updatePassword() {
+    const oldPass = document.getElementById("old-password").value;
+    const newPass = document.getElementById("new-password").value;
+    const confirmPass = document.getElementById("confirm-password").value;
+
+    if (!oldPass || !newPass || !confirmPass) {
+        alert("Vui lòng điền đầy đủ thông tin!");
+        return;
+    }
+    if (newPass !== confirmPass) {
+        alert("Mật khẩu mới không khớp!");
+        return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+        alert("Bạn chưa đăng nhập!");
+        window.location.href = "login.html";
+        return;
+    }
+
+    // Tạm thời dùng localhost:3000 theo chuẩn file cũ của ông
+    fetch("http://localhost:3000/api/auth/change-password", {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({ 
+            oldPassword: oldPass, 
+            newPassword: newPass 
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        
+        // Đổi thành công thì đá văng ra bắt đăng nhập lại
+        if (data.success || data.message.includes("thành công")) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            window.location.href = "login.html"; 
+        }
+    })
+    .catch(err => {
+        console.error("Lỗi đổi mật khẩu:", err);
+        alert("Lỗi kết nối tới Server!");
+    });
 }

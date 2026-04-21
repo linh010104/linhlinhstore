@@ -129,3 +129,43 @@ exports.updateProfile = (req, res) => {
         res.json({ message: "Cập nhật thông tin thành công!" });
     });
 };
+exports.changePassword = async (req, res) => {
+    const userId = req.user.id;
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+        return res.status(400).json({ message: "Vui lòng nhập đầy đủ mật khẩu cũ và mới!" });
+    }
+
+    // 1. Tìm user để lấy mật khẩu cũ đã mã hóa
+    const sqlSelect = "SELECT password FROM users WHERE id = ?";
+    
+    db.query(sqlSelect, [userId], async (err, result) => {
+        if (err) {
+            console.error("Lỗi Database (changePassword):", err);
+            return res.status(500).json({ message: 'Lỗi máy chủ nội bộ' });
+        }
+        if (result.length === 0) return res.status(404).json({ message: "Không tìm thấy user" });
+
+        const hashedPassword = result[0].password;
+
+        // 2. Kiểm tra mật khẩu cũ
+        const isMatch = await bcrypt.compare(oldPassword, hashedPassword);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Mật khẩu cũ không chính xác!" });
+        }
+
+        // 3. Mã hóa mật khẩu mới
+        const newHashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // 4. Lưu vào Database
+        const sqlUpdate = "UPDATE users SET password = ? WHERE id = ?";
+        db.query(sqlUpdate, [newHashedPassword, userId], (updateErr, updateResult) => {
+            if (updateErr) {
+                console.error("Lỗi Database (updatePassword):", updateErr);
+                return res.status(500).json({ message: 'Lỗi cập nhật mật khẩu' });
+            }
+            res.json({ success: true, message: "Đổi mật khẩu thành công! Vui lòng đăng nhập lại." });
+        });
+    });
+};
