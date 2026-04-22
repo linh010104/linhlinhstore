@@ -7,9 +7,6 @@ const createImportInvoice = async (req, res) => {
     const userId = 1; // Đổi thành ID số của Admin (thường là 1) để khớp với MySQL
 
     try {
-        // ==========================================
-        // PHẦN 1: LƯU HÓA ĐƠN GỐC VÀO MONGODB (Giữ nguyên)
-        // ==========================================
         const mongoDb = mongoose.connection.db; 
         const danhSachHangHoa = items.map(item => ({
             ten_san_pham: item.product_name,

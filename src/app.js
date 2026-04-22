@@ -2,57 +2,60 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-
-// --- 1. GỌI MÔNG (MONGODB) RA CHÀO SÂN ---
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://127.0.0.1:27017/dientu_store_ai')
-  .then(() => console.log("✅ Đã thông chốt thành công với MongoDB!"))
-  .catch((err) => console.error("❌ Lỗi cắm cờ MongoDB:", err));
 
+// --- 1. KẾT NỐI MONGODB ---
+mongoose.connect('mongodb://127.0.0.1:27017/dientu_store_ai')
+  .then(() => console.log("MongoDB: ok"))
+  .catch((err) => console.error("❌ MongoDB Lỗi:", err));
+
+// --- 2. IMPORT ROUTES ---
 const categoryRoutes = require('./routes/CategoryRoutes');
 const productRoutes = require('./routes/ProductRoutes');
 const authRoutes = require('./routes/AuthRoutes.js');
 const userRoutes = require('./routes/UserRoutes');
 const productImageRoutes = require('./routes/ProductImageRoutes');
 const cartRoutes = require('./routes/CartRoutes');
+const orderRoutes = require('./routes/OrderRoutes'); 
 const statsRoutes = require('./routes/StatsRoutes');
 const inventoryRoutes = require('./routes/InventoryRoutes'); 
 const aiRoutes = require('./routes/ai/ai.route');
 const importRoutes = require('./routes/ai/import.route'); 
 const chatbotRoutes = require('./routes/ai/chatbot.route');
+const vendorRoutes = require('./routes/VendorRoutes');
 
 const app = express();
 
+// --- 3. MIDDLEWARE ---
 app.use(cors());
 app.use(express.json());
 
+// PHỤC VỤ WEB-CLIENT (Sửa đường dẫn chuẩn ở đây)
+app.use('/uploads', express.static(path.join(__dirname, '..', 'web-client/uploads')));
+app.use(express.static(path.join(__dirname, '..', 'web-client')));
+
+// --- 4. API ROUTES ---
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/product-images', productImageRoutes);
-app.use('/uploads', express.static('web-client/uploads'));
 app.use('/api/cart', cartRoutes);
-app.use('/api/orders', require('./routes/OrderRoutes'));
+app.use('/api/orders', orderRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/inventory', inventoryRoutes);
-
+app.use('/api/vendors', vendorRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/import', importRoutes); 
 app.use('/api/chatbot', chatbotRoutes);
 
-// app.use(express.static(path.join(__dirname, 'web-client')));
+// --- 5. ERROR HANDLER ---
 app.use((err, req, res, next) => {
-    // 1. Chỉ in lỗi chi tiết ở màn hình Terminal của Dev (Server)
-    console.error("🔥 Lỗi Hệ Thống (Đã được chặn):", err.stack || err);
-    
-    // 2. Trả về cho Frontend (Người dùng) một câu chung chung, bảo mật tuyệt đối
-    res.status(500).json({ 
-        message: "Lỗi máy chủ nội bộ. Hệ thống đang bảo trì, vui lòng thử lại sau!" 
-    });
+    console.error("🔥 Lỗi:", err.stack || err);
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ!" });
 });
 
-app.use(express.static('web-client'));
-app.listen(process.env.PORT, () => {
-  console.log(`API running at http://localhost:${process.env.PORT}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`API: http://localhost:${PORT}`);
 });

@@ -2,34 +2,33 @@ const db = require('../config/db');
 
 const Category = {
   getAll: (cb) => {
-    db.query(
-      'SELECT * FROM categories',
-      cb
-    );
+    // JOIN chính nó để lấy tên danh mục cha (parent_name)
+    const sql = `
+      SELECT c1.*, c2.name as parent_name 
+      FROM categories c1 
+      LEFT JOIN categories c2 ON c1.parent_id = c2.id
+    `;
+    db.query(sql, cb);
   },
 
   create: (data, cb) => {
     db.query(
-      'INSERT INTO categories (name, description) VALUES (?, ?)',
-      [data.name, data.description],
+      'INSERT INTO categories (name, description, parent_id) VALUES (?, ?, ?)',
+      [data.name, data.description, data.parent_id || null],
       cb
     );
   },
 
   update: (id, data, cb) => {
     db.query(
-      'UPDATE categories SET name=?, description=? WHERE id=?',
-      [data.name, data.description, id],
+      'UPDATE categories SET name=?, description=?, parent_id=? WHERE id=?',
+      [data.name, data.description, data.parent_id || null, id],
       cb
     );
   },
 
   delete: (id, cb) => {
-    db.query(
-      'DELETE FROM categories WHERE id=?',
-      [id],
-      cb
-    );
+    db.query('DELETE FROM categories WHERE id=?', [id], cb);
   }
 };
 
