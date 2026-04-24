@@ -1,4 +1,3 @@
-
 const Order = require('../models/OrderModel');
 const db = require('../config/db');
 
@@ -35,9 +34,6 @@ exports.updateStatus = (req, res) => {
             console.error("Lỗi update trạng thái:", err);
             return res.status(500).json(err);
         }
-
-        // 2. LOGIC TỰ ĐỘNG TRỪ KHO
-        // Nếu chuyển sang SHIPPING -> Trừ kho
         if (status === 'SHIPPING') {
             console.log("-> Phát hiện trạng thái SHIPPING, tiến hành trừ kho...");
             deductInventory(orderId);
@@ -46,8 +42,6 @@ exports.updateStatus = (req, res) => {
         res.json({ message: 'Cập nhật trạng thái thành công' });
     });
 };
-
-// --- HÀM NÀY CHO KHÁCH XEM LỊCH SỬ ---
 exports.getMine = (req, res) => {
     Order.getByUserId(req.user.id, (err, data) => {
         if (err) return res.status(500).json(err);
@@ -57,14 +51,10 @@ exports.getMine = (req, res) => {
 exports.getDetail = (req, res) => {
     Order.getOrderDetail(req.params.id, (err, data) => {
         if (err) return res.status(500).json(err);
-        // Kiểm tra bảo mật: User chỉ xem được đơn của chính mình
         if (data.user_id !== req.user.id) return res.status(403).json({ message: "Không có quyền" });
-        
         res.json(data);
     });
 };
-
-// User cập nhật thông tin (SĐT, Địa chỉ)
 exports.updateInfo = (req, res) => {
     Order.updateOrderInfo(req.params.id, req.body, (err, result) => {
         if (err) return res.status(500).json(err);
@@ -73,7 +63,6 @@ exports.updateInfo = (req, res) => {
     });
 };
 
-// User đổi trạng thái (Hủy / Đã nhận)
 exports.userChangeStatus = (req, res) => {
     const status = req.body.status; // 'CANCELLED' hoặc 'DONE'
     Order.userUpdateStatus(req.params.id, status, (err, result) => {
@@ -83,20 +72,16 @@ exports.userChangeStatus = (req, res) => {
     });
 };
 function deductInventory(orderId) {
-    // Phải xin một kết nối riêng biệt (connection) từ db pool để làm Transaction
     db.getConnection((err, connection) => {
         if (err) return console.error("Lỗi lấy connection từ MySQL:", err);
-
-        // BẮT ĐẦU KÍCH HOẠT LÁ CHẮN TRANSACTION
+        
         connection.beginTransaction(async (err) => {
             if (err) {
                 connection.release();
                 return console.error("Lỗi khởi tạo Transaction:", err);
             }
             try {
-                // B1: Lấy danh sách sản phẩm trong đơn (Dùng Promise để tránh callback hell)
                 const sqlGetItems = "SELECT product_id, quantity FROM order_items WHERE order_id = ?";
-                
                 const getItems = () => new Promise((resolve, reject) => {
                     connection.query(sqlGetItems, [orderId], (err, results) => {
                         if (err) reject(err);
@@ -111,19 +96,17 @@ function deductInventory(orderId) {
                     connection.rollback(() => connection.release());
                     return;
                 }
-
-                // B2: Cập nhật tồn kho và ghi log (Chạy song song tất cả các lệnh trong Transaction)
+                
                 const updatePromises = items.map(item => {
                     return new Promise((resolve, reject) => {
                         const sqlDeduct = `
-                            UPDATE inventory 
-                            SET quantity = quantity - ?, updated_at = NOW() 
-                            WHERE product_id = ?
+                            UPDATE products 
+                            SET stock_quantity = stock_quantity - ? 
+                            WHERE id = ?
                         `;
                         connection.query(sqlDeduct, [item.quantity, item.product_id], (err) => {
                             if (err) return reject(err);
                             
-                            // Nếu trừ kho thành công, ghi luôn log xuất hàng
                             const sqlLog = "INSERT INTO inventory_logs (product_id, change_qty, reason) VALUES (?, ?, ?)";
                             connection.query(sqlLog, [item.product_id, -item.quantity, `Xuất bán đơn hàng #${orderId}`], (errLog) => {
                                 if (errLog) reject(errLog);
@@ -132,11 +115,9 @@ function deductInventory(orderId) {
                         });
                     });
                 });
-
-                // Chờ tất cả các lệnh UPDATE và INSERT chạy xong
+                
                 await Promise.all(updatePromises);
-
-                // B3: CHỐT GIAO DỊCH (Lưu vĩnh viễn vào Database)
+                
                 connection.commit((err) => {
                     if (err) {
                         return connection.rollback(() => {
@@ -145,12 +126,10 @@ function deductInventory(orderId) {
                         });
                     }
                     console.log(`-> [SUCCESS] Đã trừ kho & ghi log thành công cho đơn #${orderId}`);
-                    connection.release(); // Trả connection lại cho pool
+                    connection.release(); 
                 });
 
             } catch (error) {
-                // NẾU CÓ BẤT KỲ LỖI NÀO XẢY RA (ví dụ: mất mạng, sai cú pháp SQL) 
-                // -> QUAY XE (Rollback) LẠI TRẠNG THÁI BAN ĐẦU!
                 connection.rollback(() => {
                     console.error("Cảnh báo: Có lỗi xảy ra, ĐÃ ROLLBACK toàn bộ thao tác trừ kho!", error);
                     connection.release();
@@ -159,3 +138,89 @@ function deductInventory(orderId) {
         });
     });
 }
+exports.returnOrderAdmin = (req, res) => {
+    const orderId = req.params.id;
+    const { reason, condition } = req.body; // condition: 'GOOD' hoặc 'BAD'
+
+    db.getConnection((err, connection) => {
+        if (err) return res.status(500).json(err);
+
+        connection.beginTransaction(async (err) => {
+            if (err) { connection.release(); return res.status(500).json(err); }
+            try {
+                // B1: Đổi trạng thái đơn và lưu Lý do
+                const fullReason = condition === 'GOOD' ? `${reason} (Tình trạng: Tốt, Đã nhập kho)` : `${reason} (Tình trạng: Lỗi, Lưu kho chờ xử lý)`;
+                const sqlUpdateOrder = "UPDATE orders SET status = 'RETURNED', return_reason = ? WHERE id = ?";
+                await new Promise((resolve, reject) => {
+                    connection.query(sqlUpdateOrder, [fullReason, orderId], (err) => err ? reject(err) : resolve());
+                });
+
+                // B2: Lấy danh sách sản phẩm trong đơn
+                const items = await new Promise((resolve, reject) => {
+                    connection.query("SELECT product_id, quantity FROM order_items WHERE order_id = ?", [orderId], (err, results) => err ? reject(err) : resolve(results));
+                });
+
+                // B3: Cập nhật kho và Ghi Log
+                const updatePromises = items.map(item => {
+                    return new Promise((resolve, reject) => {
+                        if (condition === 'GOOD') {
+                            // Hàng tốt -> Cộng lại số lượng vào bảng products (Chuẩn database của Linh)
+                            connection.query("UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?", [item.quantity, item.product_id], (err) => {
+                                if (err) return reject(err);
+                                // Ghi log nhập lại
+                                connection.query("INSERT INTO inventory_logs (product_id, change_qty, reason) VALUES (?, ?, ?)",
+                                    [item.product_id, item.quantity, `Nhập kho (Hoàn trả đơn #${orderId})`], (err) => err ? reject(err) : resolve());
+                            });
+                        } else {
+                            // Hàng lỗi -> KHÔNG CỘNG KHO, chỉ ghi log để theo dõi
+                            connection.query("INSERT INTO inventory_logs (product_id, change_qty, reason) VALUES (?, 0, ?)",
+                                [item.product_id, `Hàng lỗi (Hoàn trả đơn #${orderId}) - Không bán lại`], (err) => err ? reject(err) : resolve());
+                        }
+                    });
+                });
+
+                await Promise.all(updatePromises);
+
+                connection.commit((err) => {
+                    if (err) throw err;
+                    res.json({ message: "Xử lý hoàn trả thành công!" });
+                    connection.release();
+                });
+            } catch (error) {
+                connection.rollback(() => {
+                    console.error("Lỗi hoàn trả:", error);
+                    res.status(500).json({ message: "Lỗi xử lý hoàn trả" });
+                    connection.release();
+                });
+            }
+        });
+    });
+};
+exports.requestReturn = (req, res) => {
+    const orderId = req.params.id;
+    const { reason } = req.body;
+    const userId = req.user.id;
+
+    if (!reason || reason.trim() === '') {
+        return res.status(400).json({ message: "Vui lòng nhập lý do trả hàng!" });
+    }
+
+    // 1. Kiểm tra đơn hàng có tồn tại và đúng là của user này không, trạng thái phải là DONE
+    db.query("SELECT status FROM orders WHERE id = ? AND user_id = ?", [orderId, userId], (err, results) => {
+        if (err) return res.status(500).json(err);
+        if (results.length === 0) return res.status(403).json({ message: "Không tìm thấy đơn hàng hoặc không có quyền." });
+        if (results[0].status !== 'DONE') {
+            return res.status(400).json({ message: "Chỉ đơn hàng đã hoàn tất mới được yêu cầu trả hàng." });
+        }
+
+        // 2. Cập nhật trạng thái sang RETURN_REQUESTED (Đang chờ duyệt)
+        const sqlUpdate = "UPDATE orders SET status = 'RETURN_REQUESTED', return_reason = ? WHERE id = ?";
+        // Thêm chữ [Yêu cầu của khách] để Admin trên Java dễ nhận biết
+        const formattedReason = `[Yêu cầu từ Web]: ${reason}`; 
+
+        db.query(sqlUpdate, [formattedReason, orderId], (err) => {
+            if (err) return res.status(500).json(err);
+            res.json({ message: "Gửi yêu cầu trả hàng thành công! Vui lòng chờ Shop liên hệ xử lý." });
+        });
+    });
+};

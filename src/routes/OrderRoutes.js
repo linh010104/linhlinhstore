@@ -14,9 +14,11 @@ router.get('/mine', authMiddleware, orderController.getMine);
 router.get('/:id', authMiddleware, orderController.getDetail); // Xem chi tiết
 router.put('/:id/info', authMiddleware, orderController.updateInfo); // Sửa thông tin
 router.put('/:id/user-status', authMiddleware, orderController.userChangeStatus); // Hủy/Đã nhận
+router.put('/:id/request-return', authMiddleware, orderController.requestReturn);
 
 // 3. Admin quản lý
 router.get('/', authMiddleware, isAdmin, orderController.getAll);
 router.put('/:id/status', authMiddleware, isAdmin, orderController.updateStatus);
+router.put('/:id/return', authMiddleware, isAdmin, orderController.returnOrderAdmin);
 
 module.exports = router;
