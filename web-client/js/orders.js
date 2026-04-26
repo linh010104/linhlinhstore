@@ -43,16 +43,20 @@ function viewDetail(id) {
         } else { returnBox.classList.add("d-none"); }
 
         const list = document.getElementById("modal-items-list");
-        list.innerHTML = order.items.map(item => `
+        // FIX: Xử lý link ảnh an toàn, nếu null thì gán ảnh trống
+        list.innerHTML = order.items.map(item => {
+            const imgUrl = item.image_url ? `http://localhost:3000${item.image_url}` : "https://via.placeholder.com/45";
+            return `
             <div class="list-group-item d-flex align-items-center gap-3">
-                <img src="http://localhost:3000${item.image_url}" style="width: 45px; height: 45px;" class="rounded border">
+                <img src="${imgUrl}" style="width: 45px; height: 45px; object-fit: cover;" class="rounded border">
                 <div class="flex-grow-1 small">
                     <div class="fw-bold">${item.name}</div>
                     <div class="text-muted">SL: ${item.quantity}</div>
                 </div>
-                <div class="fw-bold text-end">${Number(item.price * item.quantity).toLocaleString()}</div>
+                <div class="fw-bold text-end">${Number(item.price * item.quantity).toLocaleString()} đ</div>
             </div>
-        `).join('');
+            `;
+        }).join('');
 
         document.getElementById("modal-total").innerText = Number(order.total_amount).toLocaleString() + " đ";
 
@@ -89,6 +93,18 @@ function confirmReturnRequest() {
         method: "PUT",
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem("token") },
         body: JSON.stringify({ reason: finalReason })
+    })
+    .then(res => res.json())
+    .then(d => { alert(d.message); location.reload(); });
+}
+
+function updateStatus(status) {
+    if(!confirm("Xác nhận thao tác này?")) return;
+    const token = localStorage.getItem("token");
+    fetch(`http://localhost:3000/api/orders/${currentOrderId}/user-status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({ status })
     })
     .then(res => res.json())
     .then(d => { alert(d.message); location.reload(); });
