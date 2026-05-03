@@ -222,12 +222,10 @@ body {
     height: 100%;
     cursor: pointer;
 }
-
 .card:hover {
     box-shadow: var(--hover-shadow);
     transform: translateY(-2px);
 }
-
 .card-img-top {
     height: 200px;
     object-fit: contain;
@@ -238,13 +236,11 @@ body {
 .card:hover .card-img-top {
     transform: scale(1.05);
 }
-
 .card-body {
     padding: 15px;
     display: flex;
     flex-direction: column;
 }
-
 .card-title {
     font-size: 0.9rem;
     font-weight: 700;
@@ -255,7 +251,6 @@ body {
     overflow: hidden;
     height: 40px;
 }
-
 .price-tag {
     color: var(--primary-color);
     font-size: 1.1rem;
