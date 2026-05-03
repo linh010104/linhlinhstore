@@ -1,218 +1,286 @@
-/* File: css/style.css - PHIÊN BẢN PREMIUM */
-
-/* 1. CẤU HÌNH CHUNG & BIẾN MÀU SẮC */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto:wght@300;400;500&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto:wght@300;400;500;700&display=swap');
 :root {
-    --primary-color: #0a192f; /* Xanh đen đậm sang trọng */
-    --secondary-color: #172a45; /* Xanh đen nhạt hơn cho nền phụ */
-    --accent-color: #ff6b35; /* Cam cháy nổi bật cho nút mua */
-    --text-light: #ccd6f6; /* Màu chữ sáng */
+    --primary-color: #009ed7bc; 
+    --secondary-color: #111111; /* Đen nhạt cho footer */
     --text-dark: #333333;
-    --bg-light: #f4f7f6; /* Nền xám rất nhạt */
-    --card-shadow: 0 10px 30px -15px rgba(2, 12, 27, 0.2);
-    --hover-shadow: 0 20px 30px -10px rgba(2, 12, 27, 0.3);
+    --bg-light: #f4f6f8; /* Nền xám nhạt */
+    --card-shadow: 0 1px 2px 0 rgba(60,64,67,0.1), 0 2px 6px 2px rgba(60,64,67,0.15);
+    --hover-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
 }
-
 body {
     font-family: 'Roboto', sans-serif;
     background-color: var(--bg-light);
     color: var(--text-dark);
 }
 
-h1, h2, h3, h4, h5, h6, .navbar-brand, .btn {
-    font-family: 'Montserrat', sans-serif;
-}
-
-/* 2. NAVBAR (MENU) - Gọn gàng, hiện đại */
+/* =========================================
+   1. NAVBAR & HEADER
+   ========================================= */
 .navbar {
     background-color: var(--primary-color) !important;
-    padding: 1rem 0;
+    padding: 10px 0;
 }
 
 .navbar-brand {
-    font-weight: 800;
-    letter-spacing: 1px;
-    font-size: 1.4rem;
+    color: white !important;
 }
 
-#search-input {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-}
-
-#search-input::placeholder { color: rgba(255, 255, 255, 0.6); }
-#search-input:focus {
-    background-color: rgba(255, 255, 255, 0.2);
-    box-shadow: none;
-    border-color: var(--accent-color);
-}
-
-/* 3. HERO CAROUSEL (Banner trượt xịn xò) */
-#heroCarousel {
-    margin-top: -20px; /* Kéo lên đè nhẹ vào navbar */
-    margin-bottom: 40px;
-}
-
-.carousel-item {
-    height: 500px; /* Chiều cao cố định */
-    background-color: var(--secondary-color); /* Màu nền dự phòng */
-}
-
-.carousel-item img {
-    object-fit: cover; /* Ảnh phủ kín không méo */
-    height: 100%;
-    opacity: 0.8; /* Làm tối ảnh đi một chút để nổi chữ */
-}
-
-.carousel-caption {
-    bottom: 30%;
-    text-align: left;
-    left: 10%;
-}
-
-.carousel-caption h2 {
-    font-size: 3.5rem;
-    font-weight: 800;
-    text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
-}
-
-.carousel-caption p {
-    font-size: 1.3rem;
-    font-weight: 300;
-    text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
-}
-
-/* Nút bấm chung */
-.btn-accent {
-    background-color: var(--accent-color);
-    color: white;
-    border: none;
-    font-weight: 700;
-    padding: 10px 30px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-}
-
-.btn-accent:hover {
-    background-color: #e55a2b;
-    color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px -10px rgba(255, 107, 53, 0.5);
-}
-
-/* 4. PRODUCT CARD (Card sản phẩm được làm lại) */
-.card {
-    border: none;
-    border-radius: 8px;
+.search-box {
     background: white;
-    box-shadow: var(--card-shadow);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border-radius: 10px;
     overflow: hidden;
 }
 
+#search-input {
+    box-shadow: none;
+    font-size: 0.95rem;
+}
+
+#search-input:focus {
+    outline: none;
+}
+
+.header-item {
+    padding: 5px 10px;
+    border-radius: 8px;
+    transition: background 0.3s;
+}
+
+.header-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+/* KHU VỰC HERO (Layout 3 cột) */
+.hero-wrapper {
+    display: flex; 
+    gap: 15px;
+    height: 380px; 
+    margin-bottom: 40px; 
+    position: relative; /* Neo để Mega Menu bám vào đây */
+}
+
+/* Sidebar Danh Mục (Cột 1) */
+.category-menu {
+    width: 20%;
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+    height: 100%;
+    position: static; /* Ép về static để Mega Menu có thể bung ra ngoài */
+}
+
+.category-menu .list-group-item {
+    border: none;
+    padding: 12px 15px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #444;
+    cursor: pointer;
+}
+
+.category-menu .list-group-item:hover {
+    background-color: #f8f9fa;
+    color: var(--primary-color);
+}
+
+.category-menu .list-group-item i.fa-solid {
+    width: 20px;
+    text-align: center;
+}
+   /* MEGA MENU (MENU XỔ RA) */
+.mega-menu-content {
+    display: none; 
+    position: absolute;
+    top: 0;
+    left: calc(20% + 15px); /* Nhảy qua đúng độ rộng sidebar + khoảng hở */
+    width: calc(60% - 15px); /* Che đúng cái Banner giữa */
+    height: 100%;
+    background: white;
+    box-shadow: 10px 0 20px rgba(0,0,0,0.1); 
+    border-radius: 10px;
+    z-index: 999; 
+    padding: 25px;
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 20px;
+}
+.mega-menu-content::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -30px;
+    width: 15px;
+    height: 100%;
+    background: transparent; 
+}
+
+/* Hiệu ứng hiển thị khi Hover vào list-item cha */
+.category-menu .list-group-item:hover .mega-menu-content {
+    display: grid; 
+}
+
+/* Style cột bên trong Mega Menu */
+.mega-column h6 {
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.mega-column a {
+    display: block;
+    color: #444;
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+}
+
+.mega-column a:hover {
+    color: var(--primary-color);
+    transform: translateX(5px);
+}
+
+/* =========================================
+   4. BANNER (Cột 2 & Cột 3)
+   ========================================= */
+/* Banner Trượt Giữa (Cột 2) */
+#heroCarousel {
+    width: 60%;
+    height: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+}
+
+#heroCarousel .carousel-inner, #heroCarousel .carousel-item {
+    height: 100%;
+}
+
+#heroCarousel img {
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Banner Phụ Bên Phải (Cột 3) */
+.right-banners {
+    width: 20%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.right-banners img {
+    width: 100%;
+    height: 31%; 
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s ease;
+}
+
+.right-banners img:hover {
+    transform: scale(1.02);
+}
+
+/* Responsive cho màn hình nhỏ (Tablet/Mobile) */
+@media (max-width: 991px) {
+    .hero-wrapper {
+        flex-direction: column;
+        height: auto;
+    }
+    .category-menu {
+        display: none; 
+    }
+    #heroCarousel {
+        width: 100%;
+        height: 250px;
+    }
+    .right-banners {
+        width: 100%;
+        flex-direction: row;
+        height: auto;
+        gap: 10px;
+    }
+    .right-banners img {
+        width: 33.33%;
+        height: auto;
+        aspect-ratio: 16/9;
+    }
+}
+
+/* =========================================
+   5. PRODUCT CARD (THẺ SẢN PHẨM)
+   ========================================= */
+.card {
+    border: none;
+    border-radius: 10px;
+    background: white;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    height: 100%;
+    cursor: pointer;
+}
+
 .card:hover {
-    transform: translateY(-7px);
     box-shadow: var(--hover-shadow);
+    transform: translateY(-2px);
 }
 
 .card-img-top {
-    height: 240px;
-    object-fit: contain; /* Ảnh sản phẩm điện tử nên dùng contain để thấy hết */
-    padding: 20px;
-    background: white;
+    height: 200px;
+    object-fit: contain;
+    padding: 15px;
     transition: transform 0.3s ease;
 }
 
 .card:hover .card-img-top {
-    transform: scale(1.05); /* Phóng to ảnh nhẹ khi hover */
+    transform: scale(1.05);
 }
 
 .card-body {
-    padding: 1.5rem;
-    background: white;
-    border-top: 1px solid #eee;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
 }
 
 .card-title {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-    white-space: nowrap;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
+    height: 40px;
 }
 
 .price-tag {
-    color: var(--accent-color);
-    font-size: 1.2rem;
+    color: var(--primary-color);
+    font-size: 1.1rem;
     font-weight: 700;
+    margin-bottom: 10px;
 }
 
-/* Nút Mua trong card */
 .card .btn-primary {
     background-color: var(--primary-color);
     border: none;
-    width: 100%;
-    border-radius: 4px;
+    border-radius: 5px;
     font-weight: 600;
-}
-.card .btn-primary:hover { background-color: var(--accent-color); }
-
-/* 5. SIDEBAR & DANH MỤC */
-.category-card .card-header {
-    background-color: var(--secondary-color);
-    color: var(--text-light);
-    font-weight: 700;
-    border-bottom: none;
+    margin-top: auto;
 }
 
-.list-group-item {
-    border: none;
-    border-bottom: 1px solid #eee;
-    padding: 12px 20px;
-    font-weight: 500;
-    transition: all 0.2s;
+.card .btn-primary:hover {
+    background-color: #b50012;
 }
-.list-group-item:hover {
-    background-color: #f8f9fa;
-    color: var(--accent-color);
-    padding-left: 25px; /* Hiệu ứng dịch sang phải */
-}
-
-/* Banner phụ mới */
-.promo-box {
-    background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
-    color: var(--text-light);
-    border-radius: 8px;
-    padding: 30px 20px;
-    text-align: center;
-    margin-top: 30px;
-    box-shadow: var(--card-shadow);
-}
-.promo-box h4 { font-weight: 800; color: var(--accent-color); }
-.promo-box p { font-size: 0.9rem; opacity: 0.8; }
-
-/* 6. FOOTER */
+   /* FOOTER */
 footer {
     background-color: var(--secondary-color);
-    color: var(--text-light);
-    margin-top: 80px;
-    padding-top: 60px;
+    margin-top: 50px;
+    padding-top: 40px;
 }
-footer h5 { color: white; font-weight: 700; }
-footer .text-white-50 { color: #a8b2d1 !important; }
-footer hr { border-color: rgba(255,255,255,0.1); }
-
-/* 7. MODAL */
-.modal-header { background-color: var(--primary-color); color: white; }
-.btn-close-white { filter: invert(1); }
-
-/* =========================================
-   GIAO DIỆN AI CHATBOT TƯ VẤN
-   ========================================= */
+   /* .GIAO DIỆN AI CHATBOT */
 #ai-chat-wrapper {
     position: fixed;
     bottom: 20px;
@@ -223,7 +291,7 @@ footer hr { border-color: rgba(255,255,255,0.1); }
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background-color: #0d6efd;
+    background-color: var(--primary-color);
     color: white;
     border: none;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -233,7 +301,6 @@ footer hr { border-color: rgba(255,255,255,0.1); }
 }
 #btn-open-chat:hover {
     transform: scale(1.1);
-    background-color: #0b5ed7;
 }
 #chat-window {
     width: 350px;
@@ -249,7 +316,7 @@ footer hr { border-color: rgba(255,255,255,0.1); }
     right: 0;
 }
 .chat-header {
-    background: #0d6efd;
+    background: var(--primary-color);
     color: white;
     padding: 15px;
     display: flex;
@@ -283,7 +350,7 @@ footer hr { border-color: rgba(255,255,255,0.1); }
     align-self: flex-start;
 }
 .msg-user {
-    background: #0d6efd;
+    background: var(--primary-color);
     color: white;
     padding: 10px 15px;
     border-radius: 15px 15px 0 15px;
@@ -305,10 +372,10 @@ footer hr { border-color: rgba(255,255,255,0.1); }
     outline: none;
 }
 #chat-input:focus {
-    border-color: #0d6efd;
+    border-color: var(--primary-color);
 }
 #btn-send {
-    background: #0d6efd;
+    background: var(--primary-color);
     color: white;
     border: none;
     border-radius: 50%;

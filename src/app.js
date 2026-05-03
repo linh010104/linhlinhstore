@@ -23,6 +23,7 @@ const aiRoutes = require('./routes/ai/ai.route');
 const importRoutes = require('./routes/ai/import.route'); 
 const chatbotRoutes = require('./routes/ai/chatbot.route');
 const vendorRoutes = require('./routes/VendorRoutes');
+const brandRoutes = require('./routes/BrandRoutes');
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/vendors', vendorRoutes);
+app.use('/api/brands', brandRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/import', importRoutes); 
 app.use('/api/chatbot', chatbotRoutes);
