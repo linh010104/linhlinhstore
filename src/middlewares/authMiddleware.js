@@ -18,7 +18,7 @@ module.exports = (req, res, next) => {
       return res.status(403).json({ message: 'Token hết hạn hoặc sai' });
     }
 
-    req.user = user; // { id, username, role_id }
+    req.user = user;
     next();
   });
 };

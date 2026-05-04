@@ -1,5 +1,3 @@
-/* File: js/cart.js */
-
 const token = localStorage.getItem("token");
 
 if (!token) {
@@ -7,7 +5,6 @@ if (!token) {
     window.location.href = "login.html";
 }
 
-// Hàm tải dữ liệu giỏ hàng
 function loadCart() {
     fetch(`${CONFIG.BASE_URL}/cart`, {
         method: "GET",
@@ -31,7 +28,14 @@ function loadCart() {
         }
 
         data.forEach(item => {
-            const itemTotal = item.price * item.quantity;
+            // Giá gốc từ bảng product
+            let finalPrice = Number(item.price);
+            const variantDisplay = item.variant_info 
+                ? `<div class="mt-1 small" style="color: #6c757d; font-style: italic;">Phân loại: <span class="fw-bold text-dark">${item.variant_info}</span></div>` 
+                : "";
+
+            // Tính tạm thành tiền
+            const itemTotal = finalPrice * item.quantity;
             total += itemTotal;
 
             const imgUrl = item.image_url 
@@ -47,10 +51,14 @@ function loadCart() {
                         <div>
                             <div class="fw-bold">${item.name}</div>
                             <small class="text-muted">SKU: ${item.sku}</small>
+                            ${variantDisplay} 
                         </div>
                     </div>
                 </td>
-                <td>${Number(item.price).toLocaleString()} đ</td>
+                <td>
+                    ${finalPrice.toLocaleString()} đ 
+                    ${item.variant_info ? '<br><small class="text-muted">(Giá gốc chưa gồm Option)</small>' : ''}
+                </td>
                 <td>
                     <span class="badge bg-secondary rounded-pill px-3">${item.quantity}</span>
                 </td>
@@ -64,7 +72,44 @@ function loadCart() {
             tbody.appendChild(tr);
         });
 
+        // Nút Thanh Toán (Tạm gọi qua API checkout luôn)
+        const btnCheckout = document.querySelector(".btn-danger");
+        btnCheckout.onclick = function() {
+            processCheckout();
+        };
+
         totalPriceEl.innerText = total.toLocaleString() + " đ";
+    })
+    .catch(err => console.error(err));
+}
+
+// Hàm Xử lý Thanh Toán
+function processCheckout() {
+    if(!confirm("Bạn xác nhận đặt mua giỏ hàng này chứ?")) return;
+    
+    // Tạo object data cứng tạm thời (Vì ông chưa thiết kế cái form nhập Tên, SDT, Địa chỉ lúc thanh toán)
+    const checkoutData = {
+        payment_method: "COD",
+        name: "LinhLinh", // Tạm để tĩnh, mốt làm Modal sửa sau
+        phone: "0123456789",
+        address: "Triều Khúc",
+        note: "Giao hỏa tốc"
+    };
+
+    fetch(`${CONFIG.BASE_URL}/orders/checkout`, {
+        method: "POST",
+        headers: { 
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token 
+        },
+        body: JSON.stringify(checkoutData)
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        if(data.orderId) {
+            window.location.href = "orders.html"; // Chuyển sang trang lịch sử đơn hàng
+        }
     })
     .catch(err => console.error(err));
 }
@@ -79,11 +124,9 @@ function removeItem(cartId) {
     })
     .then(res => res.json())
     .then(data => {
-        // Xóa dòng DOM trực tiếp
         const row = document.getElementById(`cart-item-${cartId}`);
         if(row) row.remove();
         
-        // Cập nhật lại số lượng và tổng tiền
         if(window.updateCartCount) window.updateCartCount();
         loadCart(); 
         alert(data.message || "Đã xóa sản phẩm khỏi giỏ!");
@@ -91,5 +134,4 @@ function removeItem(cartId) {
     .catch(err => console.error(err));
 }
 
-// Chạy hàm khi trang vừa load xong
 document.addEventListener("DOMContentLoaded", loadCart);

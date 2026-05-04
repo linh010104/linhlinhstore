@@ -1,74 +1,135 @@
 /* File: models/OrderModel.js */
 const db = require('../config/db');
 
-// 1. MUA TỪ GIỎ HÀNG
 exports.createOrder = (userId, data, callback) => {
-    const sqlGetCart = "SELECT * FROM carts WHERE user_id = ?";
-    db.query(sqlGetCart, [userId], (err, cartItems) => {
+    db.getConnection(async (err, conn) => {
         if (err) return callback(err);
-        if (cartItems.length === 0) return callback("Giỏ hàng trống");
-
-        const sqlGetPrice = `SELECT c.*, p.price FROM carts c JOIN products p ON c.product_id = p.id WHERE c.user_id = ?`;
-        db.query(sqlGetPrice, [userId], (err, itemsWithPrice) => {
-            if (err) return callback(err);
-            
-            let totalAmount = 0;
-            itemsWithPrice.forEach(item => totalAmount += item.price * item.quantity);
-
-            const sqlInsertOrder = `
-                INSERT INTO orders (user_id, total_amount, payment_method, status, receiver_name, phone, address, note)
-                VALUES (?, ?, ?, 'NEW', ?, ?, ?, ?)
-            `;
-            db.query(sqlInsertOrder, [userId, totalAmount, data.payment_method, data.name, data.phone, data.address, data.note], (err, resOrder) => {
-                if (err) return callback(err);
-                const orderId = resOrder.insertId;
-
-                const orderItemsValues = itemsWithPrice.map(item => [orderId, item.product_id, item.quantity, item.price]);
-                const sqlInsertItems = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ?";
-                
-                db.query(sqlInsertItems, [orderItemsValues], (err) => {
-                    if (err) return callback(err);
-                    const sqlClearCart = "DELETE FROM carts WHERE user_id = ?";
-                    db.query(sqlClearCart, [userId], (err) => callback(null, orderId));
+        conn.beginTransaction(async (err) => {
+            if (err) { conn.release(); return callback(err); }
+            try {
+                const cartItems = await new Promise((res, rej) => {
+                    conn.query("SELECT c.*, p.price as base_price FROM carts c JOIN products p ON c.product_id = p.id WHERE c.user_id = ?", [userId], (e, r) => e ? rej(e) : res(r));
                 });
-            });
+                if (cartItems.length === 0) throw "Giỏ hàng trống";
+
+                let totalAmount = 0;
+                const orderItemsData = [];
+
+                for (let item of cartItems) {
+                    let itemPrice = item.base_price;
+                    if (item.variant_info) {
+                        const variantNames = item.variant_info.split(' - ').map(v => v.trim());
+                        const variants = await new Promise((res, rej) => {
+                            conn.query("SELECT * FROM product_variants WHERE product_id = ? AND variant_name IN (?)", [item.product_id, variantNames], (e, r) => e ? rej(e) : res(r));
+                        });
+                        variants.forEach(v => { itemPrice += Number(v.additional_price); });
+
+                        for (let vName of variantNames) {
+                            await new Promise((res, rej) => {
+                                conn.query("UPDATE product_variants SET stock_quantity = stock_quantity - ? WHERE product_id = ? AND variant_name = ?", [item.quantity, item.product_id, vName], (e) => e ? rej(e) : res());
+                            });
+                        }
+                    }
+
+                    await new Promise((res, rej) => {
+                        conn.query("UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?", [item.quantity, item.product_id], (e) => e ? rej(e) : res());
+                    });
+
+                    totalAmount += itemPrice * item.quantity;
+                    orderItemsData.push([null, item.product_id, item.variant_info, item.quantity, itemPrice]);
+                }
+
+                const resultOrder = await new Promise((res, rej) => {
+                    conn.query("INSERT INTO orders (user_id, total_amount, payment_method, status, receiver_name, phone, address, note) VALUES (?, ?, ?, 'NEW', ?, ?, ?, ?)",
+                    [userId, totalAmount, data.payment_method, data.name, data.phone, data.address, data.note], (e, r) => e ? rej(e) : res(r));
+                });
+                const orderId = resultOrder.insertId;
+
+                for(let row of orderItemsData) { row[0] = orderId; }
+                await new Promise((res, rej) => {
+                    conn.query("INSERT INTO order_items (order_id, product_id, variant_info, quantity, price) VALUES ?", [orderItemsData], (e) => e ? rej(e) : res());
+                });
+
+                await new Promise((res, rej) => {
+                    conn.query("DELETE FROM carts WHERE user_id = ?", [userId], (e) => e ? rej(e) : res());
+                });
+
+                conn.commit((err) => {
+                    if (err) throw err;
+                    conn.release();
+                    callback(null, orderId);
+                });
+
+            } catch (error) {
+                conn.rollback(() => {
+                    conn.release();
+                    callback(error);
+                });
+            }
         });
     });
 };
 
-// 2. MUA NGAY
 exports.createDirectOrder = (userId, data, callback) => {
-    const sqlGetPrice = "SELECT price FROM products WHERE id = ?";
-    db.query(sqlGetPrice, [data.productId], (err, result) => {
-        if (err || result.length === 0) return callback("Sản phẩm không tồn tại");
-        
-        const price = result[0].price;
-        const totalAmount = price * data.quantity;
+    db.getConnection(async (err, conn) => {
+        if (err) return callback(err);
+        conn.beginTransaction(async (err) => {
+            if (err) { conn.release(); return callback(err); }
+            try {
+                const product = await new Promise((res, rej) => {
+                    conn.query("SELECT price FROM products WHERE id = ?", [data.productId], (e, r) => e ? rej(e) : res(r));
+                });
+                if (product.length === 0) throw "Sản phẩm không tồn tại";
+                
+                let itemPrice = product[0].price;
 
-        const sqlInsertOrder = `
-            INSERT INTO orders (user_id, total_amount, payment_method, status, receiver_name, phone, address, note)
-            VALUES (?, ?, ?, 'NEW', ?, ?, ?, ?)
-        `;
+                if (data.variant_info) {
+                    const variantNames = data.variant_info.split(' - ').map(v => v.trim());
+                    const variants = await new Promise((res, rej) => {
+                        conn.query("SELECT * FROM product_variants WHERE product_id = ? AND variant_name IN (?)", [data.productId, variantNames], (e, r) => e ? rej(e) : res(r));
+                    });
+                    variants.forEach(v => { itemPrice += Number(v.additional_price); });
 
-        db.query(sqlInsertOrder, [
-            userId, totalAmount, data.payment_method, 
-            data.name, data.phone, data.address, data.note
-        ], (err, resOrder) => {
-            if (err) return callback(err);
-            const orderId = resOrder.insertId;
+                    for (let vName of variantNames) {
+                        await new Promise((res, rej) => {
+                            conn.query("UPDATE product_variants SET stock_quantity = stock_quantity - ? WHERE product_id = ? AND variant_name = ?", [data.quantity, data.productId, vName], (e) => e ? rej(e) : res());
+                        });
+                    }
+                }
 
-            const sqlInsertItem = `INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)`;
-            db.query(sqlInsertItem, [orderId, data.productId, data.quantity, price], (err) => {
-                if (err) return callback(err);
-                callback(null, orderId);
-            });
+                await new Promise((res, rej) => {
+                    conn.query("UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?", [data.quantity, data.productId], (e) => e ? rej(e) : res());
+                });
+
+                const totalAmount = itemPrice * data.quantity;
+
+                const resultOrder = await new Promise((res, rej) => {
+                    conn.query("INSERT INTO orders (user_id, total_amount, payment_method, status, receiver_name, phone, address, note) VALUES (?, ?, ?, 'NEW', ?, ?, ?, ?)",
+                    [userId, totalAmount, data.payment_method, data.name, data.phone, data.address, data.note], (e, r) => e ? rej(e) : res(r));
+                });
+                
+                await new Promise((res, rej) => {
+                    conn.query("INSERT INTO order_items (order_id, product_id, variant_info, quantity, price) VALUES (?, ?, ?, ?, ?)", 
+                    [resultOrder.insertId, data.productId, data.variant_info || null, data.quantity, itemPrice], (e) => e ? rej(e) : res());
+                });
+
+                conn.commit((err) => {
+                    if (err) throw err;
+                    conn.release();
+                    callback(null, resultOrder.insertId);
+                });
+
+            } catch (error) {
+                conn.rollback(() => {
+                    conn.release();
+                    callback(error);
+                });
+            }
         });
     });
 };
-
 
 exports.getOrderDetail = (orderId, callback) => {
-
     const sqlOrder = "SELECT * FROM orders WHERE id = ?";
     const sqlItems = `
         SELECT 
@@ -113,14 +174,58 @@ exports.updateOrderInfo = (orderId, data, callback) => {
 };
 
 exports.userUpdateStatus = (orderId, status, callback) => {
-    let sql = "";
-    if (status === 'CANCELLED') {
-        sql = "UPDATE orders SET status='CANCELLED' WHERE id=? AND status='NEW'";
-    } else if (status === 'DONE') {
-        sql = "UPDATE orders SET status='DONE' WHERE id=? AND status='SHIPPING'";
+    if (status === 'DONE') {
+        db.query("UPDATE orders SET status='DONE' WHERE id=? AND status='SHIPPING'", [orderId], (err, res) => {
+            if(err) return callback(err);
+            callback(null, { message: "Đã xác nhận nhận hàng!" });
+        });
+    } else if (status === 'CANCELLED') {
+        db.getConnection((err, conn) => {
+            if (err) return callback(err);
+            conn.beginTransaction(async (err) => {
+                if (err) { conn.release(); return callback(err); }
+                try {
+                    const [order] = await new Promise((res, rej) => {
+                        conn.query("SELECT id FROM orders WHERE id=? AND status='NEW'", [orderId], (e, r) => e ? rej(e) : res(r));
+                    });
+                    if (!order) throw "Đơn hàng đã được duyệt, không thể hủy!";
+
+                    const items = await new Promise((res, rej) => {
+                        conn.query("SELECT product_id, variant_info, quantity FROM order_items WHERE order_id=?", [orderId], (e, r) => e ? rej(e) : res(r));
+                    });
+
+                    for (let item of items) {
+                        if (item.variant_info) {
+                            const vNames = item.variant_info.split(' - ').map(v => v.trim());
+                            for (let vName of vNames) {
+                                await new Promise((res, rej) => {
+                                    conn.query("UPDATE product_variants SET stock_quantity = stock_quantity + ? WHERE product_id=? AND variant_name=?", [item.quantity, item.product_id, vName], (e) => e ? rej(e) : res());
+                                });
+                            }
+                        }
+                        await new Promise((res, rej) => {
+                            conn.query("UPDATE products SET stock_quantity = stock_quantity + ? WHERE id=?", [item.quantity, item.product_id], (e) => e ? rej(e) : res());
+                        });
+                    }
+
+                    await new Promise((res, rej) => {
+                        conn.query("UPDATE orders SET status='CANCELLED' WHERE id=?", [orderId], (e) => e ? rej(e) : res());
+                    });
+
+                    conn.commit((err) => {
+                        if (err) throw err;
+                        conn.release();
+                        callback(null, { message: "Hủy đơn hàng thành công!" });
+                    });
+                } catch (error) {
+                    conn.rollback(() => {
+                        conn.release();
+                        callback(error);
+                    });
+                }
+            });
+        });
     } else {
         return callback("Trạng thái không hợp lệ");
     }
-    
-    db.query(sql, [orderId], callback);
 };

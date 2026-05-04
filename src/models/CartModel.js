@@ -1,31 +1,33 @@
-/* File: models/CartModel.js */
 const db = require('../config/db');
 
-exports.addToCart = (userId, productId, quantity, callback) => {
-    // 1. Kiểm tra xem sản phẩm này đã có trong giỏ của user chưa
-    const sqlCheck = "SELECT * FROM carts WHERE user_id = ? AND product_id = ?";
+exports.addToCart = (userId, productId, variantInfo, quantity, callback) => {
+    // 1. Phải check CẢ product_id VÀ variant_info (để S24 Đen và Trắng nằm 2 dòng khác nhau)
+    const sqlCheck = "SELECT * FROM carts WHERE user_id = ? AND product_id = ? AND IFNULL(variant_info, '') = ?";
+    const safeVariantInfo = variantInfo || ''; // Tránh lỗi null
     
-    db.query(sqlCheck, [userId, productId], (err, result) => {
+    db.query(sqlCheck, [userId, productId, safeVariantInfo], (err, result) => {
         if (err) return callback(err);
 
         if (result.length > 0) {
-            // 2a. Nếu có rồi -> Cộng dồn số lượng
+            // Đã có đúng phiên bản này -> Cộng dồn số lượng
             const newQuantity = result[0].quantity + quantity;
             const sqlUpdate = "UPDATE carts SET quantity = ? WHERE id = ?";
             db.query(sqlUpdate, [newQuantity, result[0].id], callback);
         } else {
-            // 2b. Nếu chưa có -> Thêm mới vào bảng carts
-            const sqlInsert = "INSERT INTO carts (user_id, product_id, quantity) VALUES (?, ?, ?)";
-            db.query(sqlInsert, [userId, productId, quantity], callback);
+            // Chưa có -> Thêm dòng mới, có lưu kèm variant_info
+            const sqlInsert = "INSERT INTO carts (user_id, product_id, variant_info, quantity) VALUES (?, ?, ?, ?)";
+            db.query(sqlInsert, [userId, productId, variantInfo, quantity], callback);
         }
     });
 };
+
 exports.getCart = (userId, callback) => {
-    // Join bảng carts với products để lấy thông tin chi tiết
     const sql = `
         SELECT 
             c.id as cart_id, 
             c.quantity,
+            c.variant_info, 
+            p.id as product_id,
             p.name, 
             p.price, 
             p.sku,
@@ -34,10 +36,6 @@ exports.getCart = (userId, callback) => {
         JOIN products p ON c.product_id = p.id
         WHERE c.user_id = ?
     `;
-    
-    // In ra câu lệnh để debug nếu cần
-    // console.log("Running SQL:", sql);
-    
     db.query(sql, [userId], callback);
 };
 

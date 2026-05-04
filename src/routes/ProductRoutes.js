@@ -19,4 +19,7 @@ router.post(
   upload.single('image'),
   productController.uploadImage
 );
+router.post('/:id/variants', authMiddleware, isAdmin, productController.addVariant);
+router.delete('/variants/:variantId', authMiddleware, isAdmin, productController.deleteVariant);
+
 module.exports = router;

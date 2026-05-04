@@ -1,4 +1,5 @@
 const Product = require('../models/ProductModel');
+const db = require('../config/db'); // Đã bổ sung db để gọi thẳng truy vấn sql
 
 exports.getAll = (req, res) => {
   const filters = {
@@ -21,6 +22,7 @@ exports.create = (req, res) => {
     });
   });
 };
+
 exports.update = (req, res) => {
   const id = req.params.id;
   const data = req.body;
@@ -57,6 +59,7 @@ exports.uploadImage = (req, res) => {
     res.json({ message: 'Upload ảnh thành công', image_url: imageUrl });
   });
 };
+
 exports.getDetail = (req, res) => {
   Product.getById(req.params.id, (err, result) => {
     if (err) return res.status(500).json(err);
@@ -69,6 +72,7 @@ exports.getDetail = (req, res) => {
     res.json(result[0]);
   });
 };
+
 exports.checkExistence = (req, res) => {
     const { names } = req.body; // Mảng tên sản phẩm từ AI
     const sql = "SELECT name FROM products WHERE name IN (?)";
@@ -77,4 +81,36 @@ exports.checkExistence = (req, res) => {
         const existingNames = results.map(r => r.name);
         res.json({ existingNames });
     });
+};
+
+// ==========================================
+// API QUẢN LÝ PHIÊN BẢN (MỚI THÊM)
+// ==========================================
+
+// Thêm phiên bản mới cho một sản phẩm
+exports.addVariant = (req, res) => {
+  const productId = req.params.id;
+  const { variant_group, variant_name, additional_price, stock_quantity } = req.body;
+  
+  const sql = `
+    INSERT INTO product_variants 
+    (product_id, variant_group, variant_name, additional_price, stock_quantity) 
+    VALUES (?, ?, ?, ?, ?)
+  `;
+  
+  db.query(sql, [productId, variant_group, variant_name, additional_price || 0, stock_quantity || 0], (err, result) => {
+    if (err) return res.status(500).json(err);
+    res.json({ message: 'Thêm phiên bản thành công', id: result.insertId });
+  });
+};
+
+// Xóa một phiên bản
+exports.deleteVariant = (req, res) => {
+  const variantId = req.params.variantId;
+  const sql = "DELETE FROM product_variants WHERE id = ?";
+  
+  db.query(sql, [variantId], (err) => {
+    if (err) return res.status(500).json(err);
+    res.json({ message: 'Xóa phiên bản thành công' });
+  });
 };

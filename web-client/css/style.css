@@ -88,33 +88,40 @@ body {
 }
    /* MEGA MENU (MENU XỔ RA) */
 .mega-menu-content {
-    display: none; 
+    display: grid; 
+    opacity: 0;
+    visibility: hidden;
+    
+    /* Thời gian "mất đi" và "hiện ra" ông muốn ở đây (0.3 giây) */
+    transition: all 0.3s ease-in-out;
+
     position: absolute;
     top: 0;
-    left: calc(20% + 15px); /* Nhảy qua đúng độ rộng sidebar + khoảng hở */
-    width: calc(60% - 15px); /* Che đúng cái Banner giữa */
+    left: calc(20% + 15px); /* Giữ nguyên thông số của ông */
+    width: calc(60% - 15px); 
     height: 100%;
     background: white;
-    box-shadow: 10px 0 20px rgba(0,0,0,0.1); 
+    box-shadow: 10px 0 20px rgba(0,0,0,0.1);
     border-radius: 10px;
-    z-index: 999; 
+    z-index: 999;
     padding: 25px;
-    grid-template-columns: repeat(3, 1fr); 
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 .mega-menu-content::before {
     content: "";
     position: absolute;
     top: 0;
-    left: -30px;
-    width: 15px;
+    left: -30px; /* Lấp đầy khoảng hở 15px và lấn thêm sang trái để chắc ăn */
+    width: 30px; 
     height: 100%;
-    background: transparent; 
+    background: transparent;
 }
 
 /* Hiệu ứng hiển thị khi Hover vào list-item cha */
 .category-menu .list-group-item:hover .mega-menu-content {
-    display: grid; 
+    opacity: 1;
+    visibility: visible;
 }
 
 /* Style cột bên trong Mega Menu */

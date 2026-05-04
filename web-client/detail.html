@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi tiết sản phẩm</title>
+    <title>Chi tiết sản phẩm - LinhLinh Store</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -30,15 +30,25 @@
         <div class="card shadow border-0 rounded-4 overflow-hidden mb-5">
             <div class="card-body p-0">
                 <div class="row g-0">
-                    <div class="col-md-5 bg-white d-flex align-items-center justify-content-center p-4 border-end">
-                        <img id="detail-img" src="" class="img-fluid" style="max-height: 400px;" alt="Ảnh sản phẩm">
+                    <!-- KHU VỰC ẢNH SẢN PHẨM -->
+                    <div class="col-md-5 bg-white p-4 border-end d-flex flex-column">
+                        <div class="d-flex align-items-center justify-content-center flex-grow-1 mb-3" style="height: 350px;">
+                            <img id="detail-img" src="" class="img-fluid object-fit-contain" style="max-height: 100%; width: 100%; transition: 0.3s;" alt="Ảnh sản phẩm">
+                        </div>
+                        <div class="d-flex justify-content-center gap-2 overflow-auto py-2" id="thumbnail-container">
+                            <!-- JS sẽ nhét ảnh nhỏ vào đây -->
+                        </div>
                     </div>
 
+                    <!-- KHU VỰC THÔNG TIN VÀ CHỌN PHIÊN BẢN -->
                     <div class="col-md-7 p-4 p-lg-5">
                         <small class="text-uppercase text-muted fw-bold" id="detail-category">Danh mục</small>
                         <h2 class="fw-bold mb-3 text-primary mt-2" id="detail-name">Đang tải tên...</h2>
                         <h3 class="text-danger fw-bold mb-4" id="detail-price">0 đ</h3>
                         
+                        <!-- VÙNG CHỨA CÁC NÚT BẤM CHỌN MÀU / DUNG LƯỢNG -->
+                        <div id="variants-container" class="mb-4"></div>
+
                         <p class="text-muted mb-4" id="detail-desc">Mô tả sản phẩm...</p>
 
                         <div class="d-flex align-items-center mb-4">
@@ -71,29 +81,57 @@
 
     <footer class="mt-auto">
         <div class="container py-4">
-            <div class="text-center small text-white-50">
+            <div class="text-center small text-muted">
                 &copy; 2026 LinhLinh Store. All rights reserved.
             </div>
         </div>
     </footer>
 
+    <!-- MODAL THANH TOÁN MUA NGAY -->
     <div class="modal fade" id="checkoutModal" tabindex="-1">
-         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold">Thông Tin Đặt Hàng</h5>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white border-0">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-truck-fast me-2"></i> Thông Tin Đặt Hàng</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <form id="checkout-form">
-                        <input type="hidden" id="direct-buy-product-id" value="">
-                        <div class="mb-3"><input type="text" id="order-name" class="form-control" placeholder="Họ tên" required></div>
-                        <div class="mb-3"><input type="tel" id="order-phone" class="form-control" placeholder="SĐT" required></div>
-                        <div class="mb-3"><textarea id="order-address" class="form-control" placeholder="Địa chỉ"></textarea></div>
-                    </form>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Người nhận <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" class="form-control" id="checkout-name" placeholder="Họ và tên">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Số điện thoại <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fa-solid fa-phone"></i></span>
+                            <input type="text" class="form-control" id="checkout-phone" placeholder="Số điện thoại">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Địa chỉ giao hàng <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fa-solid fa-map-location-dot"></i></span>
+                            <textarea class="form-control" id="checkout-address" rows="2" placeholder="Địa chỉ chi tiết"></textarea>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Thanh toán</label>
+                        <select class="form-select" id="checkout-payment">
+                            <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+                            <option value="BANK">Chuyển khoản ngân hàng</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Ghi chú</label>
+                        <input type="text" class="form-control" id="checkout-note" placeholder="Ghi chú thêm...">
+                    </div>
                 </div>
-                <div class="modal-footer border-0">
-                    <button type="button" onclick="processOrder()" class="btn btn-danger fw-bold rounded-pill w-100">Xác Nhận</button>
+                <div class="modal-footer border-0 pt-0 justify-content-end">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" onclick="submitDirectBuy()"><i class="fa-solid fa-paper-plane me-2"></i> Xác Nhận</button>
                 </div>
             </div>
         </div>
@@ -101,8 +139,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/auth.js"></script>
-    <script src="js/detail.js"></script>
     <script src="js/config.js"></script>
-<script src="js/utils.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/detail.js"></script>
 </body>
 </html>

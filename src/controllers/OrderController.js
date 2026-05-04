@@ -1,5 +1,7 @@
+/* File: controllers/OrderController.js */
 const db = require('../config/db');
 const nodemailer = require('nodemailer');
+const Order = require('../models/OrderModel'); 
 
 // --- CẤU HÌNH GỬI EMAIL TỰ ĐỘNG ---
 const transporter = nodemailer.createTransport({
@@ -9,6 +11,36 @@ const transporter = nodemailer.createTransport({
         pass: 'pmcmfolavvbkjmjg'         
     }
 });
+
+// ==========================================
+// 1. LUỒNG ĐẶT HÀNG (MỚI)
+// ==========================================
+
+// Đặt hàng từ Giỏ hàng
+exports.checkout = (req, res) => {
+    const userId = req.user.id;
+    const data = req.body; 
+
+    Order.createOrder(userId, data, (err, orderId) => {
+        if (err) return res.status(500).json({ message: typeof err === 'string' ? err : 'Lỗi server khi đặt hàng', error: err });
+        res.json({ message: 'Đặt hàng thành công!', orderId: orderId });
+    });
+};
+
+// Mua ngay (Không qua giỏ hàng)
+exports.directBuy = (req, res) => {
+    const userId = req.user.id;
+    const data = req.body; 
+
+    Order.createDirectOrder(userId, data, (err, orderId) => {
+        if (err) return res.status(500).json({ message: typeof err === 'string' ? err : 'Lỗi server khi đặt hàng', error: err });
+        res.json({ message: 'Đặt hàng thành công!', orderId: orderId });
+    });
+};
+
+// ==========================================
+// 2. LUỒNG XỬ LÝ TRẢ HÀNG
+// ==========================================
 
 exports.requestReturn = (req, res) => {
     const orderId = req.params.id;
@@ -58,7 +90,6 @@ exports.processReturnRequest = (req, res) => {
                                 [item.product_id, item.quantity, `Nhập lại kho từ đơn #${orderId}`], (e) => e ? reject(e) : resolve());
                             });
                         } else {
-                            // CẬP NHẬT MỚI: Cộng số lượng vào cột error_qty khi hàng bị lỗi
                             await new Promise((resolve, reject) => {
                                 conn.query("UPDATE products SET error_qty = error_qty + ? WHERE id = ?", [item.quantity, item.product_id], (e) => e ? reject(e) : resolve());
                             });
@@ -97,6 +128,10 @@ exports.processReturnRequest = (req, res) => {
     });
 };
 
+// ==========================================
+// 3. LUỒNG LẤY & CẬP NHẬT ĐƠN HÀNG (USER + ADMIN)
+// ==========================================
+
 exports.getMyOrders = (req, res) => {
     db.query("SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC", [req.user.id], (err, resu) => {
         if (err) return res.status(500).json(err);
@@ -126,14 +161,25 @@ exports.getDetail = (req, res) => {
     });
 };
 
+// Khách hàng đổi trạng thái (Hủy đơn hoặc Đã nhận hàng)
 exports.updateUserStatus = (req, res) => {
-    const { status } = req.body;
-    db.query("UPDATE orders SET status = ? WHERE id = ? AND user_id = ?", [status, req.params.id, req.user.id], (err) => {
-        if (err) return res.status(500).json(err);
-        res.json({ message: "Cập nhật thành công!" });
+    // Gọi qua Model để chạy Transaction hoàn lại kho nếu là CANCELLED
+    Order.userUpdateStatus(req.params.id, req.body.status, (err, result) => {
+        if (err) return res.status(500).json({ message: typeof err === 'string' ? err : "Lỗi server" });
+        res.json(result);
     });
 };
 
+// Khách hàng sửa thông tin (Tên, SĐT, Địa chỉ) lúc đơn còn NEW
+exports.updateOrderInfo = (req, res) => {
+    Order.updateOrderInfo(req.params.id, req.body, (err, result) => {
+        if (err) return res.status(500).json(err);
+        if (result.affectedRows === 0) return res.status(400).json({ message: "Chỉ được sửa khi đơn ở trạng thái MỚI!" });
+        res.json({ message: "Cập nhật thông tin thành công!" });
+    });
+};
+
+// Admin lấy tất cả đơn
 exports.getAllOrders = (req, res) => {
     db.query("SELECT * FROM orders ORDER BY created_at DESC", (err, results) => {
         if (err) return res.status(500).json(err);
@@ -141,10 +187,11 @@ exports.getAllOrders = (req, res) => {
     });
 };
 
+// Admin đổi trạng thái đơn
 exports.updateAdminStatus = (req, res) => {
     const { status } = req.body;
     db.query("UPDATE orders SET status = ? WHERE id = ?", [status, req.params.id], (err) => {
         if (err) return res.status(500).json(err);
         res.json({ message: "Cập nhật trạng thái thành công!" });
     });
-};1
+};
