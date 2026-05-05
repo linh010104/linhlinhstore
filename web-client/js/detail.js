@@ -69,6 +69,33 @@ function loadProductDetail() {
                 });
             }
 
+            // XỬ LÝ BẢNG THÔNG SỐ KỸ THUẬT (MỚI THÊM)
+            const specTable = document.getElementById("spec-table");
+            if (specTable) {
+                if (data.specifications && data.specifications.trim() !== "") {
+                    const specs = data.specifications.split('\n'); 
+                    let htmlSpec = "<tbody>";
+                    specs.forEach(item => {
+                        let parts = item.split(':'); 
+                        
+                        if (parts.length >= 2) {
+                            htmlSpec += `
+                                <tr>
+                                    <td class="text-muted w-25 ps-4 py-3" style="background-color: #f8f9fa;">${parts[0].trim()}</td>
+                                    <td class="fw-bold py-3 pe-4">${parts.slice(1).join(':').trim()}</td>
+                                </tr>
+                            `;
+                        } else if (item.trim() !== "") {
+                            htmlSpec += `<tr><td colspan="2" class="ps-4 py-3 fw-semibold bg-light">${item.trim()}</td></tr>`;
+                        }
+                    });
+                    htmlSpec += "</tbody>";
+                    specTable.innerHTML = htmlSpec;
+                } else {
+                    specTable.innerHTML = `<tbody><tr><td class="text-muted text-center py-4">Sản phẩm chưa có thông số kỹ thuật chi tiết.</td></tr></tbody>`;
+                }
+            }
+
             loadRelatedProducts(data.category_id);
         })
         .catch(err => console.error(err));

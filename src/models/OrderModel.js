@@ -16,27 +16,35 @@ exports.createOrder = (userId, data, callback) => {
                 const orderItemsData = [];
 
                 for (let item of cartItems) {
-                    let itemPrice = item.base_price;
+                    // FIX BUG: Ép kiểu Number để không bị nối chuỗi
+                    let itemPrice = Number(item.base_price);
+                    let qty = Number(item.quantity);
+
                     if (item.variant_info) {
                         const variantNames = item.variant_info.split(' - ').map(v => v.trim());
+                        
+                        // FIX BUG: Truyền mảng vào IN (?) phải bọc thêm mảng [[...]]
                         const variants = await new Promise((res, rej) => {
-                            conn.query("SELECT * FROM product_variants WHERE product_id = ? AND variant_name IN (?)", [item.product_id, variantNames], (e, r) => e ? rej(e) : res(r));
+                            conn.query("SELECT * FROM product_variants WHERE product_id = ? AND variant_name IN (?)", [item.product_id, [variantNames]], (e, r) => e ? rej(e) : res(r));
                         });
+                        
                         variants.forEach(v => { itemPrice += Number(v.additional_price); });
 
+                        // Trừ kho phiên bản an toàn
                         for (let vName of variantNames) {
                             await new Promise((res, rej) => {
-                                conn.query("UPDATE product_variants SET stock_quantity = stock_quantity - ? WHERE product_id = ? AND variant_name = ?", [item.quantity, item.product_id, vName], (e) => e ? rej(e) : res());
+                                conn.query("UPDATE product_variants SET stock_quantity = stock_quantity - ? WHERE product_id = ? AND variant_name = ?", [qty, item.product_id, vName], (e) => e ? rej(e) : res());
                             });
                         }
                     }
 
+                    // Trừ kho gốc an toàn
                     await new Promise((res, rej) => {
-                        conn.query("UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?", [item.quantity, item.product_id], (e) => e ? rej(e) : res());
+                        conn.query("UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?", [qty, item.product_id], (e) => e ? rej(e) : res());
                     });
 
-                    totalAmount += itemPrice * item.quantity;
-                    orderItemsData.push([null, item.product_id, item.variant_info, item.quantity, itemPrice]);
+                    totalAmount += (itemPrice * qty);
+                    orderItemsData.push([null, item.product_id, item.variant_info, qty, itemPrice]);
                 }
 
                 const resultOrder = await new Promise((res, rej) => {
@@ -81,27 +89,32 @@ exports.createDirectOrder = (userId, data, callback) => {
                 });
                 if (product.length === 0) throw "Sản phẩm không tồn tại";
                 
-                let itemPrice = product[0].price;
+                // FIX BUG: Ép kiểu Number
+                let itemPrice = Number(product[0].price);
+                let qty = Number(data.quantity);
 
                 if (data.variant_info) {
                     const variantNames = data.variant_info.split(' - ').map(v => v.trim());
+                    
+                    // FIX BUG: Bọc [[variantNames]]
                     const variants = await new Promise((res, rej) => {
-                        conn.query("SELECT * FROM product_variants WHERE product_id = ? AND variant_name IN (?)", [data.productId, variantNames], (e, r) => e ? rej(e) : res(r));
+                        conn.query("SELECT * FROM product_variants WHERE product_id = ? AND variant_name IN (?)", [data.productId, [variantNames]], (e, r) => e ? rej(e) : res(r));
                     });
+                    
                     variants.forEach(v => { itemPrice += Number(v.additional_price); });
 
                     for (let vName of variantNames) {
                         await new Promise((res, rej) => {
-                            conn.query("UPDATE product_variants SET stock_quantity = stock_quantity - ? WHERE product_id = ? AND variant_name = ?", [data.quantity, data.productId, vName], (e) => e ? rej(e) : res());
+                            conn.query("UPDATE product_variants SET stock_quantity = stock_quantity - ? WHERE product_id = ? AND variant_name = ?", [qty, data.productId, vName], (e) => e ? rej(e) : res());
                         });
                     }
                 }
 
                 await new Promise((res, rej) => {
-                    conn.query("UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?", [data.quantity, data.productId], (e) => e ? rej(e) : res());
+                    conn.query("UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?", [qty, data.productId], (e) => e ? rej(e) : res());
                 });
 
-                const totalAmount = itemPrice * data.quantity;
+                const totalAmount = itemPrice * qty;
 
                 const resultOrder = await new Promise((res, rej) => {
                     conn.query("INSERT INTO orders (user_id, total_amount, payment_method, status, receiver_name, phone, address, note) VALUES (?, ?, ?, 'NEW', ?, ?, ?, ?)",
@@ -110,7 +123,7 @@ exports.createDirectOrder = (userId, data, callback) => {
                 
                 await new Promise((res, rej) => {
                     conn.query("INSERT INTO order_items (order_id, product_id, variant_info, quantity, price) VALUES (?, ?, ?, ?, ?)", 
-                    [resultOrder.insertId, data.productId, data.variant_info || null, data.quantity, itemPrice], (e) => e ? rej(e) : res());
+                    [resultOrder.insertId, data.productId, data.variant_info || null, qty, itemPrice], (e) => e ? rej(e) : res());
                 });
 
                 conn.commit((err) => {
@@ -129,6 +142,7 @@ exports.createDirectOrder = (userId, data, callback) => {
     });
 };
 
+// ... CÁC HÀM CŨ Ở DƯỚI GIỮ NGUYÊN (getOrderDetail, getAll, updateUserStatus...)
 exports.getOrderDetail = (orderId, callback) => {
     const sqlOrder = "SELECT * FROM orders WHERE id = ?";
     const sqlItems = `
@@ -195,16 +209,17 @@ exports.userUpdateStatus = (orderId, status, callback) => {
                     });
 
                     for (let item of items) {
+                        let qty = Number(item.quantity);
                         if (item.variant_info) {
                             const vNames = item.variant_info.split(' - ').map(v => v.trim());
                             for (let vName of vNames) {
                                 await new Promise((res, rej) => {
-                                    conn.query("UPDATE product_variants SET stock_quantity = stock_quantity + ? WHERE product_id=? AND variant_name=?", [item.quantity, item.product_id, vName], (e) => e ? rej(e) : res());
+                                    conn.query("UPDATE product_variants SET stock_quantity = stock_quantity + ? WHERE product_id=? AND variant_name=?", [qty, item.product_id, vName], (e) => e ? rej(e) : res());
                                 });
                             }
                         }
                         await new Promise((res, rej) => {
-                            conn.query("UPDATE products SET stock_quantity = stock_quantity + ? WHERE id=?", [item.quantity, item.product_id], (e) => e ? rej(e) : res());
+                            conn.query("UPDATE products SET stock_quantity = stock_quantity + ? WHERE id=?", [qty, item.product_id], (e) => e ? rej(e) : res());
                         });
                     }
 
