@@ -2,7 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
     loadCategories();
     loadProducts(); // Mặc định load tất cả
 });
+
 let allCategoriesData = [];
+
 function loadCategories() {
     Promise.all([
         fetch(`${CONFIG.BASE_URL}/categories`).then(res => res.json()),
@@ -39,7 +41,6 @@ function loadCategories() {
                 </div>
             `;
 
-            // BÂY GIỜ LUÔN TẠO MEGA MENU DÙ CÓ HAY KHÔNG CÓ DANH MỤC CON
             let dynamicBrandHTML = "";
             const brandsForThisCategory = mappingData.filter(m => m.main_category_id === parent.id);
 
@@ -53,7 +54,6 @@ function loadCategories() {
 
             let childrenHTML = `<div class="mega-menu-content">`;
 
-            // Chỉ vẽ cột "Loại sản phẩm" nếu thực sự có danh mục con
             if (myChildren.length > 0) {
                 childrenHTML += `<div class="mega-column"><div class="mega-title">Loại sản phẩm</div><div class="mega-list">`;
                 myChildren.forEach(child => {
@@ -62,7 +62,6 @@ function loadCategories() {
                 childrenHTML += `</div></div>`;
             }
 
-            // Vẽ 2 cột Hãng và Giá cố định
             childrenHTML += `
                 <div class="mega-column">
                     <div class="mega-title">Chọn theo hãng</div>
@@ -89,6 +88,7 @@ function loadCategories() {
     })
     .catch(err => console.error("Lỗi load API:", err));
 }
+
 function loadProducts(keyword = "", categoryId = "") {
     let url = `${CONFIG.BASE_URL}/products?`;
     if (keyword) url += `keyword=${encodeURIComponent(keyword)}&`;
@@ -103,7 +103,6 @@ function loadProducts(keyword = "", categoryId = "") {
             childIds = allCategoriesData.filter(c => c.parent_id == categoryId).map(c => c.id);
         }
 
-        // Nếu là danh mục Cha thì KHÔNG gửi ID lên server, bắt server nhả hết data về để Frontend tự lọc
         if (!isParent) {
             url += `category_id=${categoryId}`;
         }
@@ -116,9 +115,7 @@ function loadProducts(keyword = "", categoryId = "") {
             if (!list) return;
             list.innerHTML = "";
 
-            // BỘ LỌC FRONTEND (Fixed: Bỏ điều kiện childIds.length > 0)
             if (categoryId && isParent && !keyword) {
-                // Giữ lại SP nếu nó thuộc Cha HOẶC thuộc Con của Cha đó
                 data = data.filter(p => p.category_id == categoryId || childIds.includes(p.category_id));
             }
 
@@ -156,7 +153,7 @@ function loadProducts(keyword = "", categoryId = "") {
         })
         .catch(err => console.error("Lỗi tải sản phẩm:", err));
 }
-// --- CÁC HÀM SỰ KIỆN ---
+
 function searchProduct() {
     const keyword = document.getElementById("search-input").value;
     const titleEl = document.getElementById("page-title");
@@ -170,12 +167,24 @@ function filterByCategory(id, name) {
     loadProducts("", id); 
 }
 
+// XÓA ALERT/CONFIRM: DÙNG SWEETALERT2
 function addToCart(productId) {
     const token = localStorage.getItem("token");
     if (!token) {
-        if (confirm("Bạn cần đăng nhập để mua hàng. Đến trang đăng nhập ngay?")) {
-            window.location.href = "login.html";
-        }
+        Swal.fire({
+            title: 'Chưa đăng nhập!',
+            text: "Bạn cần đăng nhập để thêm vào giỏ. Đến trang đăng nhập ngay?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Đăng nhập',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "login.html";
+            }
+        });
         return;
     }
 
@@ -189,16 +198,24 @@ function addToCart(productId) {
     })
     .then(res => {
         if (res.status === 401 || res.status === 403) {
-            alert("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
-            localStorage.clear();
-            window.location.href = "login.html";
+            Swal.fire('Hết hạn phiên!', 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', 'error').then(() => {
+                localStorage.clear();
+                window.location.href = "login.html";
+            });
             return;
         }
         return res.json();
     })
     .then(data => {
         if (data) {
-            alert(data.message);
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: data.message,
+                showConfirmButton: false,
+                timer: 3000
+            });
             if (typeof window.updateCartCount === "function") {
                 window.updateCartCount();
             }
@@ -206,23 +223,19 @@ function addToCart(productId) {
     })
     .catch(err => console.error("Lỗi:", err));
 }
-// --- HÀM LỌC SẢN PHẨM THEO HÃNG ---
+
 function filterByBrand(brandId, brandName) {
-    // 1. Đổi tiêu đề để người dùng biết đang xem hãng nào
     const titleEl = document.querySelector("h3.text-uppercase"); 
     if (titleEl) titleEl.innerText = `Sản phẩm hãng: ${brandName}`;
 
     const list = document.getElementById("product-list");
     if (!list) return;
     
-    // 2. Hiện hiệu ứng xoay xoay đang tải
     list.innerHTML = `<div class="text-center py-5 w-100"><div class="spinner-border text-danger" role="status"></div></div>`;
 
-    // 3. Gọi API và tự lọc bằng Javascript
     fetch(`${CONFIG.BASE_URL}/products`)
         .then(res => res.json())
         .then(data => {
-            // Lọc ra các sản phẩm có brand_id khớp với hãng vừa click
             const filteredProducts = data.filter(p => p.brand_id == brandId);
             
             list.innerHTML = "";
@@ -231,7 +244,6 @@ function filterByBrand(brandId, brandName) {
                 return;
             }
 
-            // In các sản phẩm đã lọc ra màn hình
             filteredProducts.forEach(p => {
                 const col = document.createElement("div");
                 col.className = "col-6 col-md-4 col-lg-3 mb-3"; 

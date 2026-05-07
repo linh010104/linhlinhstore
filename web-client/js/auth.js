@@ -3,16 +3,16 @@ function login() {
     const passwordVal = document.getElementById("password").value;
 
     if (!usernameVal || !passwordVal) {
-        alert("Vui lòng nhập tài khoản và mật khẩu");
+        Swal.fire('Thiếu thông tin', 'Vui lòng nhập tài khoản và mật khẩu', 'warning');
         return;
     }
-    fetch("http://localhost:3000/api/auth/login", {
+    fetch(`${CONFIG.BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             username: usernameVal,
             password: passwordVal,
-            clientType: "WEB" // Khai báo rõ đây là người dùng từ Web
+            clientType: "WEB" 
         })
     })
     .then(res => res.json())
@@ -20,15 +20,23 @@ function login() {
         if (data.token) {
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
-            alert("Đăng nhập thành công");
-            window.location.href = "index.html";
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công',
+                text: 'Đăng nhập thành công',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.href = "index.html";
+            });
         } else {
-            alert(data.message || "Sai tài khoản hoặc mật khẩu");
+            Swal.fire('Đăng nhập thất bại', data.message || "Sai tài khoản hoặc mật khẩu", 'error');
         }
     })
     .catch(err => {
         console.error(err);
-        alert("Lỗi kết nối server");
+        Swal.fire('Lỗi', 'Lỗi kết nối server', 'error');
     });
 }
 
@@ -39,13 +47,12 @@ function register() {
     const email = document.getElementById("email").value;
     const phone = document.getElementById("phone").value;
 
-    // Kiểm tra sơ bộ
     if (!username || !password || !fullName) {
-        alert("Vui lòng điền đầy đủ các trường bắt buộc!");
+        Swal.fire('Thiếu thông tin', 'Vui lòng điền đầy đủ các trường bắt buộc!', 'warning');
         return;
     }
 
-    fetch("http://localhost:3000/api/auth/register", {
+    fetch(`${CONFIG.BASE_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -59,26 +66,39 @@ function register() {
     .then(res => res.json())
     .then(data => {
         if (data.message && (data.message.includes("thành công") || data.message.includes("success"))) {
-            alert("Đăng ký thành công! Hãy đăng nhập.");
-            window.location.href = "login.html";
+            Swal.fire('Thành công', 'Đăng ký thành công! Hãy đăng nhập.', 'success').then(() => {
+                window.location.href = "login.html";
+            });
         } else if (data.error) {
-            alert("Lỗi: " + data.error);
+            Swal.fire('Lỗi', data.error, 'error');
         } else {
-            alert("Đăng ký thành công!");
-            window.location.href = "login.html";
+            Swal.fire('Thành công', 'Đăng ký thành công!', 'success').then(() => {
+                window.location.href = "login.html";
+            });
         }
     })
     .catch(err => {
         console.error(err);
-        alert("Có lỗi xảy ra khi kết nối server.");
+        Swal.fire('Lỗi', 'Có lỗi xảy ra khi kết nối server.', 'error');
     });
 }
 
 function logout() {
-    if(confirm("Bạn có chắc muốn đăng xuất?")) {
-        localStorage.clear();
-        window.location.href = "index.html";
-    }
+    Swal.fire({
+        title: 'Đăng xuất?',
+        text: "Bạn có chắc muốn đăng xuất khỏi hệ thống?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Đăng xuất',
+        cancelButtonText: 'Hủy'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            localStorage.clear();
+            window.location.href = "index.html";
+        }
+    });
 }
 
 // ============================================================
@@ -90,7 +110,6 @@ const token = localStorage.getItem("token");
 
 if (authArea) {
     if (token) {
-        // ĐÃ ĐĂNG NHẬP
         const user = JSON.parse(localStorage.getItem("user") || '{}');
         const username = user.username || "Khách";
 
@@ -115,10 +134,8 @@ if (authArea) {
                 </span>
             </a>
         `;
-        // Gọi hàm cập nhật số lượng giỏ hàng
         updateCartCount();
     } else {
-        // CHƯA ĐĂNG NHẬP
         authArea.innerHTML = `
             <a href="login.html" class="btn btn-light btn-sm fw-bold">Đăng nhập</a>
             <a href="register.html" class="btn btn-outline-light btn-sm">Đăng ký</a>
@@ -134,7 +151,7 @@ function updateCartCount() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    fetch("http://localhost:3000/api/cart", {
+    fetch(`${CONFIG.BASE_URL}/cart`, {
         method: "GET",
         headers: { "Authorization": "Bearer " + token }
     })
@@ -156,32 +173,38 @@ function updateCartCount() {
     .catch(err => console.error("Lỗi đếm giỏ hàng:", err));
 }
 
-// Hàm mở Modal Mua hàng (Dùng chung cho Mua Ngay và Thanh toán giỏ hàng)
 function buyNow(productId) {
     const token = localStorage.getItem("token");
     if (!token) {
-        if(confirm("Cần đăng nhập để mua hàng. Đăng nhập ngay?")) window.location.href="login.html";
+        Swal.fire({
+            title: 'Chưa đăng nhập!',
+            text: "Cần đăng nhập để mua hàng. Đăng nhập ngay?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Đăng nhập',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "login.html";
+            }
+        });
         return;
     }
 
-    // Nếu có productId truyền vào -> Là Mua Ngay -> Gán vào ô input ẩn
     if (productId) {
         const hiddenInput = document.getElementById("direct-buy-product-id");
         if(hiddenInput) hiddenInput.value = productId;
     }
 
-    // Điền sẵn thông tin user vào form (nếu có trong localStorage)
     const user = JSON.parse(localStorage.getItem("user") || '{}');
     const inputName = document.getElementById("order-name");
     const inputPhone = document.getElementById("order-phone");
-    const inputEmail = document.getElementById("order-email"); // Nếu form có ô email
+    const inputEmail = document.getElementById("order-email"); 
 
     if(inputName) inputName.value = user.full_name || "";
     if(inputPhone) inputPhone.value = user.phone || "";
     if(inputEmail) inputEmail.value = user.email || "";
 
-    // Mở Modal lên
-    // Lưu ý: Đảm bảo trang HTML có Modal ID là 'checkoutModal'
     const modalEl = document.getElementById('checkoutModal');
     if (modalEl) {
         const modal = new bootstrap.Modal(modalEl);
@@ -191,18 +214,16 @@ function buyNow(productId) {
     }
 }
 
-// Hàm xử lý khi bấm nút "Xác nhận đặt hàng" trong Modal
 function processOrder() {
     const name = document.getElementById("order-name").value.trim();
     const phone = document.getElementById("order-phone").value.trim();
     const address = document.getElementById("order-address").value.trim();
     
     if (!name || !phone || !address) {
-        alert("Vui lòng điền đủ tên, số điện thoại và địa chỉ nhận hàng!");
+        Swal.fire('Thiếu thông tin', 'Vui lòng điền đủ tên, số điện thoại và địa chỉ nhận hàng!', 'warning');
         return;
     }
 
-    // Kiểm tra xem là Mua Ngay hay Mua Giỏ Hàng
     const directProductIdInput = document.getElementById("direct-buy-product-id");
     const directProductId = directProductIdInput ? directProductIdInput.value : null;
 
@@ -216,16 +237,13 @@ function processOrder() {
     };
 
     if (directProductId) {
-        // ==> MUA NGAY (1 sản phẩm)
-        apiUrl = "http://localhost:3000/api/orders/direct";
+        apiUrl = `${CONFIG.BASE_URL}/orders/direct`;
         bodyData.productId = directProductId;
         bodyData.quantity = 1; 
     } else {
-        // ==> MUA TỪ GIỎ HÀNG
-        apiUrl = "http://localhost:3000/api/orders";
+        apiUrl = `${CONFIG.BASE_URL}/orders`;
     }
     
-    // Gửi request lên Server
     const token = localStorage.getItem("token");
     fetch(apiUrl, {
         method: "POST",
@@ -234,36 +252,43 @@ function processOrder() {
     })
     .then(res => res.json())
     .then(data => {
-        alert(data.message);
         if(data.message && (data.message.includes("thành công") || data.message.includes("success"))) {
-             location.reload(); 
+            Swal.fire('Thành công', data.message, 'success').then(() => {
+                location.reload(); 
+            });
+        } else {
+            Swal.fire('Lỗi', data.message || 'Lỗi đặt hàng', 'error');
         }
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+        console.error(err);
+        Swal.fire('Lỗi', 'Lỗi hệ thống khi đặt hàng', 'error');
+    });
 }
+
 function updatePassword() {
     const oldPass = document.getElementById("old-password").value;
     const newPass = document.getElementById("new-password").value;
     const confirmPass = document.getElementById("confirm-password").value;
 
     if (!oldPass || !newPass || !confirmPass) {
-        alert("Vui lòng điền đầy đủ thông tin!");
+        Swal.fire('Thiếu thông tin', 'Vui lòng điền đầy đủ thông tin!', 'warning');
         return;
     }
     if (newPass !== confirmPass) {
-        alert("Mật khẩu mới không khớp!");
+        Swal.fire('Lỗi', 'Mật khẩu mới không khớp!', 'error');
         return;
     }
 
     const token = localStorage.getItem("token");
     if (!token) {
-        alert("Bạn chưa đăng nhập!");
-        window.location.href = "login.html";
+        Swal.fire('Chưa đăng nhập', 'Bạn chưa đăng nhập!', 'warning').then(() => {
+            window.location.href = "login.html";
+        });
         return;
     }
 
-    // Tạm thời dùng localhost:3000 theo chuẩn file cũ của ông
-    fetch("http://localhost:3000/api/auth/change-password", {
+    fetch(`${CONFIG.BASE_URL}/auth/change-password`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -276,17 +301,18 @@ function updatePassword() {
     })
     .then(res => res.json())
     .then(data => {
-        alert(data.message);
-        
-        // Đổi thành công thì đá văng ra bắt đăng nhập lại
         if (data.success || data.message.includes("thành công")) {
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
-            window.location.href = "login.html"; 
+            Swal.fire('Thành công', data.message, 'success').then(() => {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                window.location.href = "login.html"; 
+            });
+        } else {
+            Swal.fire('Lỗi', data.message, 'error');
         }
     })
     .catch(err => {
         console.error("Lỗi đổi mật khẩu:", err);
-        alert("Lỗi kết nối tới Server!");
+        Swal.fire('Lỗi', 'Lỗi kết nối tới Server!', 'error');
     });
 }

@@ -10,7 +10,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100 bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow mb-5">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow mb-4">
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.html">
                 <i class="fa-solid fa-laptop-code me-2"></i>LINHLINH STORE
@@ -21,48 +21,68 @@
         </div>
     </nav>
 
-    <div class="container d-flex justify-content-center align-items-center flex-grow-1">
-        <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 450px; width: 100%;">
-            <div class="card-body">
-                <div class="text-center mb-4">
-                    <h3 class="fw-bold text-primary">CHÀO MỪNG TRỞ LẠI</h3>
-                    <p class="text-muted small">Vui lòng đăng nhập để tiếp tục mua sắm</p>
+    <div class="container d-flex justify-content-center align-items-center flex-grow-1 my-4">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden" style="max-width: 900px; width: 100%;">
+            <div class="row g-0">
+                
+                <div class="col-md-5 d-none d-md-flex flex-column justify-content-center align-items-center p-5 text-white position-relative" style="background: linear-gradient(135deg, rgba(13,110,253,0.85) 0%, rgba(102,16,242,0.85) 100%), url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&q=80') center/cover;">
+                    <i class="fa-solid fa-laptop-code fa-4x mb-4 text-warning"></i>
+                    <h3 class="fw-bold text-center mb-3">LINHLINH STORE</h3>
+                    <p class="text-center small opacity-75 lh-lg">Hệ sinh thái công nghệ hàng đầu. Đăng nhập ngay để nhận hàng ngàn ưu đãi đặc quyền, flash sale và tích điểm thành viên.</p>
                 </div>
 
-                <form onsubmit="event.preventDefault(); login();">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted">Tài khoản</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user text-muted"></i></span>
-                            <input type="text" id="username" class="form-control bg-light border-start-0" placeholder="Nhập tên đăng nhập" required>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="form-label fw-bold small text-muted">Mật khẩu</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
-                            <input type="password" id="password" class="form-control bg-light border-start-0" placeholder="Nhập mật khẩu" required>
-                        </div>
+                <div class="col-md-7 p-4 p-sm-5 bg-white">
+                    <div class="text-center mb-5">
+                        <h3 class="fw-bold text-primary mb-2">CHÀO MỪNG TRỞ LẠI! 👋</h3>
+                        <p class="text-muted small">Vui lòng đăng nhập để tiếp tục mua sắm</p>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow">
-                        ĐĂNG NHẬP
-                    </button>
-                </form>
+                    <form onsubmit="event.preventDefault(); login();">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-muted">Tên tài khoản <span class="text-danger">*</span></label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user text-muted fs-6"></i></span>
+                                <input type="text" id="username" class="form-control bg-light border-start-0 fs-6" placeholder="Nhập tên đăng nhập" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-muted">Mật khẩu <span class="text-danger">*</span></label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-lock text-muted fs-6"></i></span>
+                                <input type="password" id="password" class="form-control bg-light border-start-0 fs-6" placeholder="Nhập mật khẩu" required>
+                            </div>
+                        </div>
 
-                <div class="text-center mt-4">
-                    <span class="text-muted small">Chưa có tài khoản?</span>
-                    <a href="register.html" class="fw-bold text-decoration-none text-primary">Đăng ký ngay</a>
+                        <div class="d-flex justify-content-between align-items-center mb-4 small">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="rememberMe">
+                                <label class="form-check-label text-muted" for="rememberMe">
+                                    Ghi nhớ tôi
+                                </label>
+                            </div>
+                            <a href="#" class="text-decoration-none text-primary fw-bold">Quên mật khẩu?</a>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill py-3 fw-bold shadow-sm text-uppercase" style="letter-spacing: 1px;">
+                            Đăng nhập hệ thống
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-5">
+                        <span class="text-muted small">Bạn là khách hàng mới?</span>
+                        <a href="register.html" class="fw-bold text-decoration-none text-danger border-bottom border-danger pb-1 ms-1">Tạo tài khoản ngay</a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer class="mt-auto py-3 text-center text-white-50 small bg-primary">
-        &copy; 2026 LinhLinh Store. All rights reserved.
+    <footer class="mt-auto py-3 text-center text-white-50 small bg-primary shadow-lg">
+        &copy;  LinhLinh Store. All rights reserved. Design by LinhLinh.
     </footer>
 
-    <script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <script src="js/config.js"></script> <script src="js/auth.js"></script>
 </body>
 </html>

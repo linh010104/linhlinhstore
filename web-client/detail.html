@@ -30,23 +30,19 @@
         <div class="card shadow border-0 rounded-4 overflow-hidden mb-4">
             <div class="card-body p-0">
                 <div class="row g-0">
-                    <!-- KHU VỰC ẢNH SẢN PHẨM -->
                     <div class="col-md-5 bg-white p-4 border-end d-flex flex-column">
                         <div class="d-flex align-items-center justify-content-center flex-grow-1 mb-3" style="height: 350px;">
                             <img id="detail-img" src="" class="img-fluid object-fit-contain" style="max-height: 100%; width: 100%; transition: 0.3s;" alt="Ảnh sản phẩm">
                         </div>
                         <div class="d-flex justify-content-center gap-2 overflow-auto py-2" id="thumbnail-container">
-                            <!-- JS sẽ nhét ảnh nhỏ vào đây -->
                         </div>
                     </div>
 
-                    <!-- KHU VỰC THÔNG TIN VÀ CHỌN PHIÊN BẢN -->
                     <div class="col-md-7 p-4 p-lg-5">
                         <small class="text-uppercase text-muted fw-bold" id="detail-category">Danh mục</small>
                         <h2 class="fw-bold mb-3 text-primary mt-2" id="detail-name">Đang tải tên...</h2>
                         <h3 class="text-danger fw-bold mb-4" id="detail-price">0 đ</h3>
                         
-                        <!-- VÙNG CHỨA CÁC NÚT BẤM CHỌN MÀU / DUNG LƯỢNG -->
                         <div id="variants-container" class="mb-4"></div>
 
                         <p class="text-muted mb-4" id="detail-desc">Mô tả sản phẩm...</p>
@@ -73,7 +69,6 @@
             </div>
         </div>
 
-        <!-- KHU VỰC THÔNG SỐ KỸ THUẬT MỚI THÊM -->
         <div class="card shadow-sm border-0 mb-5 rounded-4 overflow-hidden">
             <div class="card-header bg-white py-3 border-0 border-bottom">
                 <h5 class="fw-bold mb-0 text-dark">
@@ -105,7 +100,6 @@
         </div>
     </footer>
 
-    <!-- MODAL THANH TOÁN MUA NGAY -->
     <div class="modal fade" id="checkoutModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
@@ -156,8 +150,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
-    <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/detail.js"></script>
 </body>
