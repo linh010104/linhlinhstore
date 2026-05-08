@@ -31,6 +31,7 @@ const app = express();
 // --- 3. MIDDLEWARE ---
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // PHỤC VỤ WEB-CLIENT (Sửa đường dẫn chuẩn ở đây)
 app.use('/uploads', express.static(path.join(__dirname, '..', 'web-client/uploads')));

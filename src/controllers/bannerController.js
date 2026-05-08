@@ -13,18 +13,16 @@ exports.getBannersByType = (req, res) => {
 };
 
 exports.createBanner = (req, res) => {
+    if (!req.body) req.body = {};
+    if (!req.file) {
+        return res.status(400).json({ message: "Vui lòng chọn file ảnh! (Hoặc form gửi từ Java bị lỗi)" });
+    }
     const { title, link_url, banner_type, sort_order } = req.body;
     
-    if (!req.file) {
-        return res.status(400).json({ message: "Vui lòng chọn file ảnh!" });
-    }
-
-    // Đường dẫn tương đối để lưu vào DB (Dùng cho thẻ <img src="..."> ngoài web)
     const image_url = '/uploads/banners/' + req.file.filename;
+    const sql = "INSERT INTO banners (title, image_url, link_url, banner_type, sort_order, status) VALUES (?, ?, ?, ?, ?, 1)";
     
-    const sql = "INSERT INTO banners (title, image_url, link_url, banner_type, sort_order) VALUES (?, ?, ?, ?, ?)";
-    
-    db.query(sql, [title, image_url, link_url, banner_type, sort_order || 0], (err, result) => {
+db.query(sql, [title, image_url, link_url, banner_type, sort_order || 0], (err, result) => { 
         if (err) return res.status(500).json({ error: err.message });
         res.status(201).json({ message: "Thêm banner thành công!", id: result.insertId });
     });
