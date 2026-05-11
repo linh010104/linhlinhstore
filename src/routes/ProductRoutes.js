@@ -16,7 +16,7 @@ router.post(
   '/:id/images',
   authMiddleware,
   isAdmin,
-  upload.single('image'),
+  upload.array('images', 10),
   productController.uploadImage
 );
 router.post('/:id/variants', authMiddleware, isAdmin, productController.addVariant);

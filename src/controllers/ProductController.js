@@ -46,17 +46,30 @@ exports.delete = (req, res) => {
 };
 
 exports.uploadImage = (req, res) => {
-  const productId = req.params.id;
-  const imageUrl = `/uploads/${req.file.filename}`;
+ const productId = req.params.id;
 
-  const sql = `
-    INSERT INTO product_images (product_id, image_url)
-    VALUES (?, ?)
-  `;
+  // Dùng req.files (số nhiều) vì mình xài upload.array
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ message: 'Chưa chọn file ảnh nào' });
+  }
 
-  db.query(sql, [productId, imageUrl], err => {
-    if (err) return res.status(500).json(err);
-    res.json({ message: 'Upload ảnh thành công', image_url: imageUrl });
+  // Gom đống ảnh thành mảng để Insert 1 phát ăn ngay
+  const values = req.files.map(file => [
+    productId, 
+    `/uploads/${file.filename}`
+  ]);
+
+  const sql = `INSERT INTO product_images (product_id, image_url) VALUES ?`;
+
+  db.query(sql, [values], (err, result) => {
+    if (err) {
+      console.error("Lỗi insert DB:", err);
+      return res.status(500).json(err);
+    }
+    res.json({ 
+      message: `Đã up thành công ${req.files.length} ảnh`, 
+      insertedRows: result.affectedRows 
+    });
   });
 };
 
@@ -83,11 +96,6 @@ exports.checkExistence = (req, res) => {
     });
 };
 
-// ==========================================
-// API QUẢN LÝ PHIÊN BẢN (MỚI THÊM)
-// ==========================================
-
-// Thêm phiên bản mới cho một sản phẩm
 exports.addVariant = (req, res) => {
   const productId = req.params.id;
   const { variant_group, variant_name, additional_price, stock_quantity } = req.body;

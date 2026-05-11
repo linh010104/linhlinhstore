@@ -89,6 +89,59 @@ function loadCategories() {
     .catch(err => console.error("Lỗi load API:", err));
 }
 
+// HÀM TẠO THẺ SẢN PHẨM (GỘP CHUNG ĐỂ DỄ QUẢN LÝ)
+function createProductCard(p) {
+    const col = document.createElement("div");
+    col.className = "col-6 col-md-4 col-lg-3 mb-4"; 
+    
+    // Fake giá cũ tăng 15% để làm mồi nhử Marketing
+    const oldPrice = Number(p.price) * 1.15; 
+    
+    // Placeholder ảnh thông minh báo tên shop nếu ảnh lỗi/chưa có
+    const fallbackImg = "https://placehold.co/300x300/f8f9fa/a3a3a3?text=LinhLinh+Store";
+    const imgUrl = p.image_url ? `${CONFIG.IMAGE_BASE_URL}${p.image_url}` : fallbackImg;
+
+    col.innerHTML = `
+        <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'">
+            
+            <div class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 small fw-bold shadow-sm" style="border-radius: 0 10px 10px 0; z-index: 2; margin-top: 10px;">
+                <i class="fa-solid fa-fire-flame-curved"></i> Trợ giá
+            </div>
+            <div class="position-absolute top-0 end-0 bg-warning text-dark px-2 py-1 small fw-bold shadow-sm" style="border-radius: 10px 0 0 10px; z-index: 2; margin-top: 10px;">
+                -15%
+            </div>
+            
+            <a href="detail.html?id=${p.id}" class="text-center d-block position-relative p-4 bg-white">
+                <img src="${imgUrl}" onerror="this.src='${fallbackImg}'" class="img-fluid" style="height: 160px; object-fit: contain; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'" alt="${p.name}">
+            </a>
+            
+            <div class="card-body d-flex flex-column" style="background-color: #fafafa;">
+                <h5 class="card-title text-truncate mb-2" style="font-size: 15px;">
+                    <a href="detail.html?id=${p.id}" class="text-decoration-none text-dark fw-bold" title="${p.name}">${p.name}</a>
+                </h5>
+                
+                <div class="d-flex align-items-center mb-1" style="font-size: 12px;">
+                    <div class="text-warning me-1">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <span class="text-muted">(128)</span>
+                </div>
+
+                <div class="text-muted text-decoration-line-through small" style="font-size: 13px;">${oldPrice.toLocaleString('vi-VN')} đ</div>
+                <div class="fw-bold text-danger mb-3" style="font-size: 18px;">${Number(p.price).toLocaleString('vi-VN')} đ</div>
+                
+                <div class="mt-auto d-flex gap-2">
+                    <button onclick="buyNow(${p.id})" class="btn btn-danger flex-grow-1 fw-bold rounded-pill shadow-sm" style="font-size: 14px;">Mua Ngay</button>
+                    <button onclick="addToCart(${p.id})" class="btn btn-outline-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="Thêm vào giỏ" style="width: 38px; height: 38px; flex-shrink: 0;">
+                        <i class="fa-solid fa-cart-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    return col;
+}
+
 function loadProducts(keyword = "", categoryId = "") {
     let url = `${CONFIG.BASE_URL}/products?`;
     if (keyword) url += `keyword=${encodeURIComponent(keyword)}&`;
@@ -124,31 +177,9 @@ function loadProducts(keyword = "", categoryId = "") {
                 return;
             }
 
+            // Dùng hàm createProductCard mới viết
             data.forEach(p => {
-                const col = document.createElement("div");
-                col.className = "col-6 col-md-4 col-lg-3 mb-3"; 
-                const imgUrl = p.image_url ? `${CONFIG.IMAGE_BASE_URL}${p.image_url}` : "https://via.placeholder.com/300x300";
-
-                col.innerHTML = `
-                    <div class="card h-100">
-                        <a href="detail.html?id=${p.id}" class="text-center">
-                            <img src="${imgUrl}" class="card-img-top" alt="${p.name}">
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <a href="detail.html?id=${p.id}" class="text-decoration-none text-dark">${p.name}</a>
-                            </h5>
-                            <div class="price-tag">${Number(p.price).toLocaleString('vi-VN')} đ</div>
-                            <div class="mt-auto d-flex gap-2">
-                                <button onclick="buyNow(${p.id})" class="btn btn-primary flex-grow-1">Mua Ngay</button>
-                                <button onclick="addToCart(${p.id})" class="btn btn-outline-danger" title="Thêm vào giỏ" style="width: 40px; border-radius: 5px;">
-                                    <i class="fa-solid fa-cart-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                list.appendChild(col);
+                list.appendChild(createProductCard(p));
             });
         })
         .catch(err => console.error("Lỗi tải sản phẩm:", err));
@@ -167,7 +198,6 @@ function filterByCategory(id, name) {
     loadProducts("", id); 
 }
 
-// XÓA ALERT/CONFIRM: DÙNG SWEETALERT2
 function addToCart(productId) {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -244,31 +274,9 @@ function filterByBrand(brandId, brandName) {
                 return;
             }
 
+            // Dùng hàm createProductCard mới viết
             filteredProducts.forEach(p => {
-                const col = document.createElement("div");
-                col.className = "col-6 col-md-4 col-lg-3 mb-3"; 
-                const imgUrl = p.image_url ? `${CONFIG.IMAGE_BASE_URL}${p.image_url}` : "https://via.placeholder.com/300x300";
-
-                col.innerHTML = `
-                    <div class="card h-100">
-                        <a href="detail.html?id=${p.id}" class="text-center">
-                            <img src="${imgUrl}" class="card-img-top" alt="${p.name}">
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <a href="detail.html?id=${p.id}" class="text-decoration-none text-dark">${p.name}</a>
-                            </h5>
-                            <div class="price-tag">${Number(p.price).toLocaleString('vi-VN')} đ</div>
-                            <div class="mt-auto d-flex gap-2">
-                                <button onclick="buyNow(${p.id})" class="btn btn-primary flex-grow-1">Mua Ngay</button>
-                                <button onclick="addToCart(${p.id})" class="btn btn-outline-danger" title="Thêm vào giỏ" style="width: 40px; border-radius: 5px;">
-                                    <i class="fa-solid fa-cart-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                list.appendChild(col);
+                list.appendChild(createProductCard(p));
             });
         })
         .catch(err => console.error("Lỗi lọc hãng:", err));

@@ -109,13 +109,12 @@ function changeMainImage(url) {
         mainImg.style.opacity = 1; 
     }, 150);
 }
-
-// LOGIC VẼ NÚT PHIÊN BẢN (CÓ KIỂM TRA HẾT HÀNG)
 function renderVariants(variants, defaultPrice) {
     basePrice = defaultPrice;
     currentVariants = variants;
     const container = document.getElementById("variants-container");
     
+    // Gom nhóm các phiên bản (VD: Màu sắc, Dung lượng)
     const grouped = variants.reduce((acc, curr) => {
         if (!acc[curr.variant_group]) acc[curr.variant_group] = [];
         acc[curr.variant_group].push(curr);
@@ -124,53 +123,54 @@ function renderVariants(variants, defaultPrice) {
 
     let html = "";
     for (const group in grouped) {
-        html += `<div class="mb-3">
-                    <strong class="d-block mb-2 text-dark">${group}</strong>
+        html += `<div class="mb-4">
+                    <strong class="d-block mb-2 text-dark" style="font-size: 15px;">Chọn ${group}:</strong>
                     <div class="d-flex flex-wrap gap-2">`;
         
         grouped[group].forEach((v, index) => {
             const isOutOfStock = v.stock_quantity <= 0;
-
+            
+            // Mặc định chọn cái đầu tiên nếu chưa chọn và còn hàng
             if (!selectedVariants[group] && index === 0 && !isOutOfStock) {
                 selectedVariants[group] = v;
             }
 
             const isSelected = selectedVariants[group]?.id === v.id;
             
-            let activeClass = "";
-            let clickEvent = "";
+            // STYLE CHUẨN SHOPEE: VIỀN ĐỎ, CÓ DẤU CHECK KHI ĐƯỢC CHỌN
+            let boxStyle = "border: 1px solid #dee2e6; color: #444; background: #fff;";
+            let checkIcon = "";
             let opacity = "1";
             let strikeThrough = "";
+            let clickEvent = `onclick="selectVariant('${group}', ${v.id})"`;
 
             if (isOutOfStock) {
-                activeClass = "bg-secondary text-white"; 
-                opacity = "0.5"; 
-                strikeThrough = "text-decoration-line-through"; 
+                boxStyle = "border: 1px dashed #ccc; background: #f8f9fa; color: #999;";
+                opacity = "0.5";
+                strikeThrough = "text-decoration-line-through";
                 clickEvent = `onclick="alert('Phiên bản này đang tạm hết hàng!')"`;
             } else if (isSelected) {
-                activeClass = "border-danger text-danger bg-white shadow-sm"; 
-                clickEvent = `onclick="selectVariant('${group}', ${v.id})"`;
-            } else {
-                activeClass = "border-secondary text-dark bg-light"; 
-                clickEvent = `onclick="selectVariant('${group}', ${v.id})"`;
+                boxStyle = "border: 2px solid #d70018 !important; color: #d70018 !important; background: #fff; position: relative;";
+                // Vẽ cái góc tam giác màu đỏ có dấu tick
+                checkIcon = `<div style="position: absolute; right: -1px; bottom: -1px; width: 16px; height: 16px; background: #d70018; clip-path: polygon(100% 0, 0% 100%, 100% 100%);">
+                    <i class="fa-solid fa-check text-white" style="font-size: 8px; position: absolute; bottom: 2px; right: 2px;"></i>
+                </div>`;
             }
-            
+
             const btnPrice = basePrice + Number(v.additional_price);
             const priceText = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(btnPrice);
-            
-            const imgHtml = v.image_url ? `<img src="${CONFIG.IMAGE_BASE_URL}${v.image_url}" style="width:30px; height:30px; object-fit:cover;" class="rounded me-2 border">` : "";
+            const imgHtml = v.image_url ? `<img src="${CONFIG.IMAGE_BASE_URL}${v.image_url}" style="width:24px; height:24px; object-fit:cover;" class="rounded me-2 border">` : "";
 
             html += `
-                <div class="border rounded p-2 ${activeClass}" 
-                     style="cursor: ${isOutOfStock ? 'not-allowed' : 'pointer'}; min-width: 140px; transition: 0.2s; user-select: none; opacity: ${opacity};"
+                <div class="p-2 rounded px-3 d-flex align-items-center justify-content-center" 
+                     style="cursor: ${isOutOfStock ? 'not-allowed' : 'pointer'}; min-width: 120px; transition: 0.2s; user-select: none; opacity: ${opacity}; ${boxStyle}"
                      ${clickEvent}>
-                    <div class="d-flex align-items-center justify-content-center h-100">
-                        ${imgHtml}
-                        <div class="text-center">
-                            <div class="fw-bold ${strikeThrough}" style="font-size: 14px;">${v.variant_name}</div>
-                            <div style="font-size: 12px;">${priceText}</div>
-                        </div>
+                    ${imgHtml}
+                    <div class="text-center">
+                        <div class="fw-bold ${strikeThrough}" style="font-size: 13px;">${v.variant_name}</div>
+                        ${Number(v.additional_price) > 0 ? `<div style="font-size: 11px;">+${new Intl.NumberFormat('vi-VN').format(v.additional_price)}đ</div>` : ''}
                     </div>
+                    ${checkIcon}
                 </div>
             `;
         });
@@ -178,6 +178,22 @@ function renderVariants(variants, defaultPrice) {
     }
     container.innerHTML = html;
     updateTotalPrice(); 
+
+    // --- TẠO KHỐI ĐẶC ĐIỂM NỔI BẬT DƯỚI NÚT CHỌN ---
+    const highlightBox = document.getElementById("highlight-features");
+    if (highlightBox) {
+        highlightBox.innerHTML = `
+            <div class="card border-0 shadow-sm rounded-3 p-3 mb-4" style="background: #fdf2f2; border-left: 5px solid #d70018 !important;">
+                <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-fire-flame-curved me-1"></i> Ưu đãi & Điểm nổi bật</h6>
+                <ul class="small mb-0 ps-3 text-dark" style="line-height: 1.6;">
+                    <li>Bảo hành chính hãng 12 tháng tại LINHLINH Store.</li>
+                    <li>Lỗi 1 đổi 1 trong 30 ngày nếu có lỗi phần cứng từ NSX.</li>
+                    <li>Giao hàng hỏa tốc trong 2 giờ (Nội thành Hà Nội).</li>
+                    <li>Giảm thêm 5% tối đa 500k khi thanh toán qua VNPay.</li>
+                </ul>
+            </div>
+        `;
+    }
 }
 
 function selectVariant(group, variantId) {

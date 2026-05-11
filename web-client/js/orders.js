@@ -1,21 +1,32 @@
 /* File: js/orders.js */
 let currentOrderId = null;
+const orderToken = localStorage.getItem("token"); // Khai báo global đổi tên thành orderToken
 
 document.addEventListener("DOMContentLoaded", () => {
-    const token = localStorage.getItem("token");
-    if (!token) { window.location.href = "login.html"; return; }
+    if (!orderToken) { 
+        window.location.href = "login.html"; 
+        return; 
+    }
+    loadOrders();
+});
 
+function loadOrders() {
     fetch(`${CONFIG.BASE_URL}/orders/mine`, {
-        headers: { "Authorization": "Bearer " + token }
+        headers: { "Authorization": "Bearer " + orderToken }
     })
     .then(res => res.json())
     .then(data => {
         const tbody = document.getElementById("order-history-list");
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Bạn chưa có đơn hàng nào.</td></tr>';
+            return;
+        }
+
         tbody.innerHTML = data.map(order => `
             <tr>
-                <td class="ps-4 fw-bold">#${order.id}</td>
+                <td class="ps-4 fw-bold text-primary">#${order.id}</td>
                 <td>${new Date(order.created_at).toLocaleString('vi-VN')}</td>
-                <td class="text-danger fw-bold">${Number(order.total_amount).toLocaleString()} đ</td>
+                <td class="text-danger fw-bold">${Number(order.total_amount).toLocaleString('vi-VN')} đ</td>
                 <td>${getStatusBadge(order.status)}</td>
                 <td class="text-end pe-4">
                     <button onclick="viewDetail(${order.id})" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
@@ -23,15 +34,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     </button>
                 </td>
             </tr>
-        `).join('') || '<tr><td colspan="5" class="text-center py-5 text-muted">Bạn chưa có đơn hàng nào.</td></tr>';
+        `).join('');
     })
     .catch(err => console.error(err));
-});
+}
 
 function viewDetail(id) {
     currentOrderId = id;
     fetch(`${CONFIG.BASE_URL}/orders/${id}`, {
-        headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
+        headers: { "Authorization": "Bearer " + orderToken }
     })
     .then(res => res.json())
     .then(order => {
@@ -63,25 +74,26 @@ function viewDetail(id) {
 
         const list = document.getElementById("modal-items-list");
         list.innerHTML = order.items.map(item => {
-            const imgUrl = item.image_url ? `${CONFIG.IMAGE_BASE_URL}${item.image_url}` : "https://via.placeholder.com/45";
+            const fallbackImg = "https://placehold.co/50x50/f8f9fa/a3a3a3?text=LL";
+            const imgUrl = item.image_url ? `${CONFIG.IMAGE_BASE_URL}${item.image_url}` : fallbackImg;
             const variantHtml = item.variant_info ? `<div class="text-muted" style="font-size: 12px; font-style: italic;">Phân loại: <span class="text-dark fw-bold">${item.variant_info}</span></div>` : '';
 
             return `
-            <div class="list-group-item d-flex align-items-center gap-3">
-                <img src="${imgUrl}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded border shadow-sm">
+            <div class="list-group-item d-flex align-items-center gap-3 py-3">
+                <img src="${imgUrl}" onerror="this.src='${fallbackImg}'" style="width: 55px; height: 55px; object-fit: contain;" class="rounded border shadow-sm p-1">
                 <div class="flex-grow-1 small">
-                    <div class="fw-bold" style="font-size: 14px;">${item.name}</div>
+                    <div class="fw-bold text-dark" style="font-size: 14px;">${item.name}</div>
                     ${variantHtml}
-                    <div class="text-muted mt-1">SL: ${item.quantity} x ${Number(item.price).toLocaleString()} đ</div>
+                    <div class="text-muted mt-1">SL: ${item.quantity} <span class="mx-1">x</span> ${Number(item.price).toLocaleString('vi-VN')} đ</div>
                 </div>
                 <div class="fw-bold text-danger text-end" style="font-size: 15px;">
-                    ${Number(item.price * item.quantity).toLocaleString()} đ
+                    ${Number(item.price * item.quantity).toLocaleString('vi-VN')} đ
                 </div>
             </div>
             `;
         }).join('');
 
-        document.getElementById("modal-total").innerText = Number(order.total_amount).toLocaleString() + " đ";
+        document.getElementById("modal-total").innerText = Number(order.total_amount).toLocaleString('vi-VN') + " đ";
 
         const footer = document.getElementById("modal-footer-actions");
         footer.innerHTML = '<button class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>';
@@ -91,7 +103,7 @@ function viewDetail(id) {
             footer.innerHTML += `<button onclick="cancelOrder()" class="btn btn-outline-danger rounded-pill px-4 ms-2"><i class="fa-solid fa-ban me-1"></i> Hủy đơn</button>`;
         } else if (order.status === 'DONE') {
             footer.innerHTML += '<button onclick="submitReturnRequest()" class="btn btn-outline-danger rounded-pill px-4 ms-2"><i class="fa-solid fa-rotate-left me-1"></i> Trả hàng</button>';
-        } else if (order.status === 'SHIPPING') {
+        } else if (order.status === 'SHIPPED') {
             footer.innerHTML += '<button onclick="updateStatus(\'DONE\')" class="btn btn-success rounded-pill px-4 ms-2"><i class="fa-solid fa-check-circle me-1"></i> Đã nhận hàng</button>';
         }
 
@@ -109,36 +121,54 @@ function saveOrderInfo() {
     };
 
     if (!data.name || !data.phone || !data.address) {
-        alert("Vui lòng điền đủ Tên, SĐT và Địa chỉ!"); return;
+        Swal.fire('Thiếu thông tin', 'Vui lòng điền đủ Tên, SĐT và Địa chỉ nhận hàng!', 'warning'); 
+        return;
     }
 
     fetch(`${CONFIG.BASE_URL}/orders/${currentOrderId}/update-info`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem("token") },
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + orderToken },
         body: JSON.stringify(data)
     })
     .then(res => res.json())
     .then(d => {
-        alert(d.message);
-        if (!d.error) location.reload();
+        if (!d.error) {
+            Swal.fire('Thành công', d.message, 'success').then(() => location.reload());
+        } else {
+            Swal.fire('Lỗi', d.message, 'error');
+        }
     })
     .catch(err => console.error(err));
 }
 
 function cancelOrder() {
-    if(!confirm("Bạn chắc chắn muốn hủy đơn hàng này chứ? (Không thể hoàn tác!)")) return;
-    
-    fetch(`${CONFIG.BASE_URL}/orders/${currentOrderId}/user-status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem("token") },
-        body: JSON.stringify({ status: 'CANCELLED' })
-    })
-    .then(res => res.json())
-    .then(d => {
-        alert(d.message);
-        if (!d.error) location.reload();
-    })
-    .catch(err => console.error(err));
+    Swal.fire({
+        title: 'Hủy đơn hàng?',
+        text: "Bạn chắc chắn muốn hủy đơn hàng này chứ? (Không thể hoàn tác!)",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Đồng ý hủy',
+        cancelButtonText: 'Không'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`${CONFIG.BASE_URL}/orders/${currentOrderId}/user-status`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + orderToken },
+                body: JSON.stringify({ status: 'CANCELLED' })
+            })
+            .then(res => res.json())
+            .then(d => {
+                if (!d.error) {
+                    Swal.fire('Đã hủy', d.message, 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Lỗi', d.message, 'error');
+                }
+            })
+            .catch(err => console.error(err));
+        }
+    });
 }
 
 function submitReturnRequest() {
@@ -151,7 +181,10 @@ function submitReturnRequest() {
 function confirmReturnRequest() {
     const main = document.getElementById("select-return-reason").value;
     const detail = document.getElementById("input-return-reason").value.trim();
-    if (!main) { alert("Vui lòng chọn lý do!"); return; }
+    if (!main) { 
+        Swal.fire('Thiếu thông tin', 'Vui lòng chọn lý do trả hàng!', 'warning'); 
+        return; 
+    }
 
     const finalReason = detail ? `${main} (Chi tiết: ${detail})` : main;
     const btn = document.getElementById("btn-confirm-return");
@@ -159,34 +192,53 @@ function confirmReturnRequest() {
 
     fetch(`${CONFIG.BASE_URL}/orders/${currentOrderId}/request-return`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem("token") },
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + orderToken },
         body: JSON.stringify({ reason: finalReason })
     })
     .then(res => res.json())
-    .then(d => { alert(d.message); location.reload(); })
-    .catch(err => { console.error(err); btn.disabled = false; });
+    .then(d => { 
+        Swal.fire('Thành công', d.message, 'success').then(() => location.reload());
+    })
+    .catch(err => { 
+        console.error(err); 
+        btn.disabled = false; 
+    });
 }
 
 function updateStatus(status) {
-    if(!confirm("Xác nhận thao tác này?")) return;
-    fetch(`${CONFIG.BASE_URL}/orders/${currentOrderId}/user-status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem("token") },
-        body: JSON.stringify({ status })
-    })
-    .then(res => res.json())
-    .then(d => { alert(d.message); location.reload(); })
-    .catch(err => console.error(err));
+    Swal.fire({
+        title: 'Xác nhận?',
+        text: "Bạn đã nhận được hàng và xác nhận đơn hàng này?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Đã nhận hàng'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`${CONFIG.BASE_URL}/orders/${currentOrderId}/user-status`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + orderToken },
+                body: JSON.stringify({ status })
+            })
+            .then(res => res.json())
+            .then(d => { 
+                Swal.fire('Cảm ơn!', d.message, 'success').then(() => location.reload());
+            })
+            .catch(err => console.error(err));
+        }
+    });
 }
 
 function getStatusBadge(status) {
     switch(status) {
-        case 'NEW': return '<span class="badge rounded-pill bg-primary">Chờ xác nhận</span>';
-        case 'SHIPPING': return '<span class="badge rounded-pill bg-info text-dark">Đang giao hàng</span>';
-        case 'DONE': return '<span class="badge rounded-pill bg-success">Hoàn tất</span>';
-        case 'RETURN_REQUESTED': return '<span class="badge rounded-pill bg-warning text-dark">Chờ duyệt trả</span>';
-        case 'RETURNED': return '<span class="badge rounded-pill bg-secondary">Đã hoàn trả</span>';
-        case 'CANCELLED': return '<span class="badge rounded-pill bg-danger">Đã hủy</span>';
-        default: return `<span class="badge rounded-pill bg-dark">${status}</span>`;
+        case 'NEW': return '<span class="badge rounded-pill bg-primary px-3">Chờ xác nhận</span>';
+        case 'CONFIRMED': return '<span class="badge rounded-pill bg-info text-dark px-3">Đã xác nhận</span>';
+        case 'SHIPPED': return '<span class="badge rounded-pill bg-warning text-dark px-3">Đang giao hàng</span>';
+        case 'DONE': return '<span class="badge rounded-pill bg-success px-3">Hoàn tất</span>';
+        case 'RETURN_REQUESTED': return '<span class="badge rounded-pill bg-warning text-dark px-3">Chờ duyệt trả</span>';
+        case 'RETURNED': return '<span class="badge rounded-pill bg-secondary px-3">Đã hoàn trả</span>';
+        case 'CANCELLED': return '<span class="badge rounded-pill bg-danger px-3">Đã hủy</span>';
+        default: return `<span class="badge rounded-pill bg-dark px-3">${status}</span>`;
     }
 }
