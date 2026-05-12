@@ -1,20 +1,14 @@
-/* File: js/orders.js */
 let currentOrderId = null;
-const orderToken = localStorage.getItem("token"); // Khai báo global đổi tên thành orderToken
 
 document.addEventListener("DOMContentLoaded", () => {
-    if (!orderToken) { 
-        window.location.href = "login.html"; 
+    if (!UIHelper.ensureLogin()) { 
         return; 
     }
     loadOrders();
 });
 
 function loadOrders() {
-    fetch(`${CONFIG.BASE_URL}/orders/mine`, {
-        headers: { "Authorization": "Bearer " + orderToken }
-    })
-    .then(res => res.json())
+    API.get('/orders/mine', true)
     .then(data => {
         const tbody = document.getElementById("order-history-list");
         if (!data || data.length === 0) {
@@ -26,7 +20,7 @@ function loadOrders() {
             <tr>
                 <td class="ps-4 fw-bold text-primary">#${order.id}</td>
                 <td>${new Date(order.created_at).toLocaleString('vi-VN')}</td>
-                <td class="text-danger fw-bold">${Number(order.total_amount).toLocaleString('vi-VN')} đ</td>
+                <td class="text-danger fw-bold">${UIHelper.formatPrice(Number(order.total_amount))}</td>
                 <td>${getStatusBadge(order.status)}</td>
                 <td class="text-end pe-4">
                     <button onclick="viewDetail(${order.id})" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
@@ -41,10 +35,7 @@ function loadOrders() {
 
 function viewDetail(id) {
     currentOrderId = id;
-    fetch(`${CONFIG.BASE_URL}/orders/${id}`, {
-        headers: { "Authorization": "Bearer " + orderToken }
-    })
-    .then(res => res.json())
+    API.get(`/orders/${id}`, true)
     .then(order => {
         document.getElementById("modal-order-id").innerText = order.id;
         
@@ -84,16 +75,16 @@ function viewDetail(id) {
                 <div class="flex-grow-1 small">
                     <div class="fw-bold text-dark" style="font-size: 14px;">${item.name}</div>
                     ${variantHtml}
-                    <div class="text-muted mt-1">SL: ${item.quantity} <span class="mx-1">x</span> ${Number(item.price).toLocaleString('vi-VN')} đ</div>
+                    <div class="text-muted mt-1">SL: ${item.quantity} <span class="mx-1">x</span> ${UIHelper.formatPrice(Number(item.price))}</div>
                 </div>
                 <div class="fw-bold text-danger text-end" style="font-size: 15px;">
-                    ${Number(item.price * item.quantity).toLocaleString('vi-VN')} đ
+                    ${UIHelper.formatPrice(Number(item.price * item.quantity))}
                 </div>
             </div>
             `;
         }).join('');
 
-        document.getElementById("modal-total").innerText = Number(order.total_amount).toLocaleString('vi-VN') + " đ";
+        document.getElementById("modal-total").innerText = UIHelper.formatPrice(Number(order.total_amount));
 
         const footer = document.getElementById("modal-footer-actions");
         footer.innerHTML = '<button class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>';
@@ -121,54 +112,43 @@ function saveOrderInfo() {
     };
 
     if (!data.name || !data.phone || !data.address) {
-        Swal.fire('Thiếu thông tin', 'Vui lòng điền đủ Tên, SĐT và Địa chỉ nhận hàng!', 'warning'); 
+        UIHelper.showWarning('Thiếu thông tin', 'Vui lòng điền đủ Tên, SĐT và Địa chỉ nhận hàng!'); 
         return;
     }
 
-    fetch(`${CONFIG.BASE_URL}/orders/${currentOrderId}/update-info`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + orderToken },
-        body: JSON.stringify(data)
-    })
-    .then(res => res.json())
+    API.put(`/orders/${currentOrderId}/update-info`, data, true)
     .then(d => {
-        if (!d.error) {
-            Swal.fire('Thành công', d.message, 'success').then(() => location.reload());
+        const { isSuccess, message } = UIHelper.parseResponse(d);
+        
+        if (isSuccess) {
+            UIHelper.showSuccess('Thành công', message, () => location.reload());
         } else {
-            Swal.fire('Lỗi', d.message, 'error');
+            UIHelper.showError('Lỗi', message);
         }
     })
     .catch(err => console.error(err));
 }
 
 function cancelOrder() {
-    Swal.fire({
-        title: 'Hủy đơn hàng?',
-        text: "Bạn chắc chắn muốn hủy đơn hàng này chứ? (Không thể hoàn tác!)",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Đồng ý hủy',
-        cancelButtonText: 'Không'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`${CONFIG.BASE_URL}/orders/${currentOrderId}/user-status`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + orderToken },
-                body: JSON.stringify({ status: 'CANCELLED' })
-            })
-            .then(res => res.json())
+    UIHelper.showConfirm(
+        'Hủy đơn hàng?',
+        "Bạn chắc chắn muốn hủy đơn hàng này chứ? (Không thể hoàn tác!)",
+        'Đồng ý hủy',
+        'Không',
+        () => {
+            API.put(`/orders/${currentOrderId}/user-status`, { status: 'CANCELLED' }, true)
             .then(d => {
-                if (!d.error) {
-                    Swal.fire('Đã hủy', d.message, 'success').then(() => location.reload());
+                const { isSuccess, message } = UIHelper.parseResponse(d);
+                
+                if (isSuccess) {
+                    UIHelper.showSuccess('Đã hủy', message, () => location.reload());
                 } else {
-                    Swal.fire('Lỗi', d.message, 'error');
+                    UIHelper.showError('Lỗi', message);
                 }
             })
             .catch(err => console.error(err));
         }
-    });
+    );
 }
 
 function submitReturnRequest() {
@@ -182,7 +162,7 @@ function confirmReturnRequest() {
     const main = document.getElementById("select-return-reason").value;
     const detail = document.getElementById("input-return-reason").value.trim();
     if (!main) { 
-        Swal.fire('Thiếu thông tin', 'Vui lòng chọn lý do trả hàng!', 'warning'); 
+        UIHelper.showWarning('Thiếu thông tin', 'Vui lòng chọn lý do trả hàng!'); 
         return; 
     }
 
@@ -190,14 +170,15 @@ function confirmReturnRequest() {
     const btn = document.getElementById("btn-confirm-return");
     btn.disabled = true;
 
-    fetch(`${CONFIG.BASE_URL}/orders/${currentOrderId}/request-return`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + orderToken },
-        body: JSON.stringify({ reason: finalReason })
-    })
-    .then(res => res.json())
-    .then(d => { 
-        Swal.fire('Thành công', d.message, 'success').then(() => location.reload());
+    API.put(`/orders/${currentOrderId}/request-return`, { reason: finalReason }, true)
+    .then(d => {
+        const { isSuccess, message } = UIHelper.parseResponse(d);
+        
+        if (isSuccess) {
+            UIHelper.showSuccess('Thành công', message, () => location.reload());
+        } else {
+            UIHelper.showError('Lỗi', message);
+        }
     })
     .catch(err => { 
         console.error(err); 
@@ -206,28 +187,25 @@ function confirmReturnRequest() {
 }
 
 function updateStatus(status) {
-    Swal.fire({
-        title: 'Xác nhận?',
-        text: "Bạn đã nhận được hàng và xác nhận đơn hàng này?",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#28a745',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Đã nhận hàng'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`${CONFIG.BASE_URL}/orders/${currentOrderId}/user-status`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + orderToken },
-                body: JSON.stringify({ status })
-            })
-            .then(res => res.json())
-            .then(d => { 
-                Swal.fire('Cảm ơn!', d.message, 'success').then(() => location.reload());
+    UIHelper.showConfirm(
+        'Xác nhận?',
+        "Bạn đã nhận được hàng và xác nhận đơn hàng này?",
+        'Đã nhận hàng',
+        'Để sau',
+        () => {
+            API.put(`/orders/${currentOrderId}/user-status`, { status }, true)
+            .then(d => {
+                const { isSuccess, message } = UIHelper.parseResponse(d);
+                
+                if (isSuccess) {
+                    UIHelper.showSuccess('Cảm ơn!', message, () => location.reload());
+                } else {
+                    UIHelper.showError('Lỗi', message);
+                }
             })
             .catch(err => console.error(err));
         }
-    });
+    );
 }
 
 function getStatusBadge(status) {

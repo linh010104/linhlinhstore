@@ -1,13 +1,14 @@
-require('dotenv').config();
+require('dotenv').config();  // ⭐ PHẢI GỌILE ĐẦU TIÊN
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const mongoose = require('mongoose');
 
 // --- 1. KẾT NỐI MONGODB ---
-mongoose.connect('mongodb://127.0.0.1:27017/dientu_store_ai')
-  .then(() => console.log("MongoDB: ok"))
-  .catch((err) => console.error("❌ MongoDB Lỗi:", err));
+const mongoUri = process.env.MONGODB_URL || 'mongodb://127.0.0.1:27017/dientu_store_ai';
+mongoose.connect(mongoUri)
+  .then(() => console.log("✅ MongoDB: Connected"))
+  .catch((err) => console.error("❌ MongoDB Error:", err));
 
 // --- 2. IMPORT ROUTES ---
 const categoryRoutes = require('./routes/CategoryRoutes');
@@ -33,7 +34,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// PHỤC VỤ WEB-CLIENT (Sửa đường dẫn chuẩn ở đây)
+// PHỤC VỤ WEB-CLIENT
 app.use('/uploads', express.static(path.join(__dirname, '..', 'web-client/uploads')));
 app.use(express.static(path.join(__dirname, '..', 'web-client')));
 
@@ -56,11 +57,11 @@ app.use('/api/chatbot', chatbotRoutes);
 
 // --- 5. ERROR HANDLER ---
 app.use((err, req, res, next) => {
-    console.error("🔥 Lỗi:", err.stack || err);
-    res.status(500).json({ message: "Lỗi máy chủ nội bộ!" });
+    console.error("🔥 Error:", err.stack || err);
+    res.status(500).json({ message: "Internal Server Error" });
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`API: http://localhost:${PORT}`);
+  console.log(`✅ API running at http://localhost:${PORT}`);
 });

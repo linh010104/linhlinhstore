@@ -3,12 +3,12 @@ const db = require('../config/db');
 const nodemailer = require('nodemailer');
 const Order = require('../models/OrderModel'); 
 
-// --- CẤU HÌNH GỬI EMAIL TỰ ĐỘNG ---
+// --- CẤU HÌNH GỬI EMAIL TỰ ĐỘNG TỪ BIẾN MÔI TRƯỜNG ---
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: process.env.EMAIL_SERVICE || 'gmail',
     auth: {
-        user: 'veresbaby0108@gmail.com', 
-        pass: 'pmcmfolavvbkjmjg'         
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
     }
 });
 
@@ -105,7 +105,7 @@ exports.processReturnRequest = (req, res) => {
                     if (err) throw err;
 
                     const mailOptions = {
-                        from: '"LinhLinhStore" <veresbaby0108@gmail.com>',
+                        from: `"LinhLinhStore" <${process.env.EMAIL_USER}>`,  // ⭐ DÙNG BIẾN MÔI TRƯỜNG
                         to: order.email,
                         subject: action === 'ACCEPT' ? 'Yêu cầu trả hàng của bạn đã được Duyệt' : 'Kết quả xử lý yêu cầu trả hàng',
                         html: `<h3>Xin chào ${order.receiver_name},</h3>

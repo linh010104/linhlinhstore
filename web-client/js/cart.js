@@ -1,23 +1,13 @@
-// Đổi tên biến thành userToken để không đụng hàng với file auth.js
-const userToken = localStorage.getItem("token");
-
-if (!userToken) {
-    Swal.fire({
-        title: 'Chưa đăng nhập!',
-        text: "Vui lòng đăng nhập để xem giỏ hàng.",
-        icon: 'warning',
-        confirmButtonText: 'Đăng nhập ngay'
-    }).then(() => {
-        window.location.href = "login.html";
-    });
+if (!StorageHelper.isLoggedIn()) {
+    UIHelper.showWarning(
+        'Chưa đăng nhập!',
+        "Vui lòng đăng nhập để xem giỏ hàng.",
+        () => { window.location.href = "login.html"; }
+    );
 }
 
 function loadCart() {
-    fetch(`${CONFIG.BASE_URL}/cart`, {
-        method: "GET",
-        headers: { "Authorization": "Bearer " + userToken }
-    })
-    .then(res => res.json())
+    API.get('/cart', true)
     .then(data => {
         const tbody = document.getElementById("cart-body");
         const summaryArea = document.getElementById("cart-summary-area");
@@ -61,7 +51,7 @@ function loadCart() {
                     </div>
                 </td>
                 <td class="fw-bold text-danger">
-                    ${itemPrice.toLocaleString('vi-VN')} đ
+                    ${UIHelper.formatPrice(itemPrice)}
                 </td>
                 <td class="text-center">
                     <span class="badge bg-light text-dark border px-3 py-2 fs-6 rounded-pill">${item.quantity}</span>
@@ -92,13 +82,13 @@ function renderSummary(total) {
                 <label class="small fw-bold text-danger mb-2 d-block"><i class="fa-solid fa-ticket me-1"></i> Mã giảm giá / Voucher</label>
                 <div class="input-group input-group-sm">
                     <input type="text" class="form-control border-0" placeholder="Nhập mã ưu đãi...">
-                    <button class="btn btn-danger px-3 fw-bold" onclick="Swal.fire('Mã không hợp lệ', 'Voucher này đã hết hạn hoặc không tồn tại!', 'error')">Áp dụng</button>
+                    <button class="btn btn-danger px-3 fw-bold" onclick="UIHelper.showError('Mã không hợp lệ', 'Voucher này đã hết hạn hoặc không tồn tại!')">Áp dụng</button>
                 </div>
             </div>
 
             <div class="d-flex justify-content-between mb-2 text-muted">
                 <span>Tạm tính:</span>
-                <span class="fw-bold text-dark">${total.toLocaleString('vi-VN')} đ</span>
+                <span class="fw-bold text-dark">${UIHelper.formatPrice(total)}</span>
             </div>
             <div class="d-flex justify-content-between mb-3 text-muted">
                 <span>Giao hàng:</span>
@@ -107,7 +97,7 @@ function renderSummary(total) {
             <hr class="my-3">
             <div class="d-flex justify-content-between mb-4 align-items-center">
                 <span class="fw-bold">Tổng thanh toán:</span>
-                <span class="fw-bold fs-4 text-danger">${total.toLocaleString('vi-VN')} đ</span>
+                <span class="fw-bold fs-4 text-danger">${UIHelper.formatPrice(total)}</span>
             </div>
             
             <button onclick="processCheckout()" class="btn btn-danger w-100 py-3 fw-bold rounded-pill shadow-sm mb-3">
@@ -121,76 +111,53 @@ function renderSummary(total) {
 }
 
 function processCheckout() {
-    Swal.fire({
-        title: 'Xác nhận đặt hàng?',
-        text: "Bạn đang đặt mua các sản phẩm trong giỏ hàng.",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Xác nhận đặt',
-        cancelButtonText: 'Kiểm tra lại'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const user = JSON.parse(localStorage.getItem("user") || '{}');
+    UIHelper.showConfirm(
+        'Xác nhận đặt hàng?',
+        "Bạn đang đặt mua các sản phẩm trong giỏ hàng.",
+        'Xác nhận đặt',
+        'Kiểm tra lại',
+        () => {
+            const user = StorageHelper.getUser();
             const checkoutData = {
                 payment_method: "COD",
-                name: user.full_name || "Khách hàng", 
-                phone: user.phone || "0123456789",
-                address: user.address || "Hà Nội",
+                name: user?.full_name || "Khách hàng", 
+                phone: user?.phone || "0123456789",
+                address: user?.address || "Hà Nội",
                 note: "Đơn hàng từ giỏ"
             };
 
-            fetch(`${CONFIG.BASE_URL}/orders/checkout`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + userToken },
-                body: JSON.stringify(checkoutData)
-            })
-            .then(res => res.json())
+            API.post('/orders/checkout', checkoutData, true)
             .then(data => {
-                if(data.orderId) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Đặt hàng thành công!',
-                        text: 'Cảm ơn ông đã tin tưởng LinhLinh Store.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
+                const { isSuccess, message } = UIHelper.parseResponse(data);
+                
+                if (isSuccess) {
+                    UIHelper.showSuccess('Đặt hàng thành công!', 'Cảm ơn ông đã tin tưởng LinhLinh Store.', () => {
                         window.location.href = "orders.html";
                     });
                 } else {
-                    Swal.fire('Lỗi', data.message || "Không thể đặt hàng", 'error');
+                    UIHelper.showError('Lỗi', message);
                 }
             })
             .catch(err => console.error(err));
         }
-    });
+    );
 }
 
 function removeItem(cartId) {
-    Swal.fire({
-        title: 'Xóa sản phẩm?',
-        text: "Sản phẩm sẽ bị loại bỏ khỏi giỏ hàng.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Xóa đi',
-        cancelButtonText: 'Giữ lại'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`${CONFIG.BASE_URL}/cart/${cartId}`, {
-                method: "DELETE",
-                headers: { "Authorization": "Bearer " + userToken }
-            })
-            .then(res => res.json())
+    UIHelper.showConfirm(
+        'Xóa sản phẩm?',
+        "Sản phẩm sẽ bị loại bỏ khỏi giỏ hàng.",
+        'Xóa đi',
+        'Giữ lại',
+        () => {
+            API.delete(`/cart/${cartId}`, true)
             .then(() => {
                 if(window.updateCartCount) window.updateCartCount();
                 loadCart(); 
             })
             .catch(err => console.error(err));
         }
-    });
+    );
 }
 
 document.addEventListener("DOMContentLoaded", loadCart);

@@ -3,40 +3,32 @@ function login() {
     const passwordVal = document.getElementById("password").value;
 
     if (!usernameVal || !passwordVal) {
-        Swal.fire('Thiếu thông tin', 'Vui lòng nhập tài khoản và mật khẩu', 'warning');
+        UIHelper.showWarning('Thiếu thông tin', 'Vui lòng nhập tài khoản và mật khẩu');
         return;
     }
-    fetch(`${CONFIG.BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            username: usernameVal,
-            password: passwordVal,
-            clientType: "WEB" 
-        })
+
+    API.post('/auth/login', {
+        username: usernameVal,
+        password: passwordVal,
+        clientType: "WEB" 
     })
-    .then(res => res.json())
     .then(data => {
-        if (data.token) {
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data.user));
+        const { isSuccess, message } = UIHelper.parseResponse(data);
+        
+        if (isSuccess && data.token) {
+            StorageHelper.setToken(data.token);
+            StorageHelper.setUser(data.user);
             
-            Swal.fire({
-                icon: 'success',
-                title: 'Thành công',
-                text: 'Đăng nhập thành công',
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => {
+            UIHelper.showSuccess('Đăng nhập thành công', 'Chào mừng bạn!', () => {
                 window.location.href = "index.html";
             });
         } else {
-            Swal.fire('Đăng nhập thất bại', data.message || "Sai tài khoản hoặc mật khẩu", 'error');
+            UIHelper.showError('Đăng nhập thất bại', message || "Sai tài khoản hoặc mật khẩu");
         }
     })
     .catch(err => {
         console.error(err);
-        Swal.fire('Lỗi', 'Lỗi kết nối server', 'error');
+        UIHelper.showError('Lỗi', 'Lỗi kết nối server');
     });
 }
 
@@ -48,70 +40,53 @@ function register() {
     const phone = document.getElementById("phone").value;
 
     if (!username || !password || !fullName) {
-        Swal.fire('Thiếu thông tin', 'Vui lòng điền đầy đủ các trường bắt buộc!', 'warning');
+        UIHelper.showWarning('Thiếu thông tin', 'Vui lòng điền đầy đủ các trường bắt buộc!');
         return;
     }
 
-    fetch(`${CONFIG.BASE_URL}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            username: username,
-            password: password,
-            full_name: fullName,
-            email: email, 
-            phone: phone 
-        })
+    API.post('/auth/register', {
+        username: username,
+        password: password,
+        full_name: fullName,
+        email: email, 
+        phone: phone 
     })
-    .then(res => res.json())
     .then(data => {
-        if (data.message && (data.message.includes("thành công") || data.message.includes("success"))) {
-            Swal.fire('Thành công', 'Đăng ký thành công! Hãy đăng nhập.', 'success').then(() => {
+        const { isSuccess, message } = UIHelper.parseResponse(data);
+        
+        if (isSuccess) {
+            UIHelper.showSuccess('Đăng ký thành công', 'Hãy đăng nhập.', () => {
                 window.location.href = "login.html";
             });
-        } else if (data.error) {
-            Swal.fire('Lỗi', data.error, 'error');
         } else {
-            Swal.fire('Thành công', 'Đăng ký thành công!', 'success').then(() => {
-                window.location.href = "login.html";
-            });
+            UIHelper.showError('Lỗi', message);
         }
     })
     .catch(err => {
         console.error(err);
-        Swal.fire('Lỗi', 'Có lỗi xảy ra khi kết nối server.', 'error');
+        UIHelper.showError('Lỗi', 'Có lỗi xảy ra khi kết nối server.');
     });
 }
 
 function logout() {
-    Swal.fire({
-        title: 'Đăng xuất?',
-        text: "Bạn có chắc muốn đăng xuất khỏi hệ thống?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Đăng xuất',
-        cancelButtonText: 'Hủy'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            localStorage.clear();
+    UIHelper.showConfirm(
+        'Đăng xuất?',
+        "Bạn có chắc muốn đăng xuất khỏi hệ thống?",
+        'Đăng xuất',
+        'Hủy',
+        () => {
+            StorageHelper.clearAuth();
             window.location.href = "index.html";
         }
-    });
+    );
 }
 
-// ============================================================
-// 2. XỬ LÝ GIAO DIỆN (HEADER, MENU USER)
-// ============================================================
-
 const authArea = document.getElementById("authArea");
-const token = localStorage.getItem("token");
 
 if (authArea) {
-    if (token) {
-        const user = JSON.parse(localStorage.getItem("user") || '{}');
-        const username = user.username || "Khách";
+    if (StorageHelper.isLoggedIn()) {
+        const user = StorageHelper.getUser();
+        const username = user?.username || "Khách";
 
         authArea.innerHTML = `
             <div class="dropdown">
@@ -144,18 +119,13 @@ if (authArea) {
 }
 
 // ============================================================
-// 3. QUẢN LÝ GIỎ HÀNG & THANH TOÁN
+// QUẢN LÝ GIỎ HÀNG & THANH TOÁN
 // ============================================================
 
 function updateCartCount() {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!StorageHelper.isLoggedIn()) return;
 
-    fetch(`${CONFIG.BASE_URL}/cart`, {
-        method: "GET",
-        headers: { "Authorization": "Bearer " + token }
-    })
-    .then(res => res.json())
+    API.get('/cart', true)
     .then(data => {
         let totalQty = 0;
         if (Array.isArray(data)) {
@@ -174,36 +144,21 @@ function updateCartCount() {
 }
 
 function buyNow(productId) {
-    const token = localStorage.getItem("token");
-    if (!token) {
-        Swal.fire({
-            title: 'Chưa đăng nhập!',
-            text: "Cần đăng nhập để mua hàng. Đăng nhập ngay?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Đăng nhập',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = "login.html";
-            }
-        });
-        return;
-    }
+    if (!UIHelper.ensureLogin()) return;
 
     if (productId) {
         const hiddenInput = document.getElementById("direct-buy-product-id");
         if(hiddenInput) hiddenInput.value = productId;
     }
 
-    const user = JSON.parse(localStorage.getItem("user") || '{}');
+    const user = StorageHelper.getUser();
     const inputName = document.getElementById("order-name");
     const inputPhone = document.getElementById("order-phone");
     const inputEmail = document.getElementById("order-email"); 
 
-    if(inputName) inputName.value = user.full_name || "";
-    if(inputPhone) inputPhone.value = user.phone || "";
-    if(inputEmail) inputEmail.value = user.email || "";
+    if(inputName) inputName.value = user?.full_name || "";
+    if(inputPhone) inputPhone.value = user?.phone || "";
+    if(inputEmail) inputEmail.value = user?.email || "";
 
     const modalEl = document.getElementById('checkoutModal');
     if (modalEl) {
@@ -220,7 +175,7 @@ function processOrder() {
     const address = document.getElementById("order-address").value.trim();
     
     if (!name || !phone || !address) {
-        Swal.fire('Thiếu thông tin', 'Vui lòng điền đủ tên, số điện thoại và địa chỉ nhận hàng!', 'warning');
+        UIHelper.showWarning('Thiếu thông tin', 'Vui lòng điền đủ tên, số điện thoại và địa chỉ nhận hàng!');
         return;
     }
 
@@ -237,32 +192,28 @@ function processOrder() {
     };
 
     if (directProductId) {
-        apiUrl = `${CONFIG.BASE_URL}/orders/direct`;
+        apiUrl = `/orders/direct`;
         bodyData.productId = directProductId;
         bodyData.quantity = 1; 
     } else {
-        apiUrl = `${CONFIG.BASE_URL}/orders`;
+        apiUrl = `/orders`;
     }
     
-    const token = localStorage.getItem("token");
-    fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-        body: JSON.stringify(bodyData)
-    })
-    .then(res => res.json())
+    API.post(apiUrl, bodyData, true)
     .then(data => {
-        if(data.message && (data.message.includes("thành công") || data.message.includes("success"))) {
-            Swal.fire('Thành công', data.message, 'success').then(() => {
+        const { isSuccess, message } = UIHelper.parseResponse(data);
+        
+        if (isSuccess) {
+            UIHelper.showSuccess('Thành công', message, () => {
                 location.reload(); 
             });
         } else {
-            Swal.fire('Lỗi', data.message || 'Lỗi đặt hàng', 'error');
+            UIHelper.showError('Lỗi', message);
         }
     })
     .catch(err => {
         console.error(err);
-        Swal.fire('Lỗi', 'Lỗi hệ thống khi đặt hàng', 'error');
+        UIHelper.showError('Lỗi', 'Lỗi hệ thống khi đặt hàng');
     });
 }
 
@@ -272,47 +223,34 @@ function updatePassword() {
     const confirmPass = document.getElementById("confirm-password").value;
 
     if (!oldPass || !newPass || !confirmPass) {
-        Swal.fire('Thiếu thông tin', 'Vui lòng điền đầy đủ thông tin!', 'warning');
+        UIHelper.showWarning('Thiếu thông tin', 'Vui lòng điền đầy đủ thông tin!');
         return;
     }
     if (newPass !== confirmPass) {
-        Swal.fire('Lỗi', 'Mật khẩu mới không khớp!', 'error');
+        UIHelper.showError('Lỗi', 'Mật khẩu mới không khớp!');
         return;
     }
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-        Swal.fire('Chưa đăng nhập', 'Bạn chưa đăng nhập!', 'warning').then(() => {
-            window.location.href = "login.html";
-        });
-        return;
-    }
+    if (!UIHelper.ensureLogin()) return;
 
-    fetch(`${CONFIG.BASE_URL}/auth/change-password`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({ 
-            oldPassword: oldPass, 
-            newPassword: newPass 
-        })
-    })
-    .then(res => res.json())
+    API.put('/auth/change-password', { 
+        oldPassword: oldPass, 
+        newPassword: newPass 
+    }, true)
     .then(data => {
-        if (data.success || data.message.includes("thành công")) {
-            Swal.fire('Thành công', data.message, 'success').then(() => {
-                localStorage.removeItem("token");
-                localStorage.removeItem("user");
+        const { isSuccess, message } = UIHelper.parseResponse(data);
+        
+        if (isSuccess) {
+            UIHelper.showSuccess('Thành công', message, () => {
+                StorageHelper.clearAuth();
                 window.location.href = "login.html"; 
             });
         } else {
-            Swal.fire('Lỗi', data.message, 'error');
+            UIHelper.showError('Lỗi', message);
         }
     })
     .catch(err => {
         console.error("Lỗi đổi mật khẩu:", err);
-        Swal.fire('Lỗi', 'Lỗi kết nối tới Server!', 'error');
+        UIHelper.showError('Lỗi', 'Lỗi kết nối tới Server!');
     });
 }

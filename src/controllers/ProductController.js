@@ -48,12 +48,9 @@ exports.delete = (req, res) => {
 exports.uploadImage = (req, res) => {
  const productId = req.params.id;
 
-  // Dùng req.files (số nhiều) vì mình xài upload.array
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ message: 'Chưa chọn file ảnh nào' });
   }
-
-  // Gom đống ảnh thành mảng để Insert 1 phát ăn ngay
   const values = req.files.map(file => [
     productId, 
     `/uploads/${file.filename}`
