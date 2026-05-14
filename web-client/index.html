@@ -3,139 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LINHLINH Store - Chuyên đồ công nghệ</title>
+    <title>LINHLINH Store - Chuyên đồ công nghệ cao cấp</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css"> 
-    
-    <style>
-        /* --- HACK GIAO DIỆN CHUẨN CELLPHONES --- */
-        #heroCarousel {
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            overflow: hidden;
-        }
-
-        .custom-banner-img {
-            width: 100% !important;
-            height: auto !important; 
-            aspect-ratio: 690 / 300 !important; 
-            object-fit: cover !important; 
-            border-radius: 0 0 10px 10px !important; /* Sửa lại bo góc vì có Tab ở trên */
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
-        }
-        
-        .custom-sub-banner {
-            width: 100% !important;
-            height: auto !important;
-            border-radius: 10px !important;
-            margin-bottom: 12px !important;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
-            transition: transform 0.2s ease;
-        }
-        
-        .custom-sub-banner:hover {
-            transform: scale(1.03); 
-        }
-        
-        #heroCarousel .carousel-inner {
-            border-radius: 0 0 10px 10px !important;
-            overflow: hidden !important;
-        }
-        
-        /* Chuyển cảnh mượt */
-        .carousel-item {
-            transition: transform 0.4s ease-in-out !important;
-        }
-
-        /* Biến dấu chấm thành Tab CellphoneS */
-        .carousel-indicators {
-            position: relative !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            justify-content: flex-start !important;
-            background-color: #fff;
-            border-bottom: 1px solid #f3f3f3;
-            overflow-x: auto; /* Cho phép cuộn nếu nhiều banner */
-            white-space: nowrap;
-            flex-wrap: nowrap;
-        }
-        
-        .carousel-indicators [data-bs-target] {
-            text-indent: 0 !important; /* Hiện chữ */
-            width: auto !important;
-            height: auto !important;
-            background: transparent !important;
-            border: none !important;
-            border-bottom: 2px solid transparent !important;
-            padding: 10px 15px !important;
-            color: #444 !important;
-            font-size: 13px !important;
-            opacity: 1 !important;
-            margin: 0 !important;
-        }
-        
-        /* Trạng thái Tab đang chọn */
-        .carousel-indicators .active {
-            color: #d70018 !important;
-            font-weight: bold !important;
-            border-bottom: 2px solid #d70018 !important;
-        }
-        
-        /* Ẩn scrollbar trên Tab cho đẹp */
-        .carousel-indicators::-webkit-scrollbar {
-            display: none;
-        }
-    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm">
+    <nav class="navbar navbar-expand-lg sticky-top shadow-sm" style="background-color: var(--primary-color); padding: 12px 0;">
         <div class="container align-items-center">
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
+            <a class="navbar-brand fw-bold d-flex align-items-center text-white" href="index.html">
                 <i class="fa-solid fa-laptop-code me-2 fs-3"></i>
                 <div class="lh-1">
                     <div class="fs-5">LINHLINH</div>
-                    <div class="fs-6 fw-normal">STORE</div>
+                    <div class="fs-6 fw-normal" style="font-size: 0.8rem !important; letter-spacing: 2px;">STORE</div>
                 </div>
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="fa-solid fa-bars fs-3"></i>
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
-                <form class="d-flex mx-auto w-50 my-2 my-lg-0" onsubmit="event.preventDefault(); searchProduct();">
-                    <div class="input-group search-box">
-                        <input id="search-input" class="form-control border-0 ps-3" type="search" placeholder="Bạn cần tìm gì hôm nay?">
-                        <button class="btn bg-white border-0 text-dark" type="button" onclick="searchProduct()">
+                <form class="d-flex mx-auto w-50 px-lg-4 my-3 my-lg-0" onsubmit="event.preventDefault(); searchProduct();">
+                    <div class="input-group search-box" style="border-radius: 25px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                        <input id="search-input" class="form-control border-0 ps-4 py-2" type="search" placeholder="Bạn cần tìm gì hôm nay?" style="font-size: 0.95rem;">
+                        <button class="btn bg-white border-0 text-dark px-4" type="button" onclick="searchProduct()">
                             <i class="fa-solid fa-magnifying-glass"></i>
                         </button>
                     </div>
                 </form>
 
-                <div class="d-flex align-items-center gap-4 text-white" id="authArea">
-                    <div class="d-flex align-items-center gap-2 cursor-pointer header-item">
-                        <i class="fa-solid fa-phone fs-4"></i>
-                        <div class="lh-1 small">
-                            <div>Gọi mua hàng</div>
-                            <div class="fw-bold">1800.xxxx</div>
+                <div class="d-flex align-items-center gap-3 text-white justify-content-end" id="authArea">
+                    <div class="d-flex align-items-center gap-2 cursor-pointer header-item" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
+                        <i class="fa-solid fa-phone-volume fs-4"></i>
+                        <div class="lh-1 small d-none d-lg-block">
+                            <div style="font-size: 0.75rem; opacity: 0.9;">Gọi mua hàng</div>
+                            <div class="fw-bold mt-1">1800.6969</div>
                         </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2 cursor-pointer header-item">
-                        <i class="fa-solid fa-cart-shopping fs-4"></i>
-                        <div class="lh-1 small">
-                            <div>Giỏ hàng</div>
+
+                    <a href="cart.html" class="d-flex align-items-center gap-2 cursor-pointer header-item text-white text-decoration-none position-relative" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
+                        <i class="fa-solid fa-bag-shopping fs-4"></i>
+                        <div class="lh-1 small d-none d-lg-block">
+                            <div style="font-size: 0.75rem; opacity: 0.9;">Giỏ hàng</div>
+                            <div class="fw-bold mt-1">Của bạn</div>
                         </div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 cursor-pointer header-item">
-                        <a href="login.html" class="text-white text-decoration-none d-flex align-items-center gap-2">
-                            <i class="fa-regular fa-circle-user fs-3"></i>
-                            <div class="lh-1 small d-none d-lg-block">
-                                <div>Đăng nhập</div>
-                            </div>
-                        </a>
-                    </div>
+                        <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark border border-white" style="margin-top: 5px; margin-left: -15px; display:none;">
+                            0
+                        </span>
+                    </a>
+
+                    <a href="login.html" class="d-flex align-items-center gap-2 cursor-pointer header-item text-white text-decoration-none" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
+                        <i class="fa-regular fa-circle-user fs-4"></i>
+                        <div class="lh-1 small d-none d-lg-block">
+                            <div style="font-size: 0.75rem; opacity: 0.9;">Đăng nhập</div>
+                            <div class="fw-bold mt-1">Tài khoản</div>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -143,39 +67,78 @@
 
     <div class="container my-4">
         <div class="hero-wrapper">
-            <div class="category-menu py-2">
+            <div class="category-menu py-2 shadow-sm rounded-3">
                 <ul class="list-group list-group-flush" id="category-list">
                     </ul>
             </div>
 
-            <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3000">
-                <div class="carousel-indicators" id="dynamic-indicators">
-                    </div>
-                <div class="carousel-inner" id="dynamic-slides">
-                    <div class="carousel-item active">
-                        <div class="d-flex justify-content-center align-items-center bg-light" style="height: 350px;">
-                            <div class="spinner-border text-primary" role="status"></div>
+            <div class="center-content d-flex flex-column" style="gap: 15px;">
+                <div id="heroCarousel" class="carousel slide carousel-fade flex-grow-1 shadow-sm" data-bs-ride="carousel" data-bs-interval="4000">
+                    <div class="carousel-indicators" id="dynamic-indicators"></div>
+                    <div class="carousel-inner h-100" id="dynamic-slides">
+                        <div class="carousel-item active h-100">
+                            <div class="d-flex justify-content-center align-items-center bg-light h-100">
+                                <div class="spinner-border text-danger" role="status"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                </button>
+                
+                <div class="bottom-sub-banners d-flex flex-row gap-3" id="dynamic-sub-banners">
+                    </div>
             </div>
 
-            <div class="right-banners" id="dynamic-sub-banners">
+            <div class="right-promos d-flex flex-column" style="gap: 15px;">
+                <div class="promo-box shadow-sm bg-white p-3 d-flex flex-column justify-content-center rounded-3" style="height: 35%;">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 20px;">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div class="fw-bold text-danger lh-sm" style="font-size: 0.9rem;">Chào mừng bạn đến với LINHLINH</div>
+                    </div>
+                    <p class="small text-muted mb-2 lh-sm" style="font-size: 0.75rem;">Đăng nhập để nhận đặc quyền.</p>
+                    <div class="d-flex gap-2 mt-auto">
+                        <a href="login.html" class="btn btn-outline-danger btn-sm flex-grow-1 fw-bold">Đăng nhập</a>
+                        <a href="register.html" class="btn btn-danger btn-sm flex-grow-1 fw-bold">Đăng ký</a>
+                    </div>
                 </div>
-        </div>
-    </div>
 
-    <main class="container my-5" id="main-area">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="fw-bold text-dark text-uppercase fs-4" id="page-title">
-                Sản phẩm nổi bật
-            </h3>
+                <div class="promo-box shadow-sm bg-white d-flex flex-column rounded-3" style="height: calc(65% - 15px); overflow: hidden;">
+                    <div class="p-2 fw-bold text-center border-bottom text-danger bg-light" style="font-size: 0.85rem;">
+                        <i class="fa-solid fa-fire me-1"></i> ƯU ĐÃI ĐẶC QUYỀN
+                    </div>
+                    <div class="promo-list-scroll" style="overflow-y: auto; height: 100%; padding: 5px 0;">
+                        <a href="#" class="d-flex align-items-center gap-3 py-2 px-3 text-dark text-decoration-none border-bottom promo-item">
+                            <i class="fa-solid fa-graduation-cap text-danger w-20px text-center fs-5"></i>
+                            <span style="font-size: 0.8rem; font-weight: 500;">Ưu đãi Học sinh - Sinh viên</span>
+                        </a>
+                        <a href="#" class="d-flex align-items-center gap-3 py-2 px-3 text-dark text-decoration-none border-bottom promo-item">
+                            <i class="fa-solid fa-credit-card text-danger w-20px text-center fs-5"></i>
+                            <span style="font-size: 0.8rem; font-weight: 500;">Thanh toán thẻ giảm 5%</span>
+                        </a>
+                        <a href="#" class="d-flex align-items-center gap-3 py-2 px-3 text-dark text-decoration-none border-bottom promo-item">
+                            <i class="fa-solid fa-truck-fast text-danger w-20px text-center fs-5"></i>
+                            <span style="font-size: 0.8rem; font-weight: 500;">Miễn phí giao hàng hỏa tốc</span>
+                        </a>
+                        <a href="#" class="d-flex align-items-center gap-3 py-2 px-3 text-dark text-decoration-none border-bottom promo-item">
+                            <i class="fa-solid fa-arrows-rotate text-danger w-20px text-center fs-5"></i>
+                            <span style="font-size: 0.8rem; font-weight: 500;">Thu cũ lên đời trợ giá 3 Triệu</span>
+                        </a>
+                        <a href="#" class="d-flex align-items-center gap-3 py-2 px-3 text-dark text-decoration-none border-bottom promo-item">
+                            <i class="fa-solid fa-headset text-danger w-20px text-center fs-5"></i>
+                            <span style="font-size: 0.8rem; font-weight: 500;">Khách hàng B2B</span>
+                        </a>
+                        <a href="#" class="d-flex align-items-center gap-3 py-2 px-3 text-dark text-decoration-none promo-item">
+                            <i class="fa-solid fa-gift text-danger w-20px text-center fs-5"></i>
+                            <span style="font-size: 0.8rem; font-weight: 500;">Quà tặng sinh nhật VIP</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </div> <main class="container my-5" id="main-area">
+        <div class="d-flex justify-content-between align-items-center mb-4 border-start border-danger border-4 ps-3">
+            <h3 class="fw-bold text-dark text-uppercase fs-4 mb-0" id="page-title">Sản phẩm nổi bật</h3>
         </div>
         
         <div id="product-list" class="row g-3">
@@ -186,35 +149,58 @@
         </div>
     </main>
 
-    <footer>
+    <footer style="background-color: #f8f9fa; border-top: 1px solid #e5e5e5; padding-top: 40px; margin-top: 50px; color: #444; width: 100%; clear: both;">
         <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <h5 class="fw-bold text-white mb-3">VỀ LINHLINH STORE</h5>
-                    <p class="small text-white-50">
-                        Chuyên cung cấp các thiết bị điện tử chính hãng, Laptop, Smartphone với chế độ bảo hành dài hạn và dịch vụ số 1 Việt Nam.
-                    </p>
+            <div class="row text-start" style="font-size: 0.85rem;">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h6 class="fw-bold text-dark mb-3">Tổng đài hỗ trợ miễn phí</h6>
+                    <ul class="list-unstyled mb-4 lh-lg">
+                        <li>Mua hàng: <span class="fw-bold text-dark">1800.6969</span> (7h30 - 22h00)</li>
+                        <li>Bảo hành: <span class="fw-bold text-dark">1800.6970</span> (8h00 - 21h30)</li>
+                        <li>Khiếu nại: <span class="fw-bold text-dark">1800.6971</span> (8h00 - 21h30)</li>
+                    </ul>
+                    <h6 class="fw-bold text-dark mb-3">Phương thức thanh toán</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <span class="badge bg-white border text-dark p-2 fs-6 shadow-sm"><i class="fa-brands fa-apple"></i> Pay</span>
+                        <span class="badge bg-white border text-primary p-2 fs-6 shadow-sm">VNPAY</span>
+                        <span class="badge bg-white border text-danger p-2 fs-6 shadow-sm">MoMo</span>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <h5 class="fw-bold text-white mb-3">LIÊN HỆ</h5>
-                    <ul class="list-unstyled text-white-50 small">
-                        <li class="mb-2"><i class="fa-solid fa-location-dot me-2"></i> 62 Đường Khuất Duy Tiến, Hà Nội</li>
-                        <li class="mb-2"><i class="fa-solid fa-phone me-2"></i> 0966.694.299</li>
-                        <li class="mb-2"><i class="fa-solid fa-envelope me-2"></i> veresbaby0108@gmail.com</li>
+
+                <div class="col-lg-3 col-md-6 mb-4 footer-links">
+                    <h6 class="fw-bold text-dark mb-3">Thông tin và chính sách</h6>
+                    <ul class="list-unstyled lh-lg">
+                        <li><a href="#" class="text-decoration-none text-muted footer-hover">Mua hàng trả góp Online</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted footer-hover">Chính sách giao hàng</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted footer-hover">Chính sách đổi trả</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted footer-hover">Trung tâm bảo hành chính hãng</a></li>
                     </ul>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <h5 class="fw-bold text-white mb-3">THEO DÕI</h5>
-                    <div class="d-flex gap-3">
-                        <a href="#" class="text-white fs-4 hover-scale"><i class="fa-brands fa-facebook"></i></a>
-                        <a href="#" class="text-white fs-4 hover-scale"><i class="fa-brands fa-tiktok"></i></a>
-                        <a href="#" class="text-white fs-4 hover-scale"><i class="fa-brands fa-youtube"></i></a>
+
+                <div class="col-lg-3 col-md-6 mb-4 footer-links">
+                    <h6 class="fw-bold text-dark mb-3">Dịch vụ và thông tin khác</h6>
+                    <ul class="list-unstyled lh-lg">
+                        <li><a href="#" class="text-decoration-none text-muted footer-hover">Khách hàng doanh nghiệp (B2B)</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted footer-hover">Chính sách bảo mật thông tin cá nhân</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted footer-hover">Liên hệ hợp tác kinh doanh</a></li>
+                        <li><a href="#" class="text-decoration-none text-muted footer-hover">Tuyển dụng</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h6 class="fw-bold text-dark mb-3">Kết nối với LINHLINH Store</h6>
+                    <div class="d-flex gap-3 mb-4">
+                        <a href="#" class="text-danger fs-3 hover-scale"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="#" class="text-primary fs-3 hover-scale"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" class="text-dark fs-3 hover-scale"><i class="fa-brands fa-tiktok"></i></a>
                     </div>
                 </div>
             </div>
-            <hr class="border-secondary">
-            <div class="text-center small text-white-50">
-                &copy; LINHLINH Store. All rights reserved. Design by LinhLinh.
+
+            <div class="row border-top pt-3 pb-4 mt-3" style="font-size: 0.75rem;">
+                <div class="col-12 text-muted text-center">
+                    <p class="mb-1">© 2026 LINHLINH Store. Tất cả bản quyền được bảo lưu. Đồ án Tốt Nghiệp của Linh.</p>
+                </div>
             </div>
         </div>
     </footer>
@@ -276,19 +262,13 @@
     </div>
 
     <div id="ai-chat-wrapper">
-        <button id="btn-open-chat">
-            <i class="fa-solid fa-robot"></i>
-        </button>
-
+        <button id="btn-open-chat"><i class="fa-solid fa-robot"></i></button>
         <div id="chat-window">
             <div class="chat-header">
-                <span><i class="fa-solid fa-headset me-2"></i> Trợ lý AI linhlinhstore</span>
+                <span><i class="fa-solid fa-headset me-2"></i> Trợ lý AI</span>
                 <button id="btn-close-chat"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            
-            <div id="chat-content">
-            </div>
-            
+            <div id="chat-content"></div>
             <div class="chat-input-area">
                 <input type="text" id="chat-input" placeholder="Nhập câu hỏi tại đây...">
                 <button id="btn-send"><i class="fa-solid fa-paper-plane"></i></button>
@@ -299,9 +279,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
     <script src="js/config.js"></script> 
+    <script src="js/storage-helper.js"></script>
+    <script src="js/api-helper.js"></script>
+    <script src="js/ui-helper.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/product.js"></script>
+    <script src="js/utils.js"></script>
     
     <script>
-        // --- HÀM TẢI BANNER TỪ API ---
         async function loadBanners() {
             try {
                 const resBig = await fetch(`${CONFIG.BASE_URL}/banners/BIG_SLIDER`);
@@ -315,13 +300,12 @@
                     indicatorContainer.innerHTML = '';
 
                     bigBanners.forEach((banner, index) => {
-                        // NƠI BƠM TIÊU ĐỀ VÀO TAB:
                         indicatorContainer.innerHTML += `<button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="${index}" class="${index === 0 ? 'active' : ''}">${banner.title || 'Khuyến mãi Hot'}</button>`;
                         
                         slideContainer.innerHTML += `
-                            <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                            <div class="carousel-item ${index === 0 ? 'active' : ''} h-100">
                                 <a href="${banner.link_url || '#'}">
-                                    <img src="http://localhost:3000${banner.image_url}" class="d-block custom-banner-img" alt="${banner.title}">
+                                    <img src="${CONFIG.IMAGE_BASE_URL}${banner.image_url}" class="d-block w-100 h-100 object-fit-fill rounded-bottom custom-banner-img" alt="${banner.title}">
                                 </a>
                             </div>`;
                     });
@@ -336,7 +320,7 @@
                     subBanners.forEach(banner => {
                         subContainer.innerHTML += `
                             <a href="${banner.link_url || '#'}">
-                                <img src="http://localhost:3000${banner.image_url}" alt="${banner.title}" class="mb-2 shadow-sm custom-sub-banner">
+                                <img src="${CONFIG.IMAGE_BASE_URL}${banner.image_url}" alt="${banner.title}" class="shadow-sm custom-sub-banner">
                             </a>`;
                     });
                 }
@@ -346,44 +330,58 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Gọi hàm load banner
             loadBanners(); 
 
-            // --- Logic Chat AI của Linh ---
+            // HÀM UPDATE VIP KHÔNG LỖI
+            function updatePromoBox() {
+                if (typeof StorageHelper !== 'undefined' && StorageHelper.isLoggedIn()) {
+                    const user = StorageHelper.getUser();
+                    const currentUserName = user?.username || user?.full_name || "Khách hàng VIP";
+                    
+                    const promoBoxes = document.querySelectorAll('.promo-box'); 
+                    if (promoBoxes.length > 0) {
+                        promoBoxes[0].innerHTML = `
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px; font-size: 20px;">
+                                    <i class="fa-solid fa-crown"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted lh-1">Xin chào,</div>
+                                    <div class="fw-bold text-danger fs-6 lh-1 mt-1 text-truncate" style="max-width: 150px;">${currentUserName}</div>
+                                </div>
+                            </div>
+                            <div class="bg-light rounded p-2 mb-2 text-center border">
+                                <span class="small fw-bold text-dark"><i class="fa-solid fa-medal text-warning"></i> Hạng: Smember</span>
+                            </div>
+                            <div class="d-flex gap-2 mt-auto">
+                                <a href="profile.html" class="btn btn-outline-danger btn-sm flex-grow-1 fw-bold" style="font-size: 0.75rem;">Hồ sơ</a>
+                                <a href="orders.html" class="btn btn-danger btn-sm flex-grow-1 fw-bold" style="font-size: 0.75rem;">Đơn hàng</a>
+                            </div>
+                        `;
+                    }
+                }
+            }
+            updatePromoBox();
+
+            // LOGIC CHATBOT AI CHUẨN
             const btnOpen = document.getElementById('btn-open-chat');
             const btnClose = document.getElementById('btn-close-chat');
             const windowChat = document.getElementById('chat-window');
-            const chatContent = document.getElementById('chat-content');
             const chatInput = document.getElementById('chat-input');
             const btnSend = document.getElementById('btn-send');
+            const chatContent = document.getElementById('chat-content');
 
-            const currentUserId = localStorage.getItem('userId');
-            const currentUserName = localStorage.getItem('userName'); 
-            let initialMessage = "";
+            if(btnOpen && windowChat) {
+                btnOpen.addEventListener('click', () => {
+                    windowChat.style.display = 'flex';
+                    btnOpen.style.display = 'none';
+                });
 
-            if (currentUserId) {
-                const nameToGreet = currentUserName ? currentUserName : "anh/chị";
-                initialMessage = `Dạ em chào ${nameToGreet}! Chào mừng quay trở lại LINHLINH Store. Hôm nay mình đang nhắm tới món đồ công nghệ nào để em tư vấn ạ?`;
-            } else {
-                initialMessage = `Dạ em chào anh/chị! Em là AI trợ lý của LINHLINH Store.<br><br>
-                🎁 <i>Bật mí nhỏ: Shop đang có <b>Voucher giảm 10%</b> cho khách tạo tài khoản mới đó ạ!</i><br><br>
-                Anh/chị đang tìm mua Laptop, Điện thoại hay Phụ kiện để em tư vấn cho mình luôn nha?`;
+                btnClose.addEventListener('click', () => {
+                    windowChat.style.display = 'none';
+                    btnOpen.style.display = 'block';
+                });
             }
-
-            const welcomeDiv = document.createElement('div');
-            welcomeDiv.className = 'msg-ai';
-            welcomeDiv.innerHTML = initialMessage;
-            chatContent.appendChild(welcomeDiv);
-
-            btnOpen.addEventListener('click', () => {
-                windowChat.style.display = 'flex';
-                btnOpen.style.display = 'none';
-            });
-
-            btnClose.addEventListener('click', () => {
-                windowChat.style.display = 'none';
-                btnOpen.style.display = 'block';
-            });
 
             function appendMessage(text, type) {
                 const div = document.createElement('div');
@@ -409,44 +407,25 @@
                 chatContent.scrollTop = chatContent.scrollHeight;
 
                 try {
+                    const currentUserId = (typeof StorageHelper !== 'undefined' && StorageHelper.isLoggedIn()) ? StorageHelper.getUser()?.id : null;
                     const response = await fetch(`${CONFIG.BASE_URL}/chatbot/consult`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ 
-                            message: message,
-                            userId: currentUserId || null
-                        })
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: message, userId: currentUserId })
                     });
-
                     const data = await response.json();
                     
                     document.getElementById(typingId).remove();
                     appendMessage(data.reply, 'ai');
-
                 } catch (error) {
-                    console.error("Lỗi gọi API AI:", error);
                     if(document.getElementById(typingId)) document.getElementById(typingId).remove();
-                    appendMessage("Xin lỗi, hệ thống AI đang bảo trì. Vui lòng thử lại sau!", 'ai');
+                    appendMessage("Hệ thống đang bận. Vui lòng thử lại sau!", 'ai');
                 }
             }
 
-            btnSend.addEventListener('click', sendMessage);
-            chatInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
+            if(btnSend) btnSend.addEventListener('click', sendMessage);
+            if(chatInput) chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendMessage(); });
         });
     </script>
-    <script src="js/storage-helper.js"></script>
-    <script src="js/api-helper.js"></script>
-    <script src="js/ui-helper.js"></script>
-
-    <script src="js/auth.js"></script>
-    <script src="js/product.js"></script>
-    <script src="js/utils.js"></script>
-    
 </body>
 </html>

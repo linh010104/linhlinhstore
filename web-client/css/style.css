@@ -1,391 +1,153 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
 :root {
-    --primary-color: #009ed7bc; 
-    --secondary-color: #111111; /* Đen nhạt cho footer */
+    --primary-color: #d70018; /* Màu đỏ CellphoneS rực rỡ */
+    --secondary-color: #111111;
     --text-dark: #333333;
-    --bg-light: #f4f6f8; /* Nền xám nhạt */
-    --card-shadow: 0 1px 2px 0 rgba(60,64,67,0.1), 0 2px 6px 2px rgba(60,64,67,0.15);
-    --hover-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+    --bg-light: #f4f6f8;
+    --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    --hover-shadow: 0 8px 24px rgba(215, 0, 24, 0.15);
 }
+
 body {
     font-family: 'Roboto', sans-serif;
     background-color: var(--bg-light);
     color: var(--text-dark);
 }
 
-/* =========================================
-   1. NAVBAR & HEADER
-   ========================================= */
-.navbar {
-    background-color: var(--primary-color) !important;
-    padding: 10px 0;
-}
+/* ================= HEADER & UTILS ================= */
+.search-box { background: white; border-radius: 25px; overflow: hidden; }
+#search-input:focus { outline: none; box-shadow: none; }
+.btn-header-custom { transition: all 0.2s ease; border: none; }
+.btn-header-custom:hover { background: rgba(255, 255, 255, 0.25) !important; transform: translateY(-2px); }
 
-.navbar-brand {
-    color: white !important;
-}
-
-.search-box {
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-#search-input {
-    box-shadow: none;
-    font-size: 0.95rem;
-}
-
-#search-input:focus {
-    outline: none;
-}
-
-.header-item {
-    padding: 5px 10px;
-    border-radius: 8px;
-    transition: background 0.3s;
-}
-
-.header-item:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-/* KHU VỰC HERO (Layout 3 cột) */
+/* ================= LAYOUT HERO ================= */
 .hero-wrapper {
     display: flex; 
     gap: 15px;
-    height: 380px; 
+    height: 450px; /* Chiều cao chuẩn CellphoneS */
     margin-bottom: 40px; 
-    position: relative; /* Neo để Mega Menu bám vào đây */
+    position: relative; 
 }
 
-/* Sidebar Danh Mục (Cột 1) */
-.category-menu {
-    width: 20%;
-    background: white;
+/* Cột 1: Danh mục */
+.category-menu { width: 20%; background: white; border-radius: 10px; height: 100%; }
+.category-menu .list-group-item { border: none; padding: 12px 15px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.category-menu .list-group-item:hover { background-color: #f8f9fa; color: var(--primary-color); }
+.category-menu .list-group-item i.fa-solid { width: 20px; text-align: center; }
+
+/* Cột 2: Cột Giữa (Slider + Sub Banners) */
+.center-content { width: 60%; height: 100%; display: flex; flex-direction: column; }
+#heroCarousel { height: 75%; border-radius: 10px; overflow: hidden; background: #fff; }
+#heroCarousel .carousel-inner { border-radius: 0 0 10px 10px !important; overflow: hidden !important;}
+
+/* Fix Banner Ảnh chính */
+.custom-banner-img {
+    width: 100% !important;
+    height: 100% !important; 
+    object-fit: fill !important; 
+    border-radius: 0 0 10px 10px !important; 
+}
+
+/* Cột 2 (Phần dưới): 3 Banner phụ - ÉP NẰM NGANG */
+.bottom-sub-banners {
+    height: calc(25% - 15px); 
+    width: 100%;
+    margin-top: auto;
+    display: flex !important;
+    flex-direction: row !important; /* Tuyệt đối ép ngang */
+}
+.bottom-sub-banners a {
+    flex: 1; /* Cả 3 cái chia đều */
+    height: 100%; 
+    display: block;
     border-radius: 10px;
+    overflow: hidden;
     box-shadow: var(--card-shadow);
-    height: 100%;
-    position: static; /* Ép về static để Mega Menu có thể bung ra ngoài */
+    transition: transform 0.3s ease;
 }
+.bottom-sub-banners a:hover { transform: translateY(-3px); }
+.custom-sub-banner { width: 100%; height: 100%; object-fit: cover; }
 
-.category-menu .list-group-item {
-    border: none;
-    padding: 12px 15px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #444;
-    cursor: pointer;
-}
+/* Cột 3: Bảng Promo */
+.right-promos { width: 20%; height: 100%; }
+.promo-item { transition: all 0.2s ease; }
+.promo-item:hover { background-color: #fce4e4; color: var(--primary-color) !important; padding-left: 20px !important; }
 
-.category-menu .list-group-item:hover {
-    background-color: #f8f9fa;
-    color: var(--primary-color);
+/* TAB CELLPHONES CHO SLIDER CHÍNH */
+.carousel-indicators {
+    position: relative !important; margin: 0 !important; padding: 0 !important;
+    justify-content: flex-start !important; background-color: #fff; border-bottom: 1px solid #f3f3f3;
+    overflow-x: auto; white-space: nowrap; flex-wrap: nowrap;
 }
+.carousel-indicators [data-bs-target] {
+    text-indent: 0 !important; width: auto !important; height: auto !important;
+    background: transparent !important; border: none !important; border-bottom: 2px solid transparent !important;
+    padding: 10px 15px !important; color: #444 !important; font-size: 13px !important; opacity: 1 !important; margin: 0 !important;
+}
+.carousel-indicators .active { color: #d70018 !important; font-weight: bold !important; border-bottom: 2px solid #d70018 !important; }
+.carousel-indicators::-webkit-scrollbar { display: none; }
+.promo-list-scroll::-webkit-scrollbar { width: 5px; }
+.promo-list-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
 
-.category-menu .list-group-item i.fa-solid {
-    width: 20px;
-    text-align: center;
-}
-   /* MEGA MENU (MENU XỔ RA) */
+/* ================= MEGA MENU ================= */
 .mega-menu-content {
-    display: grid; 
-    opacity: 0;
-    visibility: hidden;
-    
-    /* Thời gian "mất đi" và "hiện ra" ông muốn ở đây (0.3 giây) */
-    transition: all 0.3s ease-in-out;
-
-    position: absolute;
-    top: 0;
-    left: calc(20% + 15px); /* Giữ nguyên thông số của ông */
-    width: calc(60% - 15px); 
-    height: 100%;
-    background: white;
-    box-shadow: 10px 0 20px rgba(0,0,0,0.1);
-    border-radius: 10px;
-    z-index: 999;
-    padding: 25px;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    display: grid; opacity: 0; visibility: hidden; transition: all 0.3s ease-in-out;
+    position: absolute; top: 0; left: calc(20% + 15px); width: calc(60% - 15px); height: 100%;
+    background: white; box-shadow: 10px 0 20px rgba(0,0,0,0.1); border-radius: 10px; z-index: 999;
+    padding: 25px; grid-template-columns: repeat(3, 1fr); gap: 20px;
 }
 .mega-menu-content::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -30px; /* Lấp đầy khoảng hở 15px và lấn thêm sang trái để chắc ăn */
-    width: 30px; 
-    height: 100%;
-    background: transparent;
+    content: ""; position: absolute; top: 0; left: -30px; width: 30px; height: 100%; background: transparent;
 }
+.category-menu .list-group-item:hover .mega-menu-content { opacity: 1; visibility: visible; }
+.mega-column h6 { font-weight: 700; color: #333; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+.mega-column a { display: block; color: #444; text-decoration: none; font-size: 0.9rem; margin-bottom: 12px; transition: all 0.2s; }
+.mega-column a:hover { color: var(--primary-color); transform: translateX(5px); }
 
-/* Hiệu ứng hiển thị khi Hover vào list-item cha */
-.category-menu .list-group-item:hover .mega-menu-content {
-    opacity: 1;
-    visibility: visible;
-}
+/* ================= PRODUCT CARD ================= */
+.card { border: none; border-radius: 12px; background: white; box-shadow: var(--card-shadow); transition: all 0.3s ease; height: 100%; cursor: pointer; }
+.card:hover { transform: translateY(-5px); box-shadow: var(--hover-shadow); }
+.card-img-top { height: 200px; object-fit: contain; padding: 15px; transition: transform 0.3s ease; }
+.card:hover .card-img-top { transform: scale(1.05); }
+.card-body { padding: 15px; display: flex; flex-direction: column; }
+.card-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 40px; }
+.price-tag { color: var(--primary-color); font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
 
-/* Style cột bên trong Mega Menu */
-.mega-column h6 {
-    font-weight: 700;
-    color: #333;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
-}
+/* ================= FOOTER ================= */
+footer { width: 100%; clear: both; }
+.footer-hover { transition: color 0.2s ease; }
+.footer-hover:hover { color: var(--primary-color) !important; }
+.hover-scale { transition: transform 0.2s ease; display: inline-block; }
+.hover-scale:hover { transform: scale(1.1); }
 
-.mega-column a {
-    display: block;
-    color: #444;
-    text-decoration: none;
-    font-size: 0.9rem;
-    margin-bottom: 12px;
-    transition: all 0.2s;
-}
-
-.mega-column a:hover {
-    color: var(--primary-color);
-    transform: translateX(5px);
-}
-
-/* =========================================
-   4. BANNER (Cột 2 & Cột 3)
-   ========================================= */
-/* Banner Trượt Giữa (Cột 2) */
-#heroCarousel {
-    width: 60%;
-    height: 100%;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: var(--card-shadow);
-}
-
-#heroCarousel .carousel-inner, #heroCarousel .carousel-item {
-    height: 100%;
-}
-
-#heroCarousel img {
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Banner Phụ Bên Phải (Cột 3) */
-.right-banners {
-    width: 20%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.right-banners img {
-    width: 100%;
-    height: 31%; 
-    border-radius: 10px;
-    object-fit: cover;
-    box-shadow: var(--card-shadow);
-    transition: transform 0.3s ease;
-}
-
-.right-banners img:hover {
-    transform: scale(1.02);
-}
-
-/* Responsive cho màn hình nhỏ (Tablet/Mobile) */
-@media (max-width: 991px) {
-    .hero-wrapper {
-        flex-direction: column;
-        height: auto;
-    }
-    .category-menu {
-        display: none; 
-    }
-    #heroCarousel {
-        width: 100%;
-        height: 250px;
-    }
-    .right-banners {
-        width: 100%;
-        flex-direction: row;
-        height: auto;
-        gap: 10px;
-    }
-    .right-banners img {
-        width: 33.33%;
-        height: auto;
-        aspect-ratio: 16/9;
-    }
-}
-
-/* =========================================
-   5. PRODUCT CARD (THẺ SẢN PHẨM)
-   ========================================= */
-.card {
-    border: none;
-    border-radius: 10px;
-    background: white;
-    box-shadow: var(--card-shadow);
-    transition: all 0.3s ease;
-    overflow: hidden;
-    height: 100%;
-    cursor: pointer;
-}
-.card:hover {
-    box-shadow: var(--hover-shadow);
-    transform: translateY(-2px);
-}
-.card-img-top {
-    height: 200px;
-    object-fit: contain;
-    padding: 15px;
-    transition: transform 0.3s ease;
-}
-
-.card:hover .card-img-top {
-    transform: scale(1.05);
-}
-.card-body {
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-}
-.card-title {
-    font-size: 0.9rem;
-    font-weight: 700;
-    margin-bottom: 8px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2; 
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    height: 40px;
-}
-.price-tag {
-    color: var(--primary-color);
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-}
-
-.card .btn-primary {
-    background-color: var(--primary-color);
-    border: none;
-    border-radius: 5px;
-    font-weight: 600;
-    margin-top: auto;
-}
-
-.card .btn-primary:hover {
-    background-color: #b50012;
-}
-   /* FOOTER */
-footer {
-    background-color: var(--secondary-color);
-    margin-top: 50px;
-    padding-top: 40px;
-}
-   /* .GIAO DIỆN AI CHATBOT */
-#ai-chat-wrapper {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 9999;
-}
+/* ================= AI CHAT ================= */
+#ai-chat-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
 #btn-open-chat {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    font-size: 24px;
-    cursor: pointer;
-    transition: transform 0.3s;
+    width: 60px; height: 60px; border-radius: 50%; background-color: var(--primary-color);
+    color: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 24px; transition: transform 0.3s;
 }
-#btn-open-chat:hover {
-    transform: scale(1.1);
-}
+#btn-open-chat:hover { transform: scale(1.1); }
 #chat-window {
-    width: 350px;
-    height: 500px;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
-    display: none;
-    flex-direction: column;
-    overflow: hidden;
-    position: absolute;
-    bottom: 80px;
-    right: 0;
+    width: 350px; height: 500px; background: white; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+    display: none; flex-direction: column; overflow: hidden; position: absolute; bottom: 80px; right: 0;
 }
-.chat-header {
-    background: var(--primary-color);
-    color: white;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-}
-.chat-header button {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-}
-#chat-content {
-    flex: 1;
-    padding: 15px;
-    overflow-y: auto;
-    background: #f8f9fa;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    font-size: 0.9rem;
-}
-.msg-ai {
-    background: #e9ecef;
-    color: #212529;
-    padding: 10px 15px;
-    border-radius: 15px 15px 15px 0;
-    max-width: 85%;
-    align-self: flex-start;
-}
-.msg-user {
-    background: var(--primary-color);
-    color: white;
-    padding: 10px 15px;
-    border-radius: 15px 15px 0 15px;
-    max-width: 85%;
-    align-self: flex-end;
-}
-.chat-input-area {
-    padding: 15px;
-    border-top: 1px solid #dee2e6;
-    display: flex;
-    gap: 10px;
-    background: white;
-}
-#chat-input {
-    flex: 1;
-    border: 1px solid #ced4da;
-    border-radius: 20px;
-    padding: 8px 15px;
-    outline: none;
-}
-#chat-input:focus {
-    border-color: var(--primary-color);
-}
-#btn-send {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+.chat-header { background: var(--primary-color); color: white; padding: 15px; display: flex; justify-content: space-between; font-weight: bold; }
+.chat-header button { background: none; border: none; color: white; font-size: 20px; }
+#chat-content { flex: 1; padding: 15px; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem; }
+.msg-ai { background: #e9ecef; color: #212529; padding: 10px 15px; border-radius: 15px 15px 15px 0; max-width: 85%; align-self: flex-start; }
+.msg-user { background: var(--primary-color); color: white; padding: 10px 15px; border-radius: 15px 15px 0 15px; max-width: 85%; align-self: flex-end; }
+.chat-input-area { padding: 15px; border-top: 1px solid #dee2e6; display: flex; gap: 10px; background: white; }
+#chat-input { flex: 1; border: 1px solid #ced4da; border-radius: 20px; padding: 8px 15px; outline: none; }
+#chat-input:focus { border-color: var(--primary-color); }
+#btn-send { background: var(--primary-color); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
 .typing-indicator { font-style: italic; color: #6c757d; font-size: 0.8rem; align-self: flex-start;}
+
+/* Đáp ứng giao diện Mobile */
+@media (max-width: 991px) {
+    .center-content { width: 100%; height: auto; }
+    #heroCarousel { height: 250px !important; }
+    .bottom-sub-banners { height: 100px; }
+    .right-promos { width: 100%; flex-direction: row !important; height: 200px; }
+    .promo-box { width: 50%; height: 100% !important; }
+}

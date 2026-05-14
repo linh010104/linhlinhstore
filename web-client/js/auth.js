@@ -86,35 +86,73 @@ const authArea = document.getElementById("authArea");
 if (authArea) {
     if (StorageHelper.isLoggedIn()) {
         const user = StorageHelper.getUser();
-        const username = user?.username || "Khách";
+        const username = user?.username || user?.full_name || "Khách";
 
+        // GIAO DIỆN KHI ĐÃ ĐĂNG NHẬP (Giữ nguyên style CellphoneS)
         authArea.innerHTML = `
+            <div class="d-flex align-items-center gap-2 cursor-pointer header-item btn-header-custom" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
+                <i class="fa-solid fa-phone-volume fs-4 text-white"></i>
+                <div class="lh-1 small d-none d-lg-block text-white">
+                    <div style="font-size: 0.7rem; opacity: 0.9;">Gọi mua hàng</div>
+                    <div class="fw-bold mt-1">1800.6969</div>
+                </div>
+            </div>
+
+            <a href="cart.html" class="d-flex align-items-center gap-2 cursor-pointer header-item text-white text-decoration-none position-relative btn-header-custom" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
+                <i class="fa-solid fa-bag-shopping fs-4"></i>
+                <div class="lh-1 small d-none d-lg-block">
+                    <div style="font-size: 0.7rem; opacity: 0.9;">Giỏ hàng</div>
+                    <div class="fw-bold mt-1">Của bạn</div>
+                </div>
+                <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark border border-white" style="margin-top: 5px; margin-left: -15px; display: none;">0</span>
+            </a>
+
             <div class="dropdown">
-                <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
-                    <i class="fa-solid fa-user-circle fa-lg"></i>
-                    <span>${username}</span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="profile.html"><i class="fa-solid fa-id-card me-2"></i> Hồ sơ cá nhân</a></li>
-                    <li><a class="dropdown-item" href="orders.html"><i class="fa-solid fa-box-open me-2"></i> Đơn mua</a></li>
+                <a href="#" class="d-flex align-items-center gap-2 cursor-pointer header-item text-white text-decoration-none btn-header-custom" data-bs-toggle="dropdown" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
+                    <i class="fa-solid fa-user-check fs-4 text-warning"></i>
+                    <div class="lh-1 small d-none d-lg-block">
+                        <div style="font-size: 0.7rem; opacity: 0.9;">Xin chào,</div>
+                        <div class="fw-bold mt-1 text-truncate" style="max-width: 90px;">${username}</div>
+                    </div>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 12px; margin-top: 10px;">
+                    <li><a class="dropdown-item py-2" href="profile.html"><i class="fa-solid fa-id-card me-2 text-primary"></i> Hồ sơ cá nhân</a></li>
+                    <li><a class="dropdown-item py-2" href="orders.html"><i class="fa-solid fa-box-open me-2 text-success"></i> Đơn mua</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất</a></li>
+                    <li><a class="dropdown-item py-2 text-danger" href="#" onclick="logout()"><i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất</a></li>
                 </ul>
             </div>
-            
-            <a href="cart.html" class="btn btn-warning position-relative rounded-circle ms-2">
-                <i class="fa-solid fa-cart-shopping"></i>
-                <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
-                    0
-                </span>
-            </a>
         `;
         updateCartCount();
     } else {
+        // GIAO DIỆN KHI CHƯA ĐĂNG NHẬP
         authArea.innerHTML = `
-            <a href="login.html" class="btn btn-light btn-sm fw-bold">Đăng nhập</a>
-            <a href="register.html" class="btn btn-outline-light btn-sm">Đăng ký</a>
+            <div class="d-flex align-items-center gap-2 cursor-pointer header-item btn-header-custom" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
+                <i class="fa-solid fa-phone-volume fs-4 text-white"></i>
+                <div class="lh-1 small d-none d-lg-block text-white">
+                    <div style="font-size: 0.7rem; opacity: 0.9;">Gọi mua hàng</div>
+                    <div class="fw-bold mt-1">1800.6969</div>
+                </div>
+            </div>
+
+            <a href="cart.html" class="d-flex align-items-center gap-2 cursor-pointer header-item text-white text-decoration-none position-relative btn-header-custom" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
+                <i class="fa-solid fa-bag-shopping fs-4"></i>
+                <div class="lh-1 small d-none d-lg-block">
+                    <div style="font-size: 0.7rem; opacity: 0.9;">Giỏ hàng</div>
+                    <div class="fw-bold mt-1">Của bạn</div>
+                </div>
+                <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark border border-white" style="margin-top: 5px; margin-left: -15px; display: none;">0</span>
+            </a>
+
+            <a href="login.html" class="d-flex align-items-center gap-2 cursor-pointer header-item text-white text-decoration-none btn-header-custom" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
+                <i class="fa-regular fa-circle-user fs-4"></i>
+                <div class="lh-1 small d-none d-lg-block">
+                    <div style="font-size: 0.7rem; opacity: 0.9;">Đăng nhập</div>
+                    <div class="fw-bold mt-1">Tài khoản</div>
+                </div>
+            </a>
         `;
+        updateCartCount();
     }
 }
 
