@@ -8,8 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
     currentProductId = params.get("id");
 
     if (!currentProductId) {
-        alert("Không tìm thấy sản phẩm!");
-        window.location.href = "index.html";
+        UIHelper.showError("Lỗi", "Không tìm thấy sản phẩm!", () => {
+            window.location.href = "index.html";
+        });
         return;
     }
 
@@ -21,7 +22,9 @@ function loadProductDetail() {
         .then(res => res.json())
         .then(data => {
             if (!data || data.message) {
-                alert("Sản phẩm không tồn tại");
+                UIHelper.showError("Lỗi", "Sản phẩm không tồn tại", () => {
+                    window.location.href = "index.html";
+                });
                 return;
             }
 
@@ -69,7 +72,7 @@ function loadProductDetail() {
                 });
             }
 
-            // XỬ LÝ BẢNG THÔNG SỐ KỸ THUẬT (MỚI THÊM)
+            // XỬ LÝ BẢNG THÔNG SỐ KỸ THUẬT
             const specTable = document.getElementById("spec-table");
             if (specTable) {
                 if (data.specifications && data.specifications.trim() !== "") {
@@ -109,12 +112,13 @@ function changeMainImage(url) {
         mainImg.style.opacity = 1; 
     }, 150);
 }
+
 function renderVariants(variants, defaultPrice) {
     basePrice = defaultPrice;
     currentVariants = variants;
     const container = document.getElementById("variants-container");
     
-    // Gom nhóm các phiên bản (VD: Màu sắc, Dung lượng)
+    // Gom nhóm các phiên bản
     const grouped = variants.reduce((acc, curr) => {
         if (!acc[curr.variant_group]) acc[curr.variant_group] = [];
         acc[curr.variant_group].push(curr);
@@ -130,14 +134,12 @@ function renderVariants(variants, defaultPrice) {
         grouped[group].forEach((v, index) => {
             const isOutOfStock = v.stock_quantity <= 0;
             
-            // Mặc định chọn cái đầu tiên nếu chưa chọn và còn hàng
             if (!selectedVariants[group] && index === 0 && !isOutOfStock) {
                 selectedVariants[group] = v;
             }
 
             const isSelected = selectedVariants[group]?.id === v.id;
             
-            // STYLE CHUẨN SHOPEE: VIỀN ĐỎ, CÓ DẤU CHECK KHI ĐƯỢC CHỌN
             let boxStyle = "border: 1px solid #dee2e6; color: #444; background: #fff;";
             let checkIcon = "";
             let opacity = "1";
@@ -148,17 +150,16 @@ function renderVariants(variants, defaultPrice) {
                 boxStyle = "border: 1px dashed #ccc; background: #f8f9fa; color: #999;";
                 opacity = "0.5";
                 strikeThrough = "text-decoration-line-through";
-                clickEvent = `onclick="alert('Phiên bản này đang tạm hết hàng!')"`;
+                // Đổi alert thành UIHelper
+                clickEvent = `onclick="UIHelper.showWarning('Hết hàng', 'Phiên bản này đang tạm hết hàng!')"`;
             } else if (isSelected) {
                 boxStyle = "border: 2px solid #d70018 !important; color: #d70018 !important; background: #fff; position: relative;";
-                // Vẽ cái góc tam giác màu đỏ có dấu tick
                 checkIcon = `<div style="position: absolute; right: -1px; bottom: -1px; width: 16px; height: 16px; background: #d70018; clip-path: polygon(100% 0, 0% 100%, 100% 100%);">
                     <i class="fa-solid fa-check text-white" style="font-size: 8px; position: absolute; bottom: 2px; right: 2px;"></i>
                 </div>`;
             }
 
             const btnPrice = basePrice + Number(v.additional_price);
-            const priceText = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(btnPrice);
             const imgHtml = v.image_url ? `<img src="${CONFIG.IMAGE_BASE_URL}${v.image_url}" style="width:24px; height:24px; object-fit:cover;" class="rounded me-2 border">` : "";
 
             html += `
@@ -179,7 +180,6 @@ function renderVariants(variants, defaultPrice) {
     container.innerHTML = html;
     updateTotalPrice(); 
 
-    // --- TẠO KHỐI ĐẶC ĐIỂM NỔI BẬT DƯỚI NÚT CHỌN ---
     const highlightBox = document.getElementById("highlight-features");
     if (highlightBox) {
         highlightBox.innerHTML = `
@@ -261,7 +261,13 @@ function changeQty(amount) {
 function addToCartFromDetail() {
     const token = localStorage.getItem("token");
     if (!token) {
-        if(confirm("Đăng nhập để mua hàng?")) window.location.href="login.html";
+        UIHelper.showConfirm(
+            'Chưa đăng nhập!',
+            'Bạn cần đăng nhập để thêm sản phẩm vào giỏ. Đến trang đăng nhập ngay?',
+            'Đăng nhập',
+            'Hủy',
+            () => { window.location.href = "login.html"; }
+        );
         return;
     }
     
@@ -284,7 +290,7 @@ function addToCartFromDetail() {
     })
     .then(r => r.json())
     .then(d => { 
-        alert(d.message || `Đã thêm vào giỏ thành công!`); 
+        UIHelper.showSuccess('Thành công!', d.message || `Đã thêm vào giỏ thành công!`); 
         if(window.updateCartCount) window.updateCartCount(); 
     })
     .catch(e => console.error(e));
@@ -294,7 +300,13 @@ function addToCartFromDetail() {
 function buyNowFromDetail() {
     const token = localStorage.getItem("token");
     if (!token) {
-        if(confirm("Đăng nhập để mua ngay?")) window.location.href="login.html";
+        UIHelper.showConfirm(
+            'Chưa đăng nhập!',
+            'Bạn cần đăng nhập để tiến hành mua ngay. Đến trang đăng nhập ngay?',
+            'Đăng nhập',
+            'Hủy',
+            () => { window.location.href = "login.html"; }
+        );
         return;
     }
     
@@ -302,7 +314,7 @@ function buyNowFromDetail() {
         const modal = new bootstrap.Modal(document.getElementById('checkoutModal'));
         modal.show();
     } else {
-        alert("Lỗi thư viện Modal");
+        UIHelper.showError("Lỗi", "Hệ thống đang gặp sự cố hiển thị.");
     }
 }
 
@@ -317,7 +329,7 @@ function submitDirectBuy() {
     const qty = parseInt(document.getElementById("qty-input").value);
 
     if (!name || !phone || !address) {
-        alert("Vui lòng điền đầy đủ Tên, Số điện thoại và Địa chỉ!");
+        UIHelper.showWarning("Thiếu thông tin", "Vui lòng điền đầy đủ Tên, Số điện thoại và Địa chỉ nhận hàng!");
         return;
     }
 
@@ -349,16 +361,18 @@ function submitDirectBuy() {
     .then(r => r.json())
     .then(d => {
         if (d.orderId) {
-            alert("🎉 Đặt hàng thành công! Đã lên đơn tự động.");
-            
-            const modalEl = document.getElementById('checkoutModal');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            modal.hide();
-            
-            window.location.href = "orders.html";
+            UIHelper.showSuccess("Thành công!", "🎉 Đặt hàng thành công! Đã lên đơn tự động.", () => {
+                const modalEl = document.getElementById('checkoutModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+                window.location.href = "orders.html";
+            });
         } else {
-            alert(d.message || "Lỗi khi đặt hàng");
+            UIHelper.showError("Lỗi", d.message || "Lỗi khi đặt hàng");
         }
     })
-    .catch(e => console.error(e));
+    .catch(e => {
+        console.error(e);
+        UIHelper.showError("Lỗi", "Lỗi kết nối tới máy chủ.");
+    });
 }

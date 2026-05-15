@@ -10,7 +10,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100 bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark shadow mb-4" style="background-color: var(--primary-color);">
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.html">
                 <i class="fa-solid fa-laptop-code me-2"></i>LINHLINH STORE
@@ -25,7 +25,7 @@
         <div class="card shadow-lg border-0 rounded-4 overflow-hidden" style="max-width: 900px; width: 100%;">
             <div class="row g-0">
                 
-                <div class="col-md-5 d-none d-md-flex flex-column justify-content-center align-items-center p-5 text-white position-relative" style="background: linear-gradient(135deg, rgba(220,53,69,0.85) 0%, rgba(13,110,253,0.85) 100%), url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&q=80') center/cover;">
+                <div class="col-md-5 d-none d-md-flex flex-column justify-content-center align-items-center p-5 text-white position-relative" style="background: linear-gradient(135deg, rgba(215,0,24,0.9) 0%, rgba(150,0,15,0.9) 100%), url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&q=80') center/cover;">
                     <i class="fa-solid fa-rocket fa-4x mb-4 text-warning"></i>
                     <h3 class="fw-bold text-center mb-3">TẠO TÀI KHOẢN</h3>
                     <p class="text-center small opacity-75 lh-lg">Gia nhập hệ sinh thái LINHLINH Store ngay hôm nay! Hàng ngàn voucher giảm giá và đặc quyền riêng đang chờ đón bạn.</p>
@@ -33,7 +33,7 @@
 
                 <div class="col-md-7 p-4 p-sm-5 bg-white">
                     <div class="text-center mb-4">
-                        <h3 class="fw-bold text-primary mb-2">ĐĂNG KÝ THÀNH VIÊN 🚀</h3>
+                        <h3 class="fw-bold text-danger mb-2">ĐĂNG KÝ THÀNH VIÊN 🚀</h3>
                         <p class="text-muted small">Điền thông tin của bạn để bắt đầu mua sắm</p>
                     </div>
 
@@ -82,11 +82,11 @@
                         <div class="form-check mb-4 small text-muted">
                             <input class="form-check-input" type="checkbox" value="" id="termsCheck" required>
                             <label class="form-check-label" for="termsCheck">
-                                Tôi đồng ý với <a href="#" class="text-decoration-none">Điều khoản dịch vụ</a> và <a href="#" class="text-decoration-none">Chính sách bảo mật</a>
+                                Tôi đồng ý với <a href="#" class="text-decoration-none text-danger">Điều khoản dịch vụ</a> và <a href="#" class="text-decoration-none text-danger">Chính sách bảo mật</a>
                             </label>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm text-uppercase" style="letter-spacing: 1px;">
+                        <button type="submit" class="btn btn-danger w-100 rounded-pill py-2 fw-bold shadow-sm text-uppercase" style="letter-spacing: 1px;">
                             <i class="fa-solid fa-user-plus me-2"></i> Tạo tài khoản
                         </button>
                     </form>
@@ -100,7 +100,7 @@
         </div>
     </div>
 
-    <footer class="mt-auto py-3 text-center text-white-50 small bg-primary shadow-lg">
+    <footer class="mt-auto py-3 text-center text-white-50 small shadow-lg" style="background-color: var(--secondary-color);">
         &copy; LinhLinh Store. All rights reserved. Design by LinhLinh.
     </footer>
 
@@ -111,6 +111,5 @@
     <script src="js/api-helper.js"></script>
     <script src="js/ui-helper.js"></script>
     <script src="js/auth.js"></script>
-    
 </body>
 </html>

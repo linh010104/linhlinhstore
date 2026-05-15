@@ -10,7 +10,7 @@
 </head>
 <body class="d-flex flex-column min-vh-100 bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark shadow mb-4" style="background-color: var(--primary-color);">
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.html">
                 <i class="fa-solid fa-laptop-code me-2"></i>LINHLINH STORE
@@ -25,7 +25,7 @@
         <div class="card shadow-lg border-0 rounded-4 overflow-hidden" style="max-width: 900px; width: 100%;">
             <div class="row g-0">
                 
-                <div class="col-md-5 d-none d-md-flex flex-column justify-content-center align-items-center p-5 text-white position-relative" style="background: linear-gradient(135deg, rgba(13,110,253,0.85) 0%, rgba(102,16,242,0.85) 100%), url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&q=80') center/cover;">
+                <div class="col-md-5 d-none d-md-flex flex-column justify-content-center align-items-center p-5 text-white position-relative" style="background: linear-gradient(135deg, rgba(215,0,24,0.9) 0%, rgba(150,0,15,0.9) 100%), url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&q=80') center/cover;">
                     <i class="fa-solid fa-laptop-code fa-4x mb-4 text-warning"></i>
                     <h3 class="fw-bold text-center mb-3">LINHLINH STORE</h3>
                     <p class="text-center small opacity-75 lh-lg">Hệ sinh thái công nghệ hàng đầu. Đăng nhập ngay để nhận hàng ngàn ưu đãi đặc quyền, flash sale và tích điểm thành viên.</p>
@@ -33,7 +33,7 @@
 
                 <div class="col-md-7 p-4 p-sm-5 bg-white">
                     <div class="text-center mb-5">
-                        <h3 class="fw-bold text-primary mb-2">CHÀO MỪNG TRỞ LẠI! 👋</h3>
+                        <h3 class="fw-bold text-danger mb-2">CHÀO MỪNG TRỞ LẠI! 👋</h3>
                         <p class="text-muted small">Vui lòng đăng nhập để tiếp tục mua sắm</p>
                     </div>
 
@@ -57,14 +57,12 @@
                         <div class="d-flex justify-content-between align-items-center mb-4 small">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="rememberMe">
-                                <label class="form-check-label text-muted" for="rememberMe">
-                                    Ghi nhớ tôi
-                                </label>
+                                <label class="form-check-label text-muted" for="rememberMe">Ghi nhớ tôi</label>
                             </div>
-                            <a href="#" class="text-decoration-none text-primary fw-bold">Quên mật khẩu?</a>
+                            <a href="#" class="text-decoration-none text-danger fw-bold">Quên mật khẩu?</a>
                         </div>
 
-                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill py-3 fw-bold shadow-sm text-uppercase" style="letter-spacing: 1px;">
+                        <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill py-3 fw-bold shadow-sm text-uppercase" style="letter-spacing: 1px;">
                             Đăng nhập hệ thống
                         </button>
                     </form>
@@ -78,19 +76,16 @@
         </div>
     </div>
 
-    <footer class="mt-auto py-3 text-center text-white-50 small bg-primary shadow-lg">
-        &copy;  LinhLinh Store. All rights reserved. Design by LinhLinh.
+    <footer class="mt-auto py-3 text-center text-white-50 small shadow-lg" style="background-color: var(--secondary-color);">
+        &copy; LinhLinh Store. All rights reserved. Design by LinhLinh.
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
     <script src="js/config.js"></script> 
-
     <script src="js/storage-helper.js"></script>
     <script src="js/api-helper.js"></script>
     <script src="js/ui-helper.js"></script>
-    
     <script src="js/auth.js"></script>
-    
 </body>
 </html>

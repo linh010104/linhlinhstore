@@ -10,7 +10,7 @@
 </head>
 <body class="bg-light d-flex flex-column min-vh-100">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow" style="background-color: var(--primary-color);">
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.html"><i class="fa-solid fa-arrow-left me-2"></i> TRANG CHỦ</a>
             <div class="d-flex align-items-center gap-3" id="authArea"></div>
@@ -20,7 +20,7 @@
     <div class="container my-5 flex-grow-1">
         <div class="card shadow-sm border-0 rounded-4">
             <div class="card-header bg-white py-3 border-0">
-                <h4 class="fw-bold mb-0 text-primary"><i class="fa-solid fa-box-open me-2"></i> Đơn hàng của tôi</h4>
+                <h4 class="fw-bold mb-0 text-danger"><i class="fa-solid fa-box-open me-2"></i> Đơn hàng của tôi</h4>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -35,7 +35,7 @@
                             </tr>
                         </thead>
                         <tbody id="order-history-list">
-                            <tr><td colspan="5" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>
+                            <tr><td colspan="5" class="text-center py-5"><div class="spinner-border text-danger"></div></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -46,14 +46,14 @@
     <div class="modal fade" id="orderDetailModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow-lg">
-                <div class="modal-header bg-primary text-white border-0 rounded-top-4">
+                <div class="modal-header bg-danger text-white border-0 rounded-top-4">
                     <h5 class="modal-title fw-bold"><i class="fa-solid fa-circle-info me-2"></i>Chi tiết đơn hàng #<span id="modal-order-id"></span></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="row g-4">
                         <div class="col-md-5 border-end">
-                            <h6 class="fw-bold text-primary mb-3">Thông tin nhận hàng</h6>
+                            <h6 class="fw-bold text-danger mb-3">Thông tin nhận hàng</h6>
                             <div class="mb-2">
                                 <label class="small text-muted fw-bold">Người nhận</label>
                                 <input type="text" id="modal-name" class="form-control form-control-sm" disabled>
@@ -78,7 +78,7 @@
                         </div>
 
                         <div class="col-md-7">
-                            <h6 class="fw-bold text-primary mb-3">Sản phẩm đã đặt</h6>
+                            <h6 class="fw-bold text-danger mb-3">Sản phẩm đã đặt</h6>
                             <div class="list-group list-group-flush border rounded overflow-auto" style="max-height: 280px;" id="modal-items-list"></div>
                             <div class="d-flex justify-content-between mt-3 px-2 align-items-center">
                                 <span class="fw-bold fs-6">Tổng thanh toán:</span>
@@ -142,6 +142,5 @@
     <script src="js/ui-helper.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/orders.js"></script> 
-    
 </body>
 </html>

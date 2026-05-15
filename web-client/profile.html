@@ -9,7 +9,7 @@
 </head>
 <body class="bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow" style="background-color: var(--primary-color);">
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.html">
                 <i class="fa-solid fa-arrow-left me-2"></i> TRANG CHỦ
@@ -24,7 +24,7 @@
                 
                 <div class="card shadow border-0 rounded-4 mb-4">
                     <div class="card-header bg-white py-3 text-center">
-                        <h4 class="fw-bold text-primary mb-0">
+                        <h4 class="fw-bold text-danger mb-0">
                             <i class="fa-solid fa-user-pen me-2"></i> Hồ sơ cá nhân
                         </h4>
                     </div>
@@ -51,7 +51,7 @@
                             </div>
 
                             <div class="d-grid gap-2 mt-4">
-                                <button type="submit" class="btn btn-primary rounded-pill fw-bold py-2">
+                                <button type="submit" class="btn btn-danger rounded-pill fw-bold py-2">
                                     <i class="fa-solid fa-floppy-disk me-2"></i> LƯU THAY ĐỔI
                                 </button>
                             </div>
@@ -109,7 +109,6 @@
                 return;
             }
 
-            // 1. Tải thông tin user sử dụng biến môi trường
             fetch(`${CONFIG.BASE_URL}/auth/profile`, {
                 headers: { "Authorization": "Bearer " + token }
             })
@@ -119,7 +118,6 @@
                     alert("Lỗi: " + user.message);
                     return;
                 }
-                // Điền vào form
                 document.getElementById("username").value = user.username;
                 document.getElementById("fullname").value = user.full_name || "";
                 document.getElementById("email").value = user.email || "";
@@ -127,10 +125,8 @@
             })
             .catch(err => console.error(err));
 
-            // 2. Xử lý lưu thay đổi thông tin
             document.getElementById("profile-form").addEventListener("submit", (e) => {
                 e.preventDefault();
-
                 const data = {
                     full_name: document.getElementById("fullname").value,
                     email: document.getElementById("email").value,
