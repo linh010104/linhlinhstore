@@ -34,33 +34,7 @@
                 </form>
 
                 <div class="d-flex align-items-center gap-3 text-white justify-content-end" id="authArea">
-                    <div class="d-flex align-items-center gap-2 cursor-pointer header-item" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
-                        <i class="fa-solid fa-phone-volume fs-4"></i>
-                        <div class="lh-1 small d-none d-lg-block">
-                            <div style="font-size: 0.75rem; opacity: 0.9;">Gọi mua hàng</div>
-                            <div class="fw-bold mt-1">1800.6969</div>
-                        </div>
                     </div>
-
-                    <a href="cart.html" class="d-flex align-items-center gap-2 cursor-pointer header-item text-white text-decoration-none position-relative" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
-                        <i class="fa-solid fa-bag-shopping fs-4"></i>
-                        <div class="lh-1 small d-none d-lg-block">
-                            <div style="font-size: 0.75rem; opacity: 0.9;">Giỏ hàng</div>
-                            <div class="fw-bold mt-1">Của bạn</div>
-                        </div>
-                        <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark border border-white" style="margin-top: 5px; margin-left: -15px; display:none;">
-                            0
-                        </span>
-                    </a>
-
-                    <a href="login.html" class="d-flex align-items-center gap-2 cursor-pointer header-item text-white text-decoration-none" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
-                        <i class="fa-regular fa-circle-user fs-4"></i>
-                        <div class="lh-1 small d-none d-lg-block">
-                            <div style="font-size: 0.75rem; opacity: 0.9;">Đăng nhập</div>
-                            <div class="fw-bold mt-1">Tài khoản</div>
-                        </div>
-                    </a>
-                </div>
             </div>
         </div>
     </nav>
@@ -68,8 +42,7 @@
     <div class="container my-4">
         <div class="hero-wrapper">
             <div class="category-menu py-2 shadow-sm rounded-3">
-                <ul class="list-group list-group-flush" id="category-list">
-                    </ul>
+                <ul class="list-group list-group-flush" id="category-list"></ul>
             </div>
 
             <div class="center-content d-flex flex-column" style="gap: 15px;">
@@ -84,8 +57,7 @@
                     </div>
                 </div>
                 
-                <div class="bottom-sub-banners d-flex flex-row gap-3" id="dynamic-sub-banners">
-                    </div>
+                <div class="bottom-sub-banners d-flex flex-row gap-3" id="dynamic-sub-banners"></div>
             </div>
 
             <div class="right-promos d-flex flex-column" style="gap: 15px;">
@@ -136,18 +108,84 @@
                 </div>
             </div>
         </div> 
-    </div> <main class="container my-5" id="main-area">
-        <div class="d-flex justify-content-between align-items-center mb-4 border-start border-danger border-4 ps-3">
-            <h3 class="fw-bold text-dark text-uppercase fs-4 mb-0" id="page-title">Sản phẩm nổi bật</h3>
-        </div>
+    </div> 
+
+    <main class="container my-5" id="main-area">
         
-        <div id="product-list" class="row g-3">
-            <div class="text-center py-5 w-100">
-                <div class="spinner-border text-danger" role="status"></div>
-                <p class="mt-2 text-muted">Đang tải sản phẩm...</p>
+        <div id="filter-result-area" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-start border-danger border-4 ps-3">
+                <h3 class="fw-bold text-dark text-uppercase fs-4 mb-0" id="page-title">Sản phẩm nổi bật</h3>
+            </div>
+            <div id="product-list" class="row g-3">
+                <div class="text-center py-5 w-100">
+                    <div class="spinner-border text-danger" role="status"></div>
+                </div>
             </div>
         </div>
-    </main>
+
+        <div id="home-blocks-area">
+            
+            <div class="category-block mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-danger pb-2">
+                    <h3 class="fw-bold text-dark text-uppercase fs-5 mb-0">
+                        ĐIỆN THOẠI NỔI BẬT
+                    </h3>
+                    <a href="#" class="text-decoration-none text-danger small" onclick="filterByCategory(null, 'Điện thoại'); return false;">Xem tất cả <i class="fa-solid fa-chevron-right ms-1" style="font-size: 10px;"></i></a>
+                </div>
+                
+                <div class="row g-2">
+                    <div class="col-xl-2 col-lg-3 d-none d-lg-block">
+                        <a href="#" class="d-block h-100 overflow-hidden rounded-3 vertical-banner-wrapper">
+                            <img id="vertical-banner-phone" src="https://placehold.co/300x650/d70018/ffffff?text=Điện+Thoại" class="img-fluid w-100 h-100 object-fit-cover vertical-banner" style="border-radius: 8px;">
+                        </a>
+                    </div>
+                    
+                    <div class="col-xl-10 col-lg-9 col-12">
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="badge rounded-pill border text-dark fw-normal px-3 py-2 bg-white category-pill">Apple</span>
+                            <span class="badge rounded-pill border text-dark fw-normal px-3 py-2 bg-white category-pill">Samsung</span>
+                            <span class="badge rounded-pill border text-dark fw-normal px-3 py-2 bg-white category-pill">Xiaomi</span>
+                            <span class="badge rounded-pill border text-dark fw-normal px-3 py-2 bg-white category-pill">OPPO</span>
+                        </div>
+                        
+                        <div class="row g-2" id="phone-block-list">
+                            <div class="col-12 text-center py-5 w-100"><div class="spinner-border text-danger"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="category-block mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-danger pb-2">
+                    <h3 class="fw-bold text-dark text-uppercase fs-5 mb-0">
+                        LAPTOP BÁN CHẠY
+                    </h3>
+                    <a href="#" class="text-decoration-none text-danger small" onclick="filterByCategory(null, 'Laptop'); return false;">Xem tất cả <i class="fa-solid fa-chevron-right ms-1" style="font-size: 10px;"></i></a>
+                </div>
+                
+                <div class="row g-2">
+                    <div class="col-xl-2 col-lg-3 d-none d-lg-block">
+                        <a href="#" class="d-block h-100 overflow-hidden rounded-3 vertical-banner-wrapper">
+                            <img id="vertical-banner-laptop" src="https://placehold.co/300x650/0052cc/ffffff?text=Laptop" class="img-fluid w-100 h-100 object-fit-cover vertical-banner" style="border-radius: 8px;">
+                        </a>
+                    </div>
+                    
+                    <div class="col-xl-10 col-lg-9 col-12">
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="badge rounded-pill border text-dark fw-normal px-3 py-2 bg-white category-pill">MacBook</span>
+                            <span class="badge rounded-pill border text-dark fw-normal px-3 py-2 bg-white category-pill">ASUS</span>
+                            <span class="badge rounded-pill border text-dark fw-normal px-3 py-2 bg-white category-pill">Dell</span>
+                            <span class="badge rounded-pill border text-dark fw-normal px-3 py-2 bg-white category-pill">Acer</span>
+                        </div>
+
+                        <div class="row g-2" id="laptop-block-list">
+                            <div class="col-12 text-center py-5 w-100"><div class="spinner-border text-danger"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> </main>
 
     <footer style="background-color: #f8f9fa; border-top: 1px solid #e5e5e5; padding-top: 40px; margin-top: 50px; color: #444; width: 100%; clear: both;">
         <div class="container">
@@ -199,67 +237,11 @@
 
             <div class="row border-top pt-3 pb-4 mt-3" style="font-size: 0.75rem;">
                 <div class="col-12 text-muted text-center">
-                    <p class="mb-1">© 2026 LINHLINH Store. Tất cả bản quyền được bảo lưu. Đồ án Tốt Nghiệp của Linh.</p>
+                    <p class="mb-1">©LINHLINH Store. Tất cả bản quyền được bảo lưu. Đồ án Tốt Nghiệp của Linh.</p>
                 </div>
             </div>
         </div>
     </footer>
-
-    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title fw-bold">
-                        <i class="fa-solid fa-truck-fast me-2"></i> Thông Tin Đặt Hàng
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <form id="checkout-form">
-                        <input type="hidden" id="direct-buy-product-id" value="">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Người nhận <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="fa-solid fa-user"></i></span>
-                                <input type="text" id="order-name" class="form-control" placeholder="Họ và tên" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Số điện thoại <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="fa-solid fa-phone"></i></span>
-                                <input type="tel" id="order-phone" class="form-control" placeholder="09xxxxxxx" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Địa chỉ giao hàng <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="fa-solid fa-map-location-dot"></i></span>
-                                <textarea id="order-address" class="form-control" rows="2" placeholder="Số nhà, đường, phường/xã..." required></textarea>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Thanh toán</label>
-                            <select id="payment-method" class="form-select">
-                                <option value="COD">Thanh toán khi nhận hàng (COD)</option>
-                                <option value="BANKING">Chuyển khoản ngân hàng</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted">Ghi chú</label>
-                            <input type="text" id="order-note" class="form-control" placeholder="Lời nhắn cho shop...">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer bg-light border-0">
-                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" onclick="processOrder()" class="btn btn-danger fw-bold rounded-pill px-4 shadow">
-                        <i class="fa-solid fa-paper-plane me-2"></i> Xác Nhận
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div id="ai-chat-wrapper">
         <button id="btn-open-chat"><i class="fa-solid fa-robot"></i></button>
@@ -332,7 +314,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadBanners(); 
 
-            // HÀM UPDATE VIP KHÔNG LỖI
             function updatePromoBox() {
                 if (typeof StorageHelper !== 'undefined' && StorageHelper.isLoggedIn()) {
                     const user = StorageHelper.getUser();
@@ -363,7 +344,7 @@
             }
             updatePromoBox();
 
-            // LOGIC CHATBOT AI CHUẨN
+            // LOGIC CHATBOT AI
             const btnOpen = document.getElementById('btn-open-chat');
             const btnClose = document.getElementById('btn-close-chat');
             const windowChat = document.getElementById('chat-window');
@@ -376,7 +357,6 @@
                     windowChat.style.display = 'flex';
                     btnOpen.style.display = 'none';
                 });
-
                 btnClose.addEventListener('click', () => {
                     windowChat.style.display = 'none';
                     btnOpen.style.display = 'block';

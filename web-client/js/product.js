@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     loadCategories();
-    loadProducts(); // Mặc định load tất cả
+    // Thay loadProducts() bằng hàm Load phân lô CellphoneS
+    loadHomeCategoryBlocks(); 
 });
 
 let allCategoriesData = [];
@@ -89,57 +90,149 @@ function loadCategories() {
     .catch(err => console.error("Lỗi load API:", err));
 }
 
-// HÀM TẠO THẺ SẢN PHẨM (GỘP CHUNG ĐỂ DỄ QUẢN LÝ)
 function createProductCard(p) {
-    const col = document.createElement("div");
-    col.className = "col-6 col-md-4 col-lg-3 mb-4"; 
+   const col = document.createElement("div");
+    // Chia 4 cột trên màn XL, 3 cột màn LG
+    col.className = "col-6 col-md-4 col-lg-4 col-xl-3 mb-3"; 
     
-    // Fake giá cũ tăng 15% để làm mồi nhử Marketing
     const oldPrice = Number(p.price) * 1.15; 
-    
-    // Placeholder ảnh thông minh báo tên shop nếu ảnh lỗi/chưa có
     const fallbackImg = "https://placehold.co/300x300/f8f9fa/a3a3a3?text=LinhLinh+Store";
     const imgUrl = p.image_url ? `${CONFIG.IMAGE_BASE_URL}${p.image_url}` : fallbackImg;
 
     col.innerHTML = `
-        <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'">
+        <div class="card h-100 border-0 shadow-sm cps-card bg-white" style="border-radius: 12px; overflow: hidden;">
             
-            <div class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 small fw-bold shadow-sm" style="border-radius: 0 10px 10px 0; z-index: 2; margin-top: 10px;">
-                <i class="fa-solid fa-fire-flame-curved"></i> Trợ giá
+            <div class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 fw-bold shadow-sm" style="border-radius: 12px 0 10px 0; z-index: 2; font-size: 11px;">
+                Giảm 15%
             </div>
-            <div class="position-absolute top-0 end-0 bg-warning text-dark px-2 py-1 small fw-bold shadow-sm" style="border-radius: 10px 0 0 10px; z-index: 2; margin-top: 10px;">
-                -15%
+            <div class="position-absolute top-0 end-0 px-2 py-1 fw-bold text-primary border border-primary bg-white shadow-sm" style="border-radius: 4px; z-index: 2; margin: 8px; font-size: 10px;">
+                Trả góp 0%
             </div>
             
-            <a href="detail.html?id=${p.id}" class="text-center d-block position-relative p-4 bg-white">
-                <img src="${imgUrl}" onerror="this.src='${fallbackImg}'" class="img-fluid" style="height: 160px; object-fit: contain; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'" alt="${p.name}">
+            <a href="detail.html?id=${p.id}" class="text-center d-block position-relative p-3 mt-3">
+                <img src="${imgUrl}" onerror="this.src='${fallbackImg}'" class="img-fluid cps-img" alt="${p.name}">
             </a>
             
-            <div class="card-body d-flex flex-column" style="background-color: #fafafa;">
-                <h5 class="card-title text-truncate mb-2" style="font-size: 15px;">
+            <div class="card-body d-flex flex-column p-3 pt-0">
+                <h5 class="card-title mb-2 cps-title">
                     <a href="detail.html?id=${p.id}" class="text-decoration-none text-dark fw-bold" title="${p.name}">${p.name}</a>
                 </h5>
-                
-                <div class="d-flex align-items-center mb-1" style="font-size: 12px;">
-                    <div class="text-warning me-1">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
-                    </div>
-                    <span class="text-muted">(128)</span>
-                </div>
 
-                <div class="text-muted text-decoration-line-through small" style="font-size: 13px;">${oldPrice.toLocaleString('vi-VN')} đ</div>
-                <div class="fw-bold text-danger mb-3" style="font-size: 18px;">${Number(p.price).toLocaleString('vi-VN')} đ</div>
-                
-                <div class="mt-auto d-flex gap-2">
-                    <button onclick="buyNow(${p.id})" class="btn btn-danger flex-grow-1 fw-bold rounded-pill shadow-sm" style="font-size: 14px;">Mua Ngay</button>
-                    <button onclick="addToCart(${p.id})" class="btn btn-outline-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" title="Thêm vào giỏ" style="width: 38px; height: 38px; flex-shrink: 0;">
-                        <i class="fa-solid fa-cart-plus"></i>
-                    </button>
+                <div class="mt-auto">
+                    <div class="d-flex align-items-end gap-2 mb-2">
+                        <span class="fw-bold text-danger mb-0" style="font-size: 16px;">${Number(p.price).toLocaleString('vi-VN')}đ</span>
+                        <span class="text-muted text-decoration-line-through" style="font-size: 12px;">${oldPrice.toLocaleString('vi-VN')}đ</span>
+                    </div>
+
+                    <div class="bg-light rounded p-2 mb-3 border" style="font-size: 11px; color: #444;">
+                        Liên hệ hotline 1800.6969 để nhận Voucher lên đời tới 3 triệu đồng
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-2 border-top pt-2">
+                        <div class="text-warning" style="font-size: 11px;">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+                        </div>
+                        <div class="d-flex gap-3">
+                            <button class="btn btn-sm text-secondary border-0 p-0 hover-danger" style="font-size: 12px;" onclick="event.preventDefault(); alert('Đã thêm vào yêu thích!');">
+                                <i class="fa-regular fa-heart"></i> Yêu thích
+                            </button>
+                            <button class="btn btn-sm text-danger border-0 p-0 hover-danger" style="font-size: 12px;" onclick="addToCart(${p.id})">
+                                <i class="fa-solid fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     `;
     return col;
+}
+
+function showFilterArea(titleText) {
+    const homeBlocks = document.getElementById("home-blocks-area");
+    const filterArea = document.getElementById("filter-result-area");
+    const title = document.getElementById("page-title");
+    
+    if (homeBlocks) homeBlocks.style.display = "none";
+    if (filterArea) filterArea.style.display = "block";
+    if (title && titleText) title.innerText = titleText;
+}
+
+// TẢI SẢN PHẨM PHÂN LÔ CELLPHONES
+function loadHomeCategoryBlocks() {
+    const homeBlocksArea = document.getElementById("home-blocks-area");
+    if (!homeBlocksArea) return;
+    
+    homeBlocksArea.innerHTML = `<div class="text-center py-5 w-100"><div class="spinner-border text-danger"></div></div>`;
+
+    // Chỉ cần gọi lấy Sản phẩm thôi
+    fetch(`${CONFIG.BASE_URL}/products`)
+    .then(res => res.json())
+    .then(allProducts => {
+        homeBlocksArea.innerHTML = ""; // Xóa vòng quay loading
+
+        // Chỉ lấy các danh mục cha (Điện thoại, Laptop...)
+        const parentCategories = allCategoriesData.filter(c => !c.parent_id);
+
+        parentCategories.forEach(category => {
+            // Lọc 4 sản phẩm đầu tiên của danh mục
+            const products = allProducts.filter(p => 
+                p.category_id == category.id || 
+                allCategoriesData.some(child => child.parent_id == category.id && child.id == p.category_id)
+            ).slice(0, 4);
+
+            if (products.length === 0) return; // Nếu danh mục chưa có sản phẩm thì không vẽ
+
+            // 1. Tạo giao diện trước với ảnh mặc định (Placeholder)
+            const fallbackUrl = `https://placehold.co/300x650/d70018/ffffff?text=${encodeURIComponent(category.name)}`;
+            
+            const blockHTML = `
+                <div class="category-block mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-danger pb-2">
+                        <h3 class="fw-bold text-dark text-uppercase fs-5 mb-0">${category.name}</h3>
+                        <a href="#" class="text-decoration-none text-danger small" onclick="filterByCategory(${category.id}, '${category.name}'); return false;">Xem tất cả <i class="fa-solid fa-chevron-right ms-1" style="font-size: 10px;"></i></a>
+                    </div>
+                    
+                    <div class="row g-2">
+                        <div class="col-xl-2 col-lg-3 d-none d-lg-block">
+                            <a href="#" id="banner-link-${category.id}" class="d-block h-100 overflow-hidden rounded-3 vertical-banner-wrapper">
+                                <img id="banner-img-${category.id}" src="${fallbackUrl}" class="img-fluid w-100 h-100 object-fit-cover vertical-banner" style="border-radius: 8px;">
+                            </a>
+                        </div>
+                        
+                        <div class="col-xl-10 col-lg-9 col-12">
+                            <div class="row g-2" id="dynamic-block-${category.id}"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            homeBlocksArea.insertAdjacentHTML('beforeend', blockHTML);
+
+            // Bơm 4 sản phẩm vào
+            const container = document.getElementById(`dynamic-block-${category.id}`);
+            products.forEach(p => container.appendChild(createProductCard(p)));
+
+            // 2. GỌI API LẤY BANNER XỊN ĐỂ GHI ĐÈ LÊN ẢNH MẶC ĐỊNH
+            fetch(`${CONFIG.BASE_URL}/banners/VERTICAL_CATEGORY_${category.id}`)
+                .then(res => res.json())
+                .then(banners => {
+                    // Nếu Backend trả về mảng có banner
+                    if(banners && banners.length > 0) {
+                        const imgEl = document.getElementById(`banner-img-${category.id}`);
+                        const linkEl = document.getElementById(`banner-link-${category.id}`);
+                        
+                        if(imgEl) imgEl.src = `${CONFIG.IMAGE_BASE_URL}${banners[0].image_url}`;
+                        if(linkEl && banners[0].link_url) linkEl.href = banners[0].link_url;
+                    }
+                })
+                .catch(e => console.log("Danh mục này chưa được upload Banner dọc", e));
+        });
+    })
+    .catch(err => {
+        console.error("Lỗi load Home Blocks:", err);
+        homeBlocksArea.innerHTML = `<p class="text-danger text-center">Lỗi tải dữ liệu!</p>`;
+    });
 }
 
 function loadProducts(keyword = "", categoryId = "") {
@@ -177,7 +270,6 @@ function loadProducts(keyword = "", categoryId = "") {
                 return;
             }
 
-            // Dùng hàm createProductCard mới viết
             data.forEach(p => {
                 list.appendChild(createProductCard(p));
             });
@@ -187,15 +279,48 @@ function loadProducts(keyword = "", categoryId = "") {
 
 function searchProduct() {
     const keyword = document.getElementById("search-input").value;
-    const titleEl = document.getElementById("page-title");
-    if(titleEl) titleEl.innerText = `Kết quả tìm kiếm: "${keyword}"`;
+    showFilterArea(`Kết quả tìm kiếm: "${keyword}"`);
     loadProducts(keyword, null); 
 }
 
 function filterByCategory(id, name) {
-    const titleEl = document.getElementById("page-title");
-    if(titleEl) titleEl.innerText = name;
-    loadProducts("", id); 
+    if (!id) {
+        // Tắt bộ lọc, trở về trang chủ phân lô
+        const homeBlocks = document.getElementById("home-blocks-area");
+        const filterArea = document.getElementById("filter-result-area");
+        if (homeBlocks) homeBlocks.style.display = "block";
+        if (filterArea) filterArea.style.display = "none";
+        loadHomeCategoryBlocks();
+    } else {
+        showFilterArea(`Sản phẩm: ${name}`);
+        loadProducts("", id); 
+    }
+}
+
+function filterByBrand(brandId, brandName) {
+    showFilterArea(`Sản phẩm hãng: ${brandName}`);
+
+    const list = document.getElementById("product-list");
+    if (!list) return;
+    
+    list.innerHTML = `<div class="text-center py-5 w-100"><div class="spinner-border text-danger" role="status"></div></div>`;
+
+    fetch(`${CONFIG.BASE_URL}/products`)
+        .then(res => res.json())
+        .then(data => {
+            const filteredProducts = data.filter(p => p.brand_id == brandId);
+            
+            list.innerHTML = "";
+            if (filteredProducts.length === 0) {
+                list.innerHTML = `<div class="col-12 text-center mt-5"><p class="text-muted">Chưa có sản phẩm nào thuộc hãng ${brandName}.</p></div>`;
+                return;
+            }
+
+            filteredProducts.forEach(p => {
+                list.appendChild(createProductCard(p));
+            });
+        })
+        .catch(err => console.error("Lỗi lọc hãng:", err));
 }
 
 function addToCart(productId) {
@@ -206,8 +331,8 @@ function addToCart(productId) {
             text: "Bạn cần đăng nhập để thêm vào giỏ. Đến trang đăng nhập ngay?",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
+            confirmButtonColor: '#d70018',
+            cancelButtonColor: '#6c757d',
             confirmButtonText: 'Đăng nhập',
             cancelButtonText: 'Hủy'
         }).then((result) => {
@@ -242,7 +367,7 @@ function addToCart(productId) {
                 toast: true,
                 position: 'top-end',
                 icon: 'success',
-                title: data.message,
+                title: data.message || 'Thêm thành công!',
                 showConfirmButton: false,
                 timer: 3000
             });
@@ -254,30 +379,8 @@ function addToCart(productId) {
     .catch(err => console.error("Lỗi:", err));
 }
 
-function filterByBrand(brandId, brandName) {
-    const titleEl = document.querySelector("h3.text-uppercase"); 
-    if (titleEl) titleEl.innerText = `Sản phẩm hãng: ${brandName}`;
-
-    const list = document.getElementById("product-list");
-    if (!list) return;
-    
-    list.innerHTML = `<div class="text-center py-5 w-100"><div class="spinner-border text-danger" role="status"></div></div>`;
-
-    fetch(`${CONFIG.BASE_URL}/products`)
-        .then(res => res.json())
-        .then(data => {
-            const filteredProducts = data.filter(p => p.brand_id == brandId);
-            
-            list.innerHTML = "";
-            if (filteredProducts.length === 0) {
-                list.innerHTML = `<div class="col-12 text-center mt-5"><p class="text-muted">Chưa có sản phẩm nào thuộc hãng ${brandName}.</p></div>`;
-                return;
-            }
-
-            // Dùng hàm createProductCard mới viết
-            filteredProducts.forEach(p => {
-                list.appendChild(createProductCard(p));
-            });
-        })
-        .catch(err => console.error("Lỗi lọc hãng:", err));
+function buyNow(id) {
+    if(typeof window.buyNow === "function" && typeof UIHelper !== "undefined") {
+        UIHelper.showWarning('Thông báo', 'Vui lòng vào chi tiết sản phẩm để mua ngay!');
+    }
 }

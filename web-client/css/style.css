@@ -151,3 +151,57 @@ footer { width: 100%; clear: both; }
     .right-promos { width: 100%; flex-direction: row !important; height: 200px; }
     .promo-box { width: 50%; height: 100% !important; }
 }
+.category-block h3 {
+    letter-spacing: -0.5px;
+}
+.vertical-banner-wrapper {
+    transition: all 0.3s ease;
+}
+.vertical-banner {
+    transition: transform 0.5s ease;
+}
+.vertical-banner-wrapper:hover .vertical-banner {
+    transform: scale(1.05); /* Phóng to ảnh khi hover */
+}
+.vertical-banner-wrapper:hover {
+    box-shadow: var(--hover-shadow) !important;
+}
+.cps-card {
+    border: 1px solid #f1f1f1 !important;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.cps-card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    transform: translateY(-2px);
+    border-color: #e5e5e5 !important;
+}
+.cps-img {
+    height: 180px;
+    object-fit: contain;
+    transition: transform 0.3s;
+}
+.cps-card:hover .cps-img {
+    transform: scale(1.05);
+    margin-top: -5px;
+}
+.cps-title {
+    font-size: 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+    height: 40px;
+}
+.category-pill {
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+}
+.category-pill:hover {
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+}
+.hover-danger:hover {
+    color: var(--primary-color) !important;
+}
