@@ -7,10 +7,39 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* CSS CHUẨN CELLPHONES CHỐNG ĐỤNG ĐỘ TRANG CHỦ */
+        .cps-box-km { 
+            border: 1px dashed #d70018; 
+            background-color: #fff9fa; 
+            border-radius: 10px; 
+            margin-top: 20px; 
+            position: relative; 
+        }
+        .cps-title-km { 
+            background: #d70018; 
+            color: white; 
+            padding: 4px 15px; 
+            border-radius: 20px; 
+            position: absolute; 
+            top: -15px; 
+            left: 15px; 
+            font-weight: bold; 
+            font-size: 13px; 
+        }
+        .cps-gradient { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100px; 
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1)); 
+        }
+    </style>
 </head>
 <body class="d-flex flex-column min-vh-100 bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow" style="background-color: var(--primary-color);">
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.html">
                 <i class="fa-solid fa-laptop-code me-2"></i>LINHLINH STORE
@@ -19,137 +48,216 @@
         </div>
     </nav>
 
-    <div class="container my-5 flex-grow-1">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="index.html" class="text-decoration-none">Trang chủ</a></li>
+    <div class="container my-4 flex-grow-1">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="index.html" class="text-decoration-none text-danger fw-bold">Trang chủ</a></li>
                 <li class="breadcrumb-item active" aria-current="page" id="breadcrumb-name">Chi tiết</li>
             </ol>
         </nav>
 
-        <div class="card shadow border-0 rounded-4 overflow-hidden mb-4">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4 bg-white">
             <div class="card-body p-0">
                 <div class="row g-0">
-                    <div class="col-md-5 bg-white p-4 border-end d-flex flex-column">
-                        <div class="d-flex align-items-center justify-content-center flex-grow-1 mb-3" style="height: 350px;">
-                            <img id="detail-img" src="" class="img-fluid object-fit-contain" style="max-height: 100%; width: 100%; transition: 0.3s;" alt="Ảnh sản phẩm">
+                    <div class="col-md-5 p-4 border-end d-flex flex-column position-relative">
+                        <div class="position-absolute top-0 start-0 m-3 z-3">
+                            <span class="badge bg-danger rounded-pill px-3 py-2 fw-bold shadow-sm" style="font-size:12px;">Trả góp 0%</span>
                         </div>
-                        <div class="d-flex justify-content-center gap-2 overflow-auto py-2" id="thumbnail-container">
+                        <div class="d-flex align-items-center justify-content-center flex-grow-1 mb-3" style="height: 400px;">
+                            <img id="detail-img" src="https://placehold.co/400x400/f8f9fa/a3a3a3?text=Loading..." class="img-fluid object-fit-contain" style="max-height: 100%; width: 100%;" alt="Ảnh">
                         </div>
+                        <div class="d-flex justify-content-center gap-2 overflow-auto py-2 px-2" id="thumbnail-container"></div>
                     </div>
 
                     <div class="col-md-7 p-4 p-lg-5">
-                        <small class="text-uppercase text-muted fw-bold" id="detail-category">Danh mục</small>
-                        <h2 class="fw-bold mb-3 text-primary mt-2" id="detail-name">Đang tải tên...</h2>
-                        <h3 class="text-danger fw-bold mb-4" id="detail-price">0 đ</h3>
+                        <h2 class="fw-bold mb-2 text-dark lh-base" id="detail-name" style="font-size: 1.5rem;">Đang tải...</h2>
+                        <div class="d-flex align-items-center mb-3 gap-3">
+                            <div class="text-warning small">
+                                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i> 
+                                <span class="text-primary ms-1">Đánh giá</span>
+                            </div>
+                            <div class="text-muted small border-start ps-3">Đã bán 1.2k</div>
+                        </div>
+
+                        <div class="d-flex align-items-end gap-3 mb-3">
+                            <h1 class="text-danger fw-bold mb-0" id="detail-price" style="font-size: 2.2rem;">0 đ</h1>
+                        </div>
                         
-                        <div id="variants-container" class="mb-3"></div>
+                        <div id="variants-container" class="mb-2"></div>
+                        
+                        <div id="highlight-features" class="d-none"></div>
 
-                        <div id="highlight-features"></div>
-
-                        <p class="text-muted mb-4" id="detail-desc">Mô tả sản phẩm...</p>
-
-                        <div class="d-flex align-items-center mb-4">
-                            <span class="fw-bold me-3">Số lượng:</span>
-                            <div class="input-group" style="width: 140px;">
-                                <button class="btn btn-outline-secondary" type="button" onclick="changeQty(-1)">-</button>
-                                <input type="text" class="form-control text-center" id="qty-input" value="1" readonly>
-                                <button class="btn btn-outline-secondary" type="button" onclick="changeQty(1)">+</button>
+                        <div class="cps-box-km p-3 mb-4">
+                            <div class="cps-title-km"><i class="fa-solid fa-gift me-1"></i> Khuyến mãi</div>
+                            <div class="small mt-2 lh-lg text-dark">
+                                <div><i class="fa-solid fa-circle-check text-success me-2"></i>Giảm ngay 2.000.000đ khi thu cũ đổi mới.</div>
+                                <div><i class="fa-solid fa-circle-check text-success me-2"></i>Giảm thêm 5% (tối đa 500k) khi thanh toán qua VNPay.</div>
+                                <div><i class="fa-solid fa-circle-check text-success me-2"></i>Tặng ốp lưng chính hãng trị giá 490.000đ.</div>
+                                <div><i class="fa-solid fa-circle-check text-success me-2"></i>Gói bảo hành VIP LinhLinh Care 1 đổi 1 trong 12 tháng.</div>
                             </div>
                         </div>
 
-                        <div class="d-flex gap-3">
-                            <button onclick="addToCartFromDetail()" class="btn btn-outline-primary btn-lg rounded-pill px-4 fw-bold">
-                                <i class="fa-solid fa-cart-plus me-2"></i> Thêm vào giỏ
-                            </button>
-                            <button onclick="buyNowFromDetail()" class="btn btn-danger btn-lg rounded-pill px-5 fw-bold shadow">
-                                Mua Ngay
-                            </button>
+                        <div class="d-flex align-items-center mb-4">
+                            <span class="fw-bold me-3 text-dark">Số lượng:</span>
+                            <div class="input-group shadow-sm rounded-3 overflow-hidden" style="width: 120px;">
+                                <button class="btn btn-light border-0 px-3 fw-bold text-danger" type="button" onclick="changeQty(-1)">-</button>
+                                <input type="text" class="form-control text-center border-0 fw-bold bg-light px-0" id="qty-input" value="1" readonly>
+                                <button class="btn btn-light border-0 px-3 fw-bold text-danger" type="button" onclick="changeQty(1)">+</button>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-12">
+                                <button onclick="buyNowFromDetail()" class="btn btn-danger w-100 rounded-3 py-2 text-uppercase fw-bold shadow-sm d-flex flex-column align-items-center">
+                                    <span style="font-size: 1.1rem;">Mua Ngay</span>
+                                    <small class="fw-normal text-white-50" style="font-size: 0.75rem;">Giao tận nơi hoặc nhận tại cửa hàng</small>
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-primary w-100 rounded-3 py-2 text-uppercase fw-bold d-flex flex-column align-items-center">
+                                    <span style="font-size: 0.95rem;">Trả góp 0%</span>
+                                    <small class="fw-normal text-white-50" style="font-size: 0.7rem;">Duyệt nhanh 5 phút</small>
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-primary w-100 rounded-3 py-2 text-uppercase fw-bold d-flex flex-column align-items-center">
+                                    <span style="font-size: 0.95rem;">Trả góp qua thẻ</span>
+                                    <small class="fw-normal text-white-50" style="font-size: 0.7rem;">Visa, Mastercard, JCB</small>
+                                </button>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <button onclick="addToCartFromDetail()" class="btn btn-outline-danger w-100 rounded-3 py-2 fw-bold">
+                                    <i class="fa-solid fa-cart-plus me-2"></i> THÊM VÀO GIỎ HÀNG
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card shadow-sm border-0 mb-5 rounded-4 overflow-hidden">
-            <div class="card-header bg-white py-3 border-0 border-bottom">
-                <h5 class="fw-bold mb-0 text-dark">
-                    <i class="fa-solid fa-microchip text-primary me-2"></i> Thông số kỹ thuật
-                </h5>
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 mb-4 rounded-4 p-4 bg-white">
+                    <h5 class="fw-bold mb-4 text-dark text-uppercase border-bottom pb-3"><i class="fa-solid fa-medal text-danger me-2"></i>Đặc điểm nổi bật</h5>
+                    <div class="position-relative" style="max-height: 200px; overflow: hidden; transition: max-height 0.5s ease;" id="article-content">
+                        <div class="text-dark lh-lg" id="detail-desc" style="font-size: 15px;">Đang tải mô tả...</div>
+                        <div class="cps-gradient" id="article-gradient"></div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button class="btn btn-outline-secondary rounded-pill px-4 py-2 small fw-bold shadow-sm" id="btn-readmore" onclick="toggleArticle()">
+                            Xem thêm <i class="fa-solid fa-chevron-down ms-1"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="card-body p-0">
-                <table class="table table-striped table-hover mb-0" id="spec-table" style="font-size: 15px;">
-                    <tbody>
-                        <tr>
-                            <td class="text-muted text-center py-4">Đang cập nhật thông số...</td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden h-100 bg-white">
+                    <div class="card-header bg-white py-3 border-0 border-bottom">
+                        <h6 class="fw-bold mb-0 text-dark text-uppercase"><i class="fa-solid fa-microchip text-danger me-2"></i> Thông số kỹ thuật</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-striped mb-0" id="spec-table" style="font-size: 13px;">
+                            <tbody><tr><td class="text-muted text-center py-4">Đang cập nhật...</td></tr></tbody>
+                        </table>
+                        <div class="text-center p-3 border-top bg-light">
+                            <button class="btn btn-outline-danger btn-sm w-100 fw-bold">Cấu hình chi tiết</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <h4 class="fw-bold mb-3 text-primary border-start border-5 border-primary ps-3">Sản phẩm tương tự</h4>
-        <div class="row g-4" id="related-products">
-            <div class="col-12 text-center text-muted">Đang tìm sản phẩm...</div>
+        <h4 class="fw-bold mb-3 mt-4 text-dark border-start border-5 border-danger ps-3 text-uppercase fs-5">Sản phẩm tương tự</h4>
+        <div class="row g-4 mb-5" id="related-products">
+            <div class="col-12 text-center text-muted py-4">Đang tìm sản phẩm...</div>
         </div>
     </div>
 
-    <footer class="mt-auto bg-white border-top">
-        <div class="container py-4">
-            <div class="text-center small text-muted">
-                &copy; 2026 LinhLinh Store. All rights reserved.
+    <div class="offcanvas offcanvas-end shadow-lg" tabindex="-1" id="cartOffcanvas" style="width: 400px; border-left: none;">
+        <div class="offcanvas-header border-bottom bg-light">
+            <h5 class="offcanvas-title fw-bold text-dark d-flex align-items-center gap-2">
+                <i class="fa-solid fa-cart-shopping text-danger"></i> Giỏ hàng của bạn
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body" id="offcanvas-cart-body" style="background-color: #fcfcfc;"></div>
+        <div class="offcanvas-footer border-top p-3 bg-white shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted fw-bold">Tổng tiền tạm tính:</span>
+                <span class="fs-5 fw-bold text-danger" id="offcanvas-cart-total">0đ</span>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="cart.html" class="btn btn-outline-danger w-50 fw-bold rounded-pill">Xem chi tiết</a>
+                <button class="btn btn-danger w-50 fw-bold rounded-pill shadow-sm" onclick="window.location.href='cart.html'">Thanh toán</button>
             </div>
         </div>
-    </footer>
+    </div>
 
     <div class="modal fade" id="checkoutModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-danger text-white border-0">
-                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-truck-fast me-2"></i> Thông Tin Đặt Hàng</h5>
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-bolt me-2"></i> Mua Ngay Nhanh</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Người nhận <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="fa-solid fa-user"></i></span>
-                            <input type="text" class="form-control" id="checkout-name" placeholder="Họ và tên">
-                        </div>
+                        <input type="text" class="form-control bg-light" id="checkout-name" placeholder="Họ và tên">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Số điện thoại <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="fa-solid fa-phone"></i></span>
-                            <input type="text" class="form-control" id="checkout-phone" placeholder="Số điện thoại">
-                        </div>
+                        <input type="text" class="form-control bg-light" id="checkout-phone" placeholder="Số điện thoại">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Địa chỉ giao hàng <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="fa-solid fa-map-location-dot"></i></span>
-                            <textarea class="form-control" id="checkout-address" rows="2" placeholder="Địa chỉ chi tiết"></textarea>
-                        </div>
+                        <textarea class="form-control bg-light" id="checkout-address" rows="2" placeholder="Địa chỉ chi tiết nhận hàng"></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Thanh toán</label>
-                        <select class="form-select" id="checkout-payment">
+                        <select class="form-select bg-light" id="checkout-payment">
                             <option value="COD">Thanh toán khi nhận hàng (COD)</option>
                             <option value="BANK">Chuyển khoản ngân hàng</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Ghi chú</label>
-                        <input type="text" class="form-control" id="checkout-note" placeholder="Ghi chú thêm...">
+                        <input type="text" class="form-control bg-light" id="checkout-note" placeholder="Ghi chú thêm...">
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0 justify-content-end">
                     <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-danger rounded-pill px-4" onclick="submitDirectBuy()"><i class="fa-solid fa-paper-plane me-2"></i> Xác Nhận</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold" onclick="submitDirectBuy()">Xác Nhận Đặt Hàng</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <footer class="mt-auto border-top py-3" style="background-color: #f8f9fa;">
+        <div class="container text-center small text-muted">
+            &copy; 2026 LinhLinh Store. All rights reserved. Đồ án tốt nghiệp của Linh.
+        </div>
+    </footer>
+
+    <script>
+        function toggleArticle() {
+            const content = document.getElementById('article-content');
+            const gradient = document.getElementById('article-gradient');
+            const btn = document.getElementById('btn-readmore');
+            
+            if (content.style.maxHeight === '200px') {
+                content.style.maxHeight = content.scrollHeight + 'px'; 
+                gradient.style.display = 'none';
+                btn.innerHTML = 'Thu gọn <i class="fa-solid fa-chevron-up ms-1"></i>';
+            } else {
+                content.style.maxHeight = '200px';
+                gradient.style.display = 'block';
+                btn.innerHTML = 'Xem thêm <i class="fa-solid fa-chevron-down ms-1"></i>';
+            }
+        }
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
@@ -158,8 +266,8 @@
     <script src="js/api-helper.js"></script>
     <script src="js/ui-helper.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script> 
     <script src="js/utils.js"></script>
     <script src="js/detail.js"></script>
-    
 </body>
 </html>
