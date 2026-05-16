@@ -15,23 +15,18 @@ const transporter = nodemailer.createTransport({
 // ==========================================
 // 1. LUỒNG ĐẶT HÀNG (MỚI)
 // ==========================================
-
-// Đặt hàng từ Giỏ hàng
 exports.checkout = (req, res) => {
     const userId = req.user.id;
     const data = req.body; 
-
     Order.createOrder(userId, data, (err, orderId) => {
         if (err) return res.status(500).json({ message: typeof err === 'string' ? err : 'Lỗi server khi đặt hàng', error: err });
         res.json({ message: 'Đặt hàng thành công!', orderId: orderId });
     });
 };
 
-// Mua ngay (Không qua giỏ hàng)
 exports.directBuy = (req, res) => {
     const userId = req.user.id;
     const data = req.body; 
-
     Order.createDirectOrder(userId, data, (err, orderId) => {
         if (err) return res.status(500).json({ message: typeof err === 'string' ? err : 'Lỗi server khi đặt hàng', error: err });
         res.json({ message: 'Đặt hàng thành công!', orderId: orderId });
@@ -41,7 +36,6 @@ exports.directBuy = (req, res) => {
 // ==========================================
 // 2. LUỒNG XỬ LÝ TRẢ HÀNG
 // ==========================================
-
 exports.requestReturn = (req, res) => {
     const orderId = req.params.id;
     const { reason } = req.body;
@@ -62,7 +56,6 @@ exports.processReturnRequest = (req, res) => {
         if (err) return res.status(500).json(err);
         conn.beginTransaction(async (err) => {
             if (err) { conn.release(); return res.status(500).json(err); }
-
             try {
                 const [order] = await new Promise((resolve, reject) => {
                     conn.query("SELECT o.*, u.email FROM orders o JOIN users u ON o.user_id = u.id WHERE o.id = ?", [orderId], (e, r) => e ? reject(e) : resolve(r));
@@ -100,27 +93,18 @@ exports.processReturnRequest = (req, res) => {
                         }
                     }
                 }
-
                 conn.commit(async (err) => {
                     if (err) throw err;
-
                     const mailOptions = {
-                        from: `"LinhLinhStore" <${process.env.EMAIL_USER}>`,  // ⭐ DÙNG BIẾN MÔI TRƯỜNG
+                        from: `"LinhLinhStore" <${process.env.EMAIL_USER}>`, 
                         to: order.email,
                         subject: action === 'ACCEPT' ? 'Yêu cầu trả hàng của bạn đã được Duyệt' : 'Kết quả xử lý yêu cầu trả hàng',
-                        html: `<h3>Xin chào ${order.receiver_name},</h3>
-                               <p>Đơn hàng <b>#${orderId}</b> của bạn đã được xử lý hoàn trả.</p>
-                               <p><b>Kết quả:</b> ${action === 'ACCEPT' ? 'CHẤP NHẬN' : 'TỪ CHỐI'}</p>
-                               <p><b>Ghi chú từ cửa hàng:</b> ${adminNote}</p>
-                               <p>Cảm ơn bạn đã tin tưởng LinhLinhStore!</p>`
+                        html: `<h3>Xin chào ${order.receiver_name},</h3><p>Đơn hàng <b>#${orderId}</b> của bạn đã được xử lý.</p>`
                     };
-                    
                     transporter.sendMail(mailOptions).catch(e => console.error("Lỗi gửi mail:", e));
-
-                    res.json({ message: "Xử lý thành công và đã gửi thông báo cho khách!" });
+                    res.json({ message: "Xử lý thành công!" });
                     conn.release();
                 });
-
             } catch (error) {
                 conn.rollback(() => { res.status(500).json(error); conn.release(); });
             }
@@ -129,9 +113,8 @@ exports.processReturnRequest = (req, res) => {
 };
 
 // ==========================================
-// 3. LUỒNG LẤY & CẬP NHẬT ĐƠN HÀNG (USER + ADMIN)
+// 3. LUỒNG LẤY & CẬP NHẬT ĐƠN HÀNG
 // ==========================================
-
 exports.getMyOrders = (req, res) => {
     db.query("SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC", [req.user.id], (err, resu) => {
         if (err) return res.status(500).json(err);
@@ -144,15 +127,8 @@ exports.getDetail = (req, res) => {
     db.query(sqlOrder, [req.params.id], (err, results) => {
         if (err) return res.status(500).json(err);
         if (results.length === 0) return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
-        
         const order = results[0];
-        const sqlItems = `
-            SELECT oi.*, p.name, 
-            (SELECT image_url FROM product_images WHERE product_id = p.id LIMIT 1) AS image_url
-            FROM order_items oi
-            JOIN products p ON oi.product_id = p.id
-            WHERE oi.order_id = ?
-        `;
+        const sqlItems = `SELECT oi.*, p.name, (SELECT image_url FROM product_images WHERE product_id = p.id LIMIT 1) AS image_url FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?`;
         db.query(sqlItems, [req.params.id], (err, items) => {
             if (err) return res.status(500).json(err);
             order.items = items;
@@ -161,16 +137,13 @@ exports.getDetail = (req, res) => {
     });
 };
 
-// Khách hàng đổi trạng thái (Hủy đơn hoặc Đã nhận hàng)
 exports.updateUserStatus = (req, res) => {
-    // Gọi qua Model để chạy Transaction hoàn lại kho nếu là CANCELLED
     Order.userUpdateStatus(req.params.id, req.body.status, (err, result) => {
         if (err) return res.status(500).json({ message: typeof err === 'string' ? err : "Lỗi server" });
         res.json(result);
     });
 };
 
-// Khách hàng sửa thông tin (Tên, SĐT, Địa chỉ) lúc đơn còn NEW
 exports.updateOrderInfo = (req, res) => {
     Order.updateOrderInfo(req.params.id, req.body, (err, result) => {
         if (err) return res.status(500).json(err);
@@ -179,7 +152,6 @@ exports.updateOrderInfo = (req, res) => {
     });
 };
 
-// Admin lấy tất cả đơn
 exports.getAllOrders = (req, res) => {
     db.query("SELECT * FROM orders ORDER BY created_at DESC", (err, results) => {
         if (err) return res.status(500).json(err);
@@ -187,11 +159,27 @@ exports.getAllOrders = (req, res) => {
     });
 };
 
-// Admin đổi trạng thái đơn
 exports.updateAdminStatus = (req, res) => {
-    const { status } = req.body;
-    db.query("UPDATE orders SET status = ? WHERE id = ?", [status, req.params.id], (err) => {
+    db.query("UPDATE orders SET status = ? WHERE id = ?", [req.body.status, req.params.id], (err) => {
         if (err) return res.status(500).json(err);
         res.json({ message: "Cập nhật trạng thái thành công!" });
+    });
+};
+
+// ==========================================
+// 4. API MỚI: TÍNH TỔNG QUAN USER (Dùng cho Giao diện Smember)
+// ==========================================
+exports.getMyStats = (req, res) => {
+    // Chỉ tính tiền những đơn hàng đã hoàn tất (DONE)
+    const sql = `
+        SELECT 
+            COUNT(id) as total_orders, 
+            COALESCE(SUM(total_amount), 0) as total_spent 
+        FROM orders 
+        WHERE user_id = ? AND status = 'DONE'
+    `;
+    db.query(sql, [req.user.id], (err, results) => {
+        if (err) return res.status(500).json(err);
+        res.json(results[0]);
     });
 };

@@ -7,29 +7,18 @@ function login() {
         return;
     }
 
-    API.post('/auth/login', {
-        username: usernameVal,
-        password: passwordVal,
-        clientType: "WEB" 
-    })
+    API.post('/auth/login', { username: usernameVal, password: passwordVal, clientType: "WEB" })
     .then(data => {
         const { isSuccess, message } = UIHelper.parseResponse(data);
-        
         if (isSuccess && data.token) {
             StorageHelper.setToken(data.token);
             StorageHelper.setUser(data.user);
-            
-            UIHelper.showSuccess('Đăng nhập thành công', 'Chào mừng bạn!', () => {
-                window.location.href = "index.html";
-            });
+            UIHelper.showSuccess('Đăng nhập thành công', 'Chào mừng bạn!', () => { window.location.href = "index.html"; });
         } else {
             UIHelper.showError('Đăng nhập thất bại', message || "Sai tài khoản hoặc mật khẩu");
         }
     })
-    .catch(err => {
-        console.error(err);
-        UIHelper.showError('Lỗi', 'Lỗi kết nối server');
-    });
+    .catch(err => { console.error(err); UIHelper.showError('Lỗi', 'Lỗi kết nối server'); });
 }
 
 function register() {
@@ -44,40 +33,27 @@ function register() {
         return;
     }
 
-    API.post('/auth/register', {
-        username: username,
-        password: password,
-        full_name: fullName,
-        email: email, 
-        phone: phone 
-    })
+    API.post('/auth/register', { username: username, password: password, full_name: fullName, email: email, phone: phone })
     .then(data => {
         const { isSuccess, message } = UIHelper.parseResponse(data);
-        
         if (isSuccess) {
-            UIHelper.showSuccess('Đăng ký thành công', 'Hãy đăng nhập.', () => {
-                window.location.href = "login.html";
-            });
+            UIHelper.showSuccess('Đăng ký thành công', 'Hãy đăng nhập.', () => { window.location.href = "login.html"; });
         } else {
             UIHelper.showError('Lỗi', message);
         }
     })
-    .catch(err => {
-        console.error(err);
-        UIHelper.showError('Lỗi', 'Có lỗi xảy ra khi kết nối server.');
-    });
+    .catch(err => { console.error(err); UIHelper.showError('Lỗi', 'Có lỗi xảy ra khi kết nối server.'); });
 }
 
 function logout() {
+    if(typeof UIHelper === 'undefined' || typeof Swal === 'undefined') {
+        StorageHelper.clearAuth();
+        window.location.href = "index.html";
+        return;
+    }
     UIHelper.showConfirm(
-        'Đăng xuất?',
-        "Bạn có chắc muốn đăng xuất khỏi hệ thống?",
-        'Đăng xuất',
-        'Hủy',
-        () => {
-            StorageHelper.clearAuth();
-            window.location.href = "index.html";
-        }
+        'Đăng xuất?', "Bạn có chắc muốn đăng xuất khỏi hệ thống?", 'Đăng xuất', 'Hủy',
+        () => { StorageHelper.clearAuth(); window.location.href = "index.html"; }
     );
 }
 
@@ -88,7 +64,7 @@ if (authArea) {
         const user = StorageHelper.getUser();
         const username = user?.username || user?.full_name || "Khách";
 
-        // GIAO DIỆN KHI ĐÃ ĐĂNG NHẬP (Giữ nguyên style CellphoneS)
+        // GIAO DIỆN KHI ĐÃ ĐĂNG NHẬP (GỘP CHUNG TÀI KHOẢN + THÔNG BÁO)
         authArea.innerHTML = `
             <div class="d-flex align-items-center gap-2 cursor-pointer header-item btn-header-custom" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
                 <i class="fa-solid fa-phone-volume fs-4 text-white"></i>
@@ -108,22 +84,40 @@ if (authArea) {
             </a>
 
             <div class="dropdown">
-                <a href="#" class="d-flex align-items-center gap-2 cursor-pointer header-item text-white text-decoration-none btn-header-custom" data-bs-toggle="dropdown" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
-                    <i class="fa-solid fa-user-check fs-4 text-warning"></i>
+                <a href="#" class="d-flex align-items-center gap-2 cursor-pointer header-item text-white text-decoration-none position-relative btn-header-custom" data-bs-toggle="dropdown" data-bs-auto-close="outside" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
+                    <i class="fa-regular fa-circle-user fs-4"></i>
                     <div class="lh-1 small d-none d-lg-block">
                         <div style="font-size: 0.7rem; opacity: 0.9;">Xin chào,</div>
                         <div class="fw-bold mt-1 text-truncate" style="max-width: 90px;">${username}</div>
                     </div>
+                    <span id="noti-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="margin-top: 5px; margin-left: -15px; display: none;">0</span>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 12px; margin-top: 10px;">
-                    <li><a class="dropdown-item py-2" href="profile.html"><i class="fa-solid fa-id-card me-2 text-primary"></i> Hồ sơ cá nhân</a></li>
-                    <li><a class="dropdown-item py-2" href="orders.html"><i class="fa-solid fa-box-open me-2 text-success"></i> Đơn mua</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item py-2 text-danger" href="#" onclick="logout()"><i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất</a></li>
-                </ul>
+                
+                <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-0" style="width: 360px; border-radius: 15px; margin-top: 15px;">
+                    <div class="p-3">
+                        <a href="profile.html" class="d-flex justify-content-between align-items-center border border-danger rounded-3 p-2 text-decoration-none mb-4 shadow-sm" style="background-color: #fffafb;">
+                            <div class="d-flex align-items-center">
+                                <img src="https://placehold.co/30x30/d70018/ffffff?text=L" class="rounded-circle me-2" style="width:32px; height:32px;">
+                                <span class="text-danger fw-bold">Truy cập LinhLinh Profile</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-danger"></i>
+                        </a>
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                            <span class="fw-bold fs-6">Thông báo</span>
+                            <a href="#" class="small text-success text-decoration-none" onclick="document.getElementById('noti-badge').style.display='none';"><i class="fa-solid fa-check-double"></i> Đã đọc tất cả <i class="fa-solid fa-check"></i></a>
+                        </div>
+                    </div>
+                    <div id="noti-list" class="px-3 pb-2" style="max-height: 350px; overflow-y: auto; overflow-x: hidden;">
+                        <div class="text-center py-5"><div class="spinner-border text-danger spinner-border-sm" role="status"></div></div>
+                    </div>
+                    <div class="p-2 border-top text-center bg-light" style="border-radius: 0 0 15px 15px;">
+                        <button class="btn btn-link text-primary fw-bold text-decoration-none w-100" onclick="document.querySelector('[data-bs-toggle=dropdown]').click()">Đóng</button>
+                    </div>
+                </div>
             </div>
         `;
         updateCartCount();
+        loadNotifications(); 
     } else {
         // GIAO DIỆN KHI CHƯA ĐĂNG NHẬP
         authArea.innerHTML = `
@@ -134,16 +128,13 @@ if (authArea) {
                     <div class="fw-bold mt-1">1800.6969</div>
                 </div>
             </div>
-
             <a href="cart.html" class="d-flex align-items-center gap-2 cursor-pointer header-item text-white text-decoration-none position-relative btn-header-custom" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
                 <i class="fa-solid fa-bag-shopping fs-4"></i>
                 <div class="lh-1 small d-none d-lg-block">
                     <div style="font-size: 0.7rem; opacity: 0.9;">Giỏ hàng</div>
                     <div class="fw-bold mt-1">Của bạn</div>
                 </div>
-                <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark border border-white" style="margin-top: 5px; margin-left: -15px; display: none;">0</span>
             </a>
-
             <a href="login.html" class="d-flex align-items-center gap-2 cursor-pointer header-item text-white text-decoration-none btn-header-custom" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
                 <i class="fa-regular fa-circle-user fs-4"></i>
                 <div class="lh-1 small d-none d-lg-block">
@@ -159,19 +150,12 @@ if (authArea) {
 // ============================================================
 // QUẢN LÝ GIỎ HÀNG & THANH TOÁN
 // ============================================================
-
 function updateCartCount() {
     if (!StorageHelper.isLoggedIn()) return;
-
     API.get('/cart', true)
     .then(data => {
         let totalQty = 0;
-        if (Array.isArray(data)) {
-            data.forEach(item => {
-                totalQty += item.quantity; 
-            });
-        }
-
+        if (Array.isArray(data)) { data.forEach(item => { totalQty += item.quantity; }); }
         const badge = document.getElementById("cart-badge");
         if (badge) {
             badge.innerText = totalQty;
@@ -183,12 +167,10 @@ function updateCartCount() {
 
 function buyNow(productId) {
     if (!UIHelper.ensureLogin()) return;
-
     if (productId) {
         const hiddenInput = document.getElementById("direct-buy-product-id");
         if(hiddenInput) hiddenInput.value = productId;
     }
-
     const user = StorageHelper.getUser();
     const inputName = document.getElementById("order-name");
     const inputPhone = document.getElementById("order-phone");
@@ -222,9 +204,7 @@ function processOrder() {
 
     let apiUrl = "";
     let bodyData = {
-        name: name, 
-        phone: phone, 
-        address: address,
+        name: name, phone: phone, address: address,
         payment_method: document.getElementById("payment-method").value,
         note: document.getElementById("order-note").value
     };
@@ -233,26 +213,16 @@ function processOrder() {
         apiUrl = `/orders/direct`;
         bodyData.productId = directProductId;
         bodyData.quantity = 1; 
-    } else {
-        apiUrl = `/orders`;
-    }
+    } else { apiUrl = `/orders`; }
     
     API.post(apiUrl, bodyData, true)
     .then(data => {
         const { isSuccess, message } = UIHelper.parseResponse(data);
-        
         if (isSuccess) {
-            UIHelper.showSuccess('Thành công', message, () => {
-                location.reload(); 
-            });
-        } else {
-            UIHelper.showError('Lỗi', message);
-        }
+            UIHelper.showSuccess('Thành công', message, () => { location.reload(); });
+        } else { UIHelper.showError('Lỗi', message); }
     })
-    .catch(err => {
-        console.error(err);
-        UIHelper.showError('Lỗi', 'Lỗi hệ thống khi đặt hàng');
-    });
+    .catch(err => { console.error(err); UIHelper.showError('Lỗi', 'Lỗi hệ thống khi đặt hàng'); });
 }
 
 function updatePassword() {
@@ -268,27 +238,84 @@ function updatePassword() {
         UIHelper.showError('Lỗi', 'Mật khẩu mới không khớp!');
         return;
     }
-
     if (!UIHelper.ensureLogin()) return;
 
-    API.put('/auth/change-password', { 
-        oldPassword: oldPass, 
-        newPassword: newPass 
-    }, true)
+    API.put('/auth/change-password', { oldPassword: oldPass, newPassword: newPass }, true)
     .then(data => {
         const { isSuccess, message } = UIHelper.parseResponse(data);
-        
         if (isSuccess) {
             UIHelper.showSuccess('Thành công', message, () => {
-                StorageHelper.clearAuth();
-                window.location.href = "login.html"; 
+                StorageHelper.clearAuth(); window.location.href = "login.html"; 
             });
-        } else {
-            UIHelper.showError('Lỗi', message);
+        } else { UIHelper.showError('Lỗi', message); }
+    })
+    .catch(err => { console.error("Lỗi đổi mật khẩu:", err); UIHelper.showError('Lỗi', 'Lỗi kết nối tới Server!'); });
+}
+
+// ============================================================
+// QUẢN LÝ THÔNG BÁO ĐƠN HÀNG
+// ============================================================
+function loadNotifications() {
+    API.get('/orders/mine', true)
+    .then(orders => {
+        const notiList = document.getElementById("noti-list");
+        const notiBadge = document.getElementById("noti-badge");
+        if (!notiList) return;
+
+        if (!Array.isArray(orders) || orders.length === 0) {
+            notiList.innerHTML = `
+                <div class="text-center py-5 text-muted small">
+                    <img src="https://placehold.co/120x120/f4f6f8/d70018?text=O_O" class="mb-3 rounded-circle border" style="padding: 10px;">
+                    <br><span class="fw-bold text-dark fs-6">Ở đây hơi trống trải.</span><br>
+                    LinhLinhStore sẽ gửi cho bạn những thông báo mới nhất tại đây nhé!
+                </div>`;
+            return;
+        }
+
+        let notiHTML = '';
+        let unreadCount = 0;
+        const recentOrders = orders.slice(0, 5);
+
+        recentOrders.forEach(order => {
+            let statusText = "", iconStr = "", colorStr = "";
+            switch (order.status) {
+                case 'NEW':
+                    statusText = `Đơn hàng <b>#${order.id}</b> đang chờ hệ thống xác nhận.`;
+                    iconStr = '<i class="fa-solid fa-box text-warning"></i>'; colorStr = "bg-warning-subtle"; unreadCount++; break;
+                case 'SHIPPING':
+                    statusText = `Đơn hàng <b>#${order.id}</b> đã được giao cho đơn vị vận chuyển.`;
+                    iconStr = '<i class="fa-solid fa-truck-fast text-primary"></i>'; colorStr = "bg-primary-subtle"; unreadCount++; break;
+                case 'DONE':
+                    statusText = `Đơn hàng <b>#${order.id}</b> đã hoàn tất. Cảm ơn bạn!`;
+                    iconStr = '<i class="fa-solid fa-check text-success"></i>'; colorStr = "bg-success-subtle"; break;
+                case 'CANCELLED':
+                    statusText = `Đơn hàng <b>#${order.id}</b> đã bị hủy.`;
+                    iconStr = '<i class="fa-solid fa-xmark text-danger"></i>'; colorStr = "bg-danger-subtle"; break;
+                default:
+                    statusText = `Có cập nhật mới cho đơn hàng <b>#${order.id}</b>.`;
+                    iconStr = '<i class="fa-solid fa-bell text-secondary"></i>'; colorStr = "bg-light";
+            }
+
+            const dateStr = new Date(order.created_at).toLocaleDateString('vi-VN');
+            notiHTML += `
+                <a href="orders.html" class="text-decoration-none">
+                    <div class="d-flex p-2 mb-2 rounded border-bottom" style="transition: background 0.2s;">
+                        <div class="me-3 mt-1">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center ${colorStr}" style="width: 40px; height: 40px;">${iconStr}</div>
+                        </div>
+                        <div class="text-dark small">
+                            ${statusText}
+                            <div class="text-muted mt-1" style="font-size: 0.75rem;"><i class="fa-regular fa-clock me-1"></i> ${dateStr}</div>
+                        </div>
+                    </div>
+                </a>`;
+        });
+
+        notiList.innerHTML = notiHTML;
+        if (notiBadge) {
+            notiBadge.innerText = unreadCount;
+            notiBadge.style.display = unreadCount > 0 ? "inline-block" : "none";
         }
     })
-    .catch(err => {
-        console.error("Lỗi đổi mật khẩu:", err);
-        UIHelper.showError('Lỗi', 'Lỗi kết nối tới Server!');
-    });
+    .catch(err => { console.error("Lỗi tải thông báo:", err); });
 }

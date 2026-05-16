@@ -133,9 +133,9 @@ function createProductCard(p) {
                             <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
                         </div>
                         <div class="d-flex gap-3">
-                            <button class="btn btn-sm text-secondary border-0 p-0 hover-danger" style="font-size: 12px;" onclick="event.preventDefault(); alert('Đã thêm vào yêu thích!');">
-                                <i class="fa-regular fa-heart"></i> Yêu thích
-                            </button>
+                        <button class="btn btn-sm text-secondary border-0 p-0 hover-danger" style="font-size: 12px;" onclick="event.preventDefault(); toggleFavorite(${p.id}, '${p.name.replace(/'/g, "\\'")}', '${imgUrl}', ${p.price})">
+                            <i class="fa-regular fa-heart"></i> Yêu thích
+                        </button>
                             <button class="btn btn-sm text-danger border-0 p-0 hover-danger" style="font-size: 12px;" onclick="addToCart(${p.id})">
                                 <i class="fa-solid fa-cart-plus"></i>
                             </button>
@@ -383,4 +383,28 @@ function buyNow(id) {
     if(typeof window.buyNow === "function" && typeof UIHelper !== "undefined") {
         UIHelper.showWarning('Thông báo', 'Vui lòng vào chi tiết sản phẩm để mua ngay!');
     }
+}
+function toggleFavorite(id, name, image, price) {
+    // Lấy danh sách hiện tại từ LocalStorage (nếu chưa có thì tạo mảng rỗng)
+    let favs = JSON.parse(localStorage.getItem('linhlinh_favorites')) || [];
+    
+    // Kiểm tra xem sản phẩm đã có trong danh sách chưa
+    const index = favs.findIndex(item => item.id === id);
+    
+    if(index === -1) {
+        // Nếu chưa có -> Thêm vào
+        favs.push({ id, name, image, price });
+        if(typeof UIHelper !== 'undefined') {
+            UIHelper.showSuccess('Tuyệt vời!', `Đã thêm <b>${name}</b> vào danh sách yêu thích.`);
+        }
+    } else {
+        // Nếu có rồi -> Xóa đi (Bỏ thích)
+        favs.splice(index, 1);
+        if(typeof UIHelper !== 'undefined') {
+            UIHelper.showSuccess('Đã bỏ thích', `Đã xóa <b>${name}</b> khỏi danh sách yêu thích.`);
+        }
+    }
+    
+    // Lưu ngược lại vào trình duyệt
+    localStorage.setItem('linhlinh_favorites', JSON.stringify(favs));
 }

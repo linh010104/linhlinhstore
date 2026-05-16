@@ -14,6 +14,7 @@ router.get('/:id', authMiddleware, orderController.getDetail);
 router.put('/:id/user-status', authMiddleware, orderController.updateUserStatus); 
 router.put('/:id/update-info', authMiddleware, orderController.updateOrderInfo);
 router.put('/:id/request-return', authMiddleware, orderController.requestReturn); 
+router.get('/my/stats', authMiddleware, orderController.getMyStats);
 
 //  LUỒNG CHO ADMIN ===
 router.get('/admin/all', authMiddleware, isAdmin, orderController.getAllOrders); 
