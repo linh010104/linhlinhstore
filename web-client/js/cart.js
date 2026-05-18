@@ -1,29 +1,45 @@
-if (!StorageHelper.isLoggedIn()) {
-    UIHelper.showWarning(
-        'Chưa đăng nhập!',
-        "Vui lòng đăng nhập để xem giỏ hàng.",
-        () => { window.location.href = "login.html"; }
-    );
-}
+// if (!StorageHelper.isLoggedIn()) {
+//     UIHelper.showWarning(
+//         'Chưa đăng nhập!',
+//         "Vui lòng đăng nhập để xem giỏ hàng.",
+//         () => { window.location.href = "login.html"; }
+//     );
+// }
+
+// File: web-client/js/cart.js
 
 function loadCart() {
+    // 💡 ĐÃ FIX BUG 1: Chỉ bắt đăng nhập nếu người dùng đang thật sự ở trang Giỏ hàng
+    if (!StorageHelper.isLoggedIn()) {
+        if (window.location.pathname.includes('cart.html')) {
+            UIHelper.showWarning(
+                'Chưa đăng nhập!',
+                "Vui lòng đăng nhập để xem giỏ hàng.",
+                () => { window.location.href = "login.html"; }
+            );
+        }
+        return; // Dừng lại, không gọi API lấy giỏ hàng nữa
+    }
+
     API.get('/cart', true)
     .then(data => {
         const tbody = document.getElementById("cart-body");
         const summaryArea = document.getElementById("cart-summary-area");
         
-        tbody.innerHTML = "";
+        if (tbody) tbody.innerHTML = "";
         let total = 0;
 
         if (!data || data.length === 0) {
-            tbody.innerHTML = `
-                <tr><td colspan="4" class="text-center py-5">
-                    <div class="text-muted">
-                        <i class="fa-solid fa-cart-flatbed fs-1 mb-3 opacity-25"></i>
-                        <p class="mb-0">Giỏ hàng của bạn đang trống.</p>
-                    </div>
-                </td></tr>`;
-            summaryArea.innerHTML = "";
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr><td colspan="4" class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="fa-solid fa-cart-flatbed fs-1 mb-3 opacity-25"></i>
+                            <p class="mb-0">Giỏ hàng của bạn đang trống.</p>
+                        </div>
+                    </td></tr>`;
+            }
+            if (summaryArea) summaryArea.innerHTML = "";
             return;
         }
 
@@ -62,7 +78,7 @@ function loadCart() {
                     </button>
                 </td>
             `;
-            tbody.appendChild(tr);
+            if (tbody) tbody.appendChild(tr);
         });
 
         renderSummary(total);
@@ -160,4 +176,9 @@ function removeItem(cartId) {
     );
 }
 
-document.addEventListener("DOMContentLoaded", loadCart);
+document.addEventListener("DOMContentLoaded", () => {
+    // Chỉ tự động loadCart nếu có vùng hiển thị giỏ hàng
+    if (document.getElementById("cart-body")) {
+        loadCart();
+    }
+});

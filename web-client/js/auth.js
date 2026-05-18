@@ -57,6 +57,13 @@ function logout() {
     );
 }
 
+// HÀM MỚI: Xử lý lưu trạng thái "Đã đọc tất cả" vào LocalStorage
+window.markAllNotificationsAsRead = function() {
+    const badge = document.getElementById('noti-badge');
+    if (badge) badge.style.display = 'none';
+    localStorage.setItem('hasReadNotifications', 'true');
+};
+
 const authArea = document.getElementById("authArea");
 
 if (authArea) {
@@ -64,7 +71,7 @@ if (authArea) {
         const user = StorageHelper.getUser();
         const username = user?.username || user?.full_name || "Khách";
 
-        // GIAO DIỆN KHI ĐÃ ĐĂNG NHẬP (GỘP CHUNG TÀI KHOẢN + THÔNG BÁO)
+        // GIAO DIỆN KHI ĐÃ ĐĂNG NHẬP
         authArea.innerHTML = `
             <div class="d-flex align-items-center gap-2 cursor-pointer header-item btn-header-custom" style="background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px;">
                 <i class="fa-solid fa-phone-volume fs-4 text-white"></i>
@@ -104,7 +111,7 @@ if (authArea) {
                         </a>
                         <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
                             <span class="fw-bold fs-6">Thông báo</span>
-                            <a href="#" class="small text-success text-decoration-none" onclick="document.getElementById('noti-badge').style.display='none';"><i class="fa-solid fa-check-double"></i> Đã đọc tất cả <i class="fa-solid fa-check"></i></a>
+                            <a href="#" class="small text-success text-decoration-none" onclick="markAllNotificationsAsRead(); return false;"><i class="fa-solid fa-check-double"></i> Đã đọc tất cả <i class="fa-solid fa-check"></i></a>
                         </div>
                     </div>
                     <div id="noti-list" class="px-3 pb-2" style="max-height: 350px; overflow-y: auto; overflow-x: hidden;">
@@ -312,9 +319,12 @@ function loadNotifications() {
         });
 
         notiList.innerHTML = notiHTML;
+        
+        // KIỂM TRA LOCALSTORAGE ĐỂ ẨN/HIỆN CHUÔNG
         if (notiBadge) {
             notiBadge.innerText = unreadCount;
-            notiBadge.style.display = unreadCount > 0 ? "inline-block" : "none";
+            const hasRead = localStorage.getItem('hasReadNotifications');
+            notiBadge.style.display = (unreadCount > 0 && hasRead !== 'true') ? "inline-block" : "none";
         }
     })
     .catch(err => { console.error("Lỗi tải thông báo:", err); });
