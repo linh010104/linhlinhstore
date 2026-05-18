@@ -1,25 +1,27 @@
-// const mysql = require('mysql2');
-
-// const db = mysql.createPool({
-//   host: process.env.DB_HOST,
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASS, // Sửa từ DB_PASSWORD thành DB_PASS
-//   database: process.env.DB_NAME,
-//   port: process.env.DB_PORT || 16267, // Thêm dòng này để nhận cổng 16267
-//   waitForConnections: true,
-//   connectionLimit: 10,
-//   queueLimit: 0
-// });
-
-// module.exports = db.promise();
-
 const mysql = require('mysql2');
 
 const db = mysql.createPool({
- host: process.env.DB_HOST || 'localhost',
+    // Lấy thông tin từ mây (nếu có), không thì tự dùng localhost của máy tính
+    host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASS || '',
     database: process.env.DB_NAME || 'dientu_store',
+    port: process.env.DB_PORT || 3306,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-module.exports = db;
+// Xuất ra dạng promise để API dùng được async/await
+module.exports = db.promise();
+
+// const mysql = require('mysql2');
+
+// const db = mysql.createPool({
+//  host: process.env.DB_HOST || 'localhost',
+//     user: process.env.DB_USER || 'root',
+//     password: process.env.DB_PASS || '',
+//     database: process.env.DB_NAME || 'dientu_store',
+// });
+
+// module.exports = db;
