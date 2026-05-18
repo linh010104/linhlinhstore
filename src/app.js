@@ -4,11 +4,11 @@ const cors = require('cors');
 const path = require('path');
 const mongoose = require('mongoose');
 
-// --- 1. KẾT NỐI MONGODB ---
-const mongoUri = process.env.MONGODB_URL || 'mongodb://127.0.0.1:27017/dientu_store_ai';
-mongoose.connect(mongoUri)
-  .then(() => console.log("✅ MongoDB: Connected"))
-  .catch((err) => console.error("❌ MongoDB Error:", err));
+// // --- 1. KẾT NỐI MONGODB ---
+// const mongoUri = process.env.MONGODB_URL || 'mongodb://127.0.0.1:27017/dientu_store_ai';
+// mongoose.connect(mongoUri)
+//   .then(() => console.log("✅ MongoDB: Connected"))
+//   .catch((err) => console.error("❌ MongoDB Error:", err));
 
 // --- 2. IMPORT ROUTES ---
 const categoryRoutes = require('./routes/CategoryRoutes');
