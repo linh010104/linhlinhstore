@@ -5,22 +5,15 @@ const consultCustomer = async (req, res) => {
     try {
         const { message, userId } = req.body; 
 
-        // 1. Lấy danh sách sản phẩm từ bảng 'products' (đổi tên cột AS cho khớp logic cũ)
         const [products] = await db.promise().query(
             'SELECT name AS ten_san_pham, price AS gia FROM products ORDER BY id DESC LIMIT 20'
         );
-        
-        // Tui bỏ chữ 'Loại' đi vì nhìn trong db của ông category_id là số, ném cho AI nó không hiểu
         const inventory = products.map(p => `- ${p.ten_san_pham} (Giá: ${p.gia} VNĐ)`).join('\n');
 
-        // 2. Thu thập "profile" khách hàng
         let customerProfile = "Đây là khách hàng mới (vãng lai). Hãy chào mừng nồng nhiệt.";
         
         if (userId) {
-            // Sửa lại thành bảng 'users'. Giả định cột tên của ông là 'name' (Nếu database dùng fullname hay ho_ten thì ông tự đổi chữ 'name' nhé)
-            const [user] = await db.promise().query('SELECT name AS ho_ten FROM users WHERE id = ?', [userId]);
-            
-            // Sửa lại thành bảng 'orders' và 'order_items'
+            const [user] = await db.promise().query('SELECT full_name AS ho_ten FROM users WHERE id = ?', [userId]);
             const [orders] = await db.promise().query(
                 `SELECT p.name AS ten_san_pham 
                  FROM order_items oi 
@@ -28,8 +21,6 @@ const consultCustomer = async (req, res) => {
                  JOIN orders o ON oi.order_id = o.id 
                  WHERE o.user_id = ? ORDER BY o.created_at DESC LIMIT 1`, [userId]
             );
-            
-            // Sửa lại thành bảng 'carts'
             const [cart] = await db.promise().query(
                 `SELECT p.name AS ten_san_pham 
                  FROM carts c 
@@ -44,7 +35,6 @@ const consultCustomer = async (req, res) => {
             }
         }
 
-        // 3. Xây dựng Prompt cho Chatbot
         const systemPrompt = `Bạn là chuyên viên tư vấn bán hàng của "linhlinhstore". 
         Thông tin khách hàng: ${customerProfile}
         Kho hàng của shop: \n${inventory}
@@ -55,7 +45,6 @@ const consultCustomer = async (req, res) => {
         - Giọng văn: Thân thiện, xưng "em" gọi "anh/chị", siêu ngắn gọn (dưới 80 chữ).
         - Luôn kết thúc bằng một câu hỏi dẫn dắt.`;
 
-        // 4. Gọi Gemini
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const result = await model.generateContent(`${systemPrompt}\nKhách hàng: ${message}`);

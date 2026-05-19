@@ -1,5 +1,3 @@
-/* File: aiPrompts.js - Nơi tập trung toàn bộ "Kịch bản" cho AI */
-
 module.exports = {
     // 1. Prompt cho tính năng Quét Hóa Đơn (Dạng chuỗi cố định)
     SCAN_INVOICE_PROMPT: `

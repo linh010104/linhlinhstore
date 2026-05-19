@@ -1,10 +1,8 @@
-/* File: ai.controller.js */
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const prompts = require('./aiPrompts'); // Gọi "Kịch bản" từ file mới tạo vào đây
+const prompts = require('./aiPrompts'); 
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// --- 1. TÍNH NĂNG QUÉT HÓA ĐƠN ---
 const scanInvoice = async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ success: false, message: 'Thiếu file ảnh hóa đơn!' });
@@ -15,8 +13,6 @@ const scanInvoice = async (req, res) => {
         };
 
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-        // Gọi hằng số SCAN_INVOICE_PROMPT cực kỳ gọn
         const result = await model.generateContent([prompts.SCAN_INVOICE_PROMPT, imagePart]);
         const responseText = result.response.text();
 
@@ -32,16 +28,12 @@ const scanInvoice = async (req, res) => {
     }
 };
 
-// --- 2. TÍNH NĂNG AI CỐ VẤN TÀI CHÍNH ---
 const analyzeFinance = async (req, res) => {
     const { totalRevenue, totalImportCost, totalVatPaid, profit, soldData, importData } = req.body;
 
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-        // Truyền tham số vào hàm getFinancePrompt cực kỳ mượt
         const prompt = prompts.getFinancePrompt(totalRevenue, totalImportCost, totalVatPaid, profit, soldData, importData);
-
         const result = await model.generateContent(prompt);
         const text = result.response.text();
 
