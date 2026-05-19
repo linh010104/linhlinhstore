@@ -34,7 +34,6 @@ const pool = mysql.createPool({
     queueLimit: 0            // Hàng đợi không giới hạn
 });
 
-// Bắt lỗi nếu Pool có vấn đề
 pool.on('connection', function (connection) {
     console.log('🔗 Đã mở một kết nối DB an toàn.');
 });
