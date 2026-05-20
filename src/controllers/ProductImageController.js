@@ -14,3 +14,18 @@ exports.uploadImage = (req, res) => {
       res.json({ message: 'Upload ảnh lên mây thành công', image_url: imageUrl });
   });
 };
+exports.deleteImage = (req, res) => {
+  const imageId = req.params.imageId;
+  
+  const sql = "DELETE FROM product_images WHERE id = ?";
+  
+  db.query(sql, [imageId], (err, result) => {
+      if (err) return res.status(500).json({ error: err.message });
+      
+      if (result.affectedRows === 0) {
+          return res.status(404).json({ message: 'Không tìm thấy ảnh này trong hệ thống' });
+      }
+      
+      res.json({ message: 'Đã xóa ảnh thành công!' });
+  });
+};
