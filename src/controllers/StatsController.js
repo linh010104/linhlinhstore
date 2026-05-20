@@ -114,7 +114,6 @@ exports.getDashboardOverview = async (req, res) => {
             if (found) dailyRev = found.daily_revenue;
             chartData.push(dailyRev);
         }
-
         const recentOrdersSql = `
             SELECT id, receiver_name as customer, total_amount, status 
             FROM orders 

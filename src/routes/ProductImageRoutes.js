@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../middlewares/upload');
+
+// 🔥 Hút đường ống uploadProduct từ file cấu hình Cloudinary mới
+const { uploadProduct } = require('../config/cloudinary');
 const ProductImageController = require('../controllers/ProductImageController');
 
+// 🔥 Gắn đường ống vào đây
 router.post(
   '/:productId',
-  upload.single('image'),
+  uploadProduct.single('image'),
   ProductImageController.uploadImage
 );
 

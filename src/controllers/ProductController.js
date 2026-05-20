@@ -1,14 +1,5 @@
 const Product = require('../models/ProductModel');
 const db = require('../config/db');
-const cloudinary = require('cloudinary').v2; 
-const fs = require('fs');
-
-// Cấu hình kết nối đám mây Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
 
 exports.getAll = (req, res) => {
   const filters = {
@@ -18,8 +9,6 @@ exports.getAll = (req, res) => {
 
   Product.getAll(filters, (err, result) => {
     if (err) return res.status(500).json(err);
-    
-    // Đảm bảo trả về mảng danh sách sản phẩm sạch cho Frontend
     const safeResult = Array.isArray(result) ? result : [];
     res.json(safeResult);
   });
@@ -54,39 +43,25 @@ exports.delete = (req, res) => {
   });
 };
 
-// ĐÃ NÂNG CẤP LÊN CLOUDINARY
-exports.uploadImage = async (req, res) => {
+// 🔥 ĐÃ DỌN DẸP GỌN GÀNG NHỜ CLOUDINARY MIDDLEWARE
+exports.uploadImage = (req, res) => {
   const productId = req.params.id;
 
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ message: 'Chưa chọn file ảnh nào' });
   }
 
-  try {
-    const uploadPromises = req.files.map(async (file) => {
-      const result = await cloudinary.uploader.upload(file.path, {
-        folder: 'linhlinhstore_products'
-      });
+  // Quét qua mảng req.files, bóc lấy cái link mây (file.path) để tạo data insert vào DB
+  const values = req.files.map(file => [productId, file.path]);
+  const sql = `INSERT INTO product_images (product_id, image_url) VALUES ?`;
 
-      if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
-
-      return [productId, result.secure_url]; 
+  db.query(sql, [values], (err, result) => {
+    if (err) return res.status(500).json(err);
+    res.json({ 
+      message: `Đã upload vĩnh viễn thành công ${req.files.length} ảnh lên mây!`, 
+      insertedRows: result ? result.affectedRows : 0 
     });
-
-    const values = await Promise.all(uploadPromises);
-    const sql = `INSERT INTO product_images (product_id, image_url) VALUES ?`;
-
-    db.query(sql, [values], (err, result) => {
-      if (err) return res.status(500).json(err);
-      res.json({ 
-        message: `Đã upload vĩnh viễn thành công ${req.files.length} ảnh lên mây!`, 
-        insertedRows: result ? result.affectedRows : 0 
-      });
-    });
-  } catch (error) {
-    console.error("🔥 Lỗi Cloudinary:", error);
-    return res.status(500).json({ message: "Lỗi upload dữ liệu đám mây" });
-  }
+  });
 };
 
 exports.getDetail = (req, res) => {
