@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-// 🔥 Hút đường ống uploadProduct từ file cấu hình Cloudinary mới
 const { uploadProduct } = require('../config/cloudinary');
 const ProductImageController = require('../controllers/ProductImageController');
 
