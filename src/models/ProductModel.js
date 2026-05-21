@@ -5,6 +5,8 @@ exports.getAll = (filters, callback) => {
     callback = filters;
     filters = {}; 
   }
+  
+  // Dùng Window Function lấy ảnh siêu tốc thay vì Subquery lồng nhau
   let sql = `
     SELECT 
       p.*,
@@ -15,10 +17,10 @@ exports.getAll = (filters, callback) => {
     LEFT JOIN categories c ON p.category_id = c.id
     LEFT JOIN brands b ON p.brand_id = b.id
     LEFT JOIN (
-        SELECT product_id, image_url 
-        FROM product_images 
-        WHERE id IN (SELECT MAX(id) FROM product_images GROUP BY product_id)
-    ) pi ON p.id = pi.product_id
+        SELECT product_id, image_url,
+               ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY id DESC) as rn
+        FROM product_images
+    ) pi ON p.id = pi.product_id AND pi.rn = 1
     WHERE p.status = 1
   `;
   

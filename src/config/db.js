@@ -28,10 +28,10 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME || 'dientu_store',
     port: process.env.DB_PORT || 3306,
     
-    // 3 DÒNG QUAN TRỌNG NHẤT ĐỂ TRỊ LỖI CLEVER CLOUD
-    connectionLimit: 4,      // Ép Node.js chỉ mở tối đa 4 kết nối (chừa 1 cái cho ông dùng phpMyAdmin/HeidiSQL)
-    waitForConnections: true,// Nếu có yêu cầu thứ 5, bắt nó đứng xếp hàng chờ thay vì báo lỗi văng game
-    queueLimit: 0            // Hàng đợi không giới hạn
+    connectionLimit: 15,    
+    queueLimit: 50,         
+    enableKeepAlive: true,  
+    keepAliveInitialDelay: 0      
 });
 
 pool.on('connection', function (connection) {
