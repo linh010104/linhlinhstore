@@ -1,3 +1,38 @@
+// ============================================================
+// BẮT TÍN HIỆU TỪ GOOGLE LOGIN TRẢ VỀ TRÊN URL
+// ============================================================
+document.addEventListener("DOMContentLoaded", () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const userStr = urlParams.get('user');
+
+    if (token && userStr) {
+        try {
+            // Giải mã và lưu thông tin
+            const user = JSON.parse(decodeURIComponent(userStr));
+            StorageHelper.setToken(token);
+            StorageHelper.setUser(user);
+            
+            // Xóa cái đuôi loằng ngoằng trên thanh địa chỉ cho đẹp web
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
+            // Báo thành công và load lại giao diện
+            if (typeof UIHelper !== 'undefined') {
+                UIHelper.showSuccess('Đăng nhập thành công', 'Chào mừng bạn đến với LinhLinh Store!', () => {
+                    window.location.reload(); 
+                });
+            } else {
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error("Lỗi khi xử lý dữ liệu Google:", error);
+        }
+    }
+});
+
+// ============================================================
+// CÁC HÀM CŨ CỦA ÔNG (GIỮ NGUYÊN)
+// ============================================================
 function login() {
     const usernameVal = document.getElementById("username").value;
     const passwordVal = document.getElementById("password").value;

@@ -27,11 +27,15 @@ const pool = mysql.createPool({
     password: process.env.DB_PASS || '',
     database: process.env.DB_NAME || 'dientu_store',
     port: process.env.DB_PORT || 3306,
+
+    connectionLimit: 4, 
+    waitForConnections: true,
+    queueLimit: 0
     
-    connectionLimit: 15,    
-    queueLimit: 50,         
-    enableKeepAlive: true,  
-    keepAliveInitialDelay: 0      
+    // connectionLimit: 5,    
+    // queueLimit: 50,         
+    // enableKeepAlive: true,  
+    // keepAliveInitialDelay: 0      
 });
 
 pool.on('connection', function (connection) {
