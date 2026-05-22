@@ -7,6 +7,22 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css"> 
+    
+    <style>
+        @media (max-width: 991.98px) {
+            .hero-wrapper {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 15px !important;
+            }
+            .category-menu, .right-promos {
+                display: none !important; /* Ẩn menu trái và khung ưu đãi phải trên điện thoại */
+            }
+            .center-content {
+                width: 100% !important; /* Banner tràn viền 100% trên điện thoại */
+            }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg sticky-top shadow-sm" style="background-color: var(--primary-color); padding: 12px 0;">
@@ -228,7 +244,7 @@
                 <div class="col-lg-3 col-md-6 mb-4">
                     <h6 class="fw-bold text-dark mb-3">Kết nối với LINHLINH Store</h6>
                     <div class="d-flex gap-3 mb-4">
-                        <a href="#" class="text-danger fs-3 hover-scale"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="https://www.youtube.com/channel/UCpGrk7ie4kpLWMhsnorI1Bg" class="text-danger fs-3 hover-scale"><i class="fa-brands fa-youtube"></i></a>
                         <a href="#" class="text-primary fs-3 hover-scale"><i class="fa-brands fa-facebook"></i></a>
                         <a href="#" class="text-dark fs-3 hover-scale"><i class="fa-brands fa-tiktok"></i></a>
                     </div>
@@ -242,6 +258,12 @@
             </div>
         </div>
     </footer>
+
+    <div class="zalo-btn-wrapper">
+        <a href="https://zalo.me/0966694299" target="_blank" class="zalo-btn">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo Chat">
+        </a>
+    </div>
 
     <div id="ai-chat-wrapper">
         <button id="btn-open-chat"><i class="fa-solid fa-robot"></i></button>
