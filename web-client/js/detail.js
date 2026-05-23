@@ -232,13 +232,13 @@ function buyNowFromDetail() {
     }
 }
 
-// XÁC NHẬN ĐẶT HÀNG TỪ FORM
 function submitDirectBuy() {
     const token = localStorage.getItem("token");
     const name = document.getElementById("checkout-name").value.trim();
     const phone = document.getElementById("checkout-phone").value.trim();
     const address = document.getElementById("checkout-address").value.trim();
-    const payment = document.getElementById("checkout-payment").value;
+    // 🔥 Lấy giá trị thanh toán thực tế khách chọn trên Modal (VNPAY hoặc CASH)
+    const payment = document.getElementById("checkout-payment").value; 
     const note = document.getElementById("checkout-note").value.trim();
     const qty = parseInt(document.getElementById("qty-input").value);
 
@@ -252,15 +252,20 @@ function submitDirectBuy() {
         variantNames.push(selectedVariants[group].variant_name);
     }
     const variantInfoString = variantNames.length > 0 ? variantNames.join(" - ") : null;
+    
+    // Lấy giá tổng cộng đang hiển thị trên màn hình
+    const priceText = document.getElementById("detail-price").innerText.replace(/[^0-9]/g, '');
+    const finalPrice = parseInt(priceText) || basePrice; // Fallback về basePrice nếu lỗi
 
     const data = {
-        productId: currentProductId,
+        product_id: currentProductId, // Backend cần biến này
         quantity: qty,
+        price: finalPrice, // Gửi giá thực tế (đã cộng tiền variant)
         variant_info: variantInfoString, 
         name: name,
         phone: phone,
         address: address,
-        payment_method: payment,
+        payment_method: payment, 
         note: note
     };
 
@@ -283,13 +288,29 @@ function submitDirectBuy() {
         btnSubmit.innerHTML = originalText;
         btnSubmit.disabled = false;
 
-        if (d.orderId) {
-            UIHelper.showSuccess("Thành công!", "🎉 Đặt hàng thành công! Đã lên đơn tự động.", () => {
-                const modalEl = document.getElementById('checkoutModal');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                if(modal) modal.hide();
-                window.location.href = "orders.html";
-            });
+        if (d.success || d.orderId) {
+            // Tắt cái Modal đi
+            const modalEl = document.getElementById('checkoutModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if(modal) modal.hide();
+
+            // Nếu Backend trả về link VNPay thì bay sang đó
+            if (d.paymentUrl) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Đang chuyển hướng...',
+                    text: 'Hệ thống đang đưa bạn đến cổng thanh toán VNPay!',
+                    showConfirmButton: false,
+                    timer: 2000
+                }).then(() => {
+                    window.location.href = d.paymentUrl;
+                });
+            } else {
+                // Mua thành công nhưng bằng tiền mặt (COD)
+                UIHelper.showSuccess("Thành công!", "🎉 Đặt hàng thành công! Đã lên đơn tự động.", () => {
+                    window.location.href = "orders.html";
+                });
+            }
         } else {
             UIHelper.showError("Lỗi", d.message || "Lỗi khi đặt hàng");
         }

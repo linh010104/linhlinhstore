@@ -1,15 +1,6 @@
-// if (!StorageHelper.isLoggedIn()) {
-//     UIHelper.showWarning(
-//         'Chưa đăng nhập!',
-//         "Vui lòng đăng nhập để xem giỏ hàng.",
-//         () => { window.location.href = "login.html"; }
-//     );
-// }
-
 // File: web-client/js/cart.js
 
 function loadCart() {
-    // 💡 ĐÃ FIX BUG 1: Chỉ bắt đăng nhập nếu người dùng đang thật sự ở trang Giỏ hàng
     if (!StorageHelper.isLoggedIn()) {
         if (window.location.pathname.includes('cart.html')) {
             UIHelper.showWarning(
@@ -18,7 +9,7 @@ function loadCart() {
                 () => { window.location.href = "login.html"; }
             );
         }
-        return; // Dừng lại, không gọi API lấy giỏ hàng nữa
+        return; 
     }
 
     API.get('/cart', true)
@@ -90,6 +81,7 @@ function renderSummary(total) {
     const summaryEl = document.getElementById("cart-summary-area");
     if (!summaryEl) return;
 
+    // 🔥 FIX: Bổ sung Dropdown chọn phương thức thanh toán ngay trong bảng tính tiền
     summaryEl.innerHTML = `
         <div class="card border-0 shadow-sm rounded-4 p-4 sticky-summary bg-white">
             <h5 class="fw-bold mb-4">Hóa đơn của bạn</h5>
@@ -116,6 +108,14 @@ function renderSummary(total) {
                 <span class="fw-bold fs-4 text-danger">${UIHelper.formatPrice(total)}</span>
             </div>
             
+            <div class="mb-4">
+                <label class="small fw-bold mb-2">Phương thức thanh toán:</label>
+                <select class="form-select border-danger bg-light" id="cart-payment-method">
+                    <option value="VNPAY">Thanh toán qua cổng VNPay (Khuyên dùng)</option>
+                    <option value="CASH">Thanh toán khi nhận hàng (COD)</option>
+                </select>
+            </div>
+            
             <button onclick="processCheckout()" class="btn btn-danger w-100 py-3 fw-bold rounded-pill shadow-sm mb-3">
                 THANH TOÁN NGAY <i class="fa-solid fa-arrow-right ms-2"></i>
             </button>
@@ -127,15 +127,21 @@ function renderSummary(total) {
 }
 
 function processCheckout() {
+    // 🔥 Lấy phương thức thanh toán người dùng vừa chọn từ Dropdown
+    const selectedPayment = document.getElementById("cart-payment-method") ? document.getElementById("cart-payment-method").value : "VNPAY";
+    
+    // Tùy chỉnh tin nhắn xác nhận dựa trên phương thức
+    const confirmMsg = selectedPayment === "VNPAY" ? "Bạn sẽ được chuyển hướng sang cổng thanh toán VNPay." : "Đơn hàng sẽ được giao đến bạn và thanh toán bằng tiền mặt.";
+
     UIHelper.showConfirm(
         'Xác nhận đặt hàng?',
-        "Bạn đang đặt mua các sản phẩm trong giỏ hàng.",
-        'Xác nhận đặt',
+        confirmMsg,
+        'Thanh toán ngay',
         'Kiểm tra lại',
         () => {
             const user = StorageHelper.getUser();
             const checkoutData = {
-                payment_method: "COD",
+                payment_method: selectedPayment, 
                 name: user?.full_name || "Khách hàng", 
                 phone: user?.phone || "0123456789",
                 address: user?.address || "Hà Nội",
@@ -144,17 +150,30 @@ function processCheckout() {
 
             API.post('/orders/checkout', checkoutData, true)
             .then(data => {
-                const { isSuccess, message } = UIHelper.parseResponse(data);
-                
-                if (isSuccess) {
-                    UIHelper.showSuccess('Đặt hàng thành công!', 'Cảm ơn ông đã tin tưởng LinhLinh Store.', () => {
-                        window.location.href = "orders.html";
-                    });
+                if (data.success || data.isSuccess) {
+                    if (data.paymentUrl) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Đang chuyển hướng...',
+                            text: 'Hệ thống đang đưa bạn đến cổng thanh toán VNPay!',
+                            showConfirmButton: false,
+                            timer: 2000
+                        }).then(() => {
+                            window.location.href = data.paymentUrl;
+                        });
+                    } else {
+                        UIHelper.showSuccess('Đặt hàng thành công!', 'Cảm ơn ông đã tin tưởng LinhLinh Store.', () => {
+                            window.location.href = "orders.html";
+                        });
+                    }
                 } else {
-                    UIHelper.showError('Lỗi', message);
+                    UIHelper.showError('Lỗi', data.message || 'Có lỗi xảy ra khi tạo đơn hàng');
                 }
             })
-            .catch(err => console.error(err));
+            .catch(err => {
+                console.error("Lỗi đặt hàng:", err);
+                UIHelper.showError('Lỗi', 'Hệ thống đang bận hoặc giỏ hàng trống');
+            });
         }
     );
 }
@@ -177,7 +196,6 @@ function removeItem(cartId) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Chỉ tự động loadCart nếu có vùng hiển thị giỏ hàng
     if (document.getElementById("cart-body")) {
         loadCart();
     }
