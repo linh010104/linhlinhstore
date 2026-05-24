@@ -374,6 +374,31 @@
             const btnSend = document.getElementById('btn-send');
             const chatContent = document.getElementById('chat-content');
 
+            // 👇 THÊM MỚI TỪ ĐÂY: ĐOẠN CODE TỰ ĐỘNG CHÀO KHÁCH 👇
+            setTimeout(() => {
+                let cauChaoTuDong = "Dạ LinhLinh Store xin chào anh/chị ạ! 🔥 Bên em đang có sẵn rất nhiều deal hời cho Laptop và Điện thoại. Anh/chị đang tìm dòng máy nào để em báo giá luôn ạ? ✨ (Đăng nhập ngay để nhận Voucher sinh viên giảm 500K nhé!)";
+
+                // Tận dụng luôn StorageHelper của ông để lấy tên cho lẹ
+                if (typeof StorageHelper !== 'undefined' && StorageHelper.isLoggedIn()) {
+                    const userObj = StorageHelper.getUser();
+                    const fullName = userObj?.full_name || userObj?.username; 
+                    if (fullName) {
+                        const shortName = fullName.split(' ').pop();
+                        cauChaoTuDong = `Dạ em chào anh/chị ${shortName} ạ! 🔥 LinhLinh Store rất vui khi anh/chị quay trở lại. Hôm nay kho em đang sẵn nhiều deal công nghệ cực bốc, ${shortName} đang tìm máy nào để em tư vấn luôn ạ? 💻📱`;
+                    }
+                }
+
+                // 1. Tự động bật popup khung chat lên cho khách thấy
+                if (windowChat && btnOpen) {
+                    windowChat.style.display = 'flex';
+                    btnOpen.style.display = 'none';
+                }
+                
+                // 2. Dùng hàm có sẵn của ông để in câu chào ra màn hình
+                appendMessage(cauChaoTuDong, 'ai');
+
+            }, 1500);
+
             if(btnOpen && windowChat) {
                 btnOpen.addEventListener('click', () => {
                     windowChat.style.display = 'flex';

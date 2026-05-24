@@ -5,91 +5,77 @@ const consultCustomer = async (req, res) => {
     try {
         const { message, userId } = req.body; 
 
-        // 1. Kiểm tra nhanh API Key để tránh lỗi sập server
+        // 1. Kiểm tra API Key để tránh lỗi sập server
         if (!process.env.GEMINI_API_KEY) {
             console.error("🔥 LỖI CHÍ MẠNG: Thiếu biến môi trường GEMINI_API_KEY");
             return res.status(500).json({ reply: "Dạ hệ thống AI đang được bảo trì, anh/chị vui lòng quay lại sau nhé!" });
         }
 
-        // 2. Tối ưu truy vấn Database (Gom chung các truy vấn nhỏ)
+        // 2. Lấy TOÀN BỘ kho hàng đang kinh doanh (Bỏ LIMIT để AI quét được hết)
         const [products] = await db.promise().query(
-            'SELECT name AS ten_san_pham, price AS gia FROM products WHERE status = 1 ORDER BY id DESC LIMIT 20'
+            'SELECT name AS ten_san_pham, price AS gia FROM products WHERE status = 1 ORDER BY id DESC'
         );
         const inventory = products.map(p => `- ${p.ten_san_pham} (Giá: ${p.gia} VNĐ)`).join('\n');
 
-        let customerProfile = "Đây là khách hàng mới (vãng lai). Hãy chào mừng nồng nhiệt.";
+        // 3. PHÂN LOẠI KHÁCH HÀNG & LẤY TÊN GỌI TỰ NHIÊN
+        let customerContext = "";
         
         if (userId) {
             const [user] = await db.promise().query('SELECT full_name AS ho_ten FROM users WHERE id = ?', [userId]);
             
-            // Tối ưu: Lấy trực tiếp tên sản phẩm mua gần nhất mà không cần JOIN phức tạp nếu không cần thiết
-            const [orders] = await db.promise().query(
-                `SELECT p.name AS ten_san_pham 
-                 FROM order_items oi 
-                 JOIN products p ON oi.product_id = p.id 
-                 JOIN orders o ON oi.order_id = o.id 
-                 WHERE o.user_id = ? ORDER BY o.created_at DESC LIMIT 1`, [userId]
-            );
-            
-            const [cart] = await db.promise().query(
-                `SELECT p.name AS ten_san_pham 
-                 FROM carts c 
-                 JOIN products p ON c.product_id = p.id 
-                 WHERE c.user_id = ?`, [userId]
-            );
+            // Lấy từ cuối cùng trong chuỗi họ tên để xưng hô cho thân mật
+            const fullName = user[0].ho_ten;
+            const shortName = fullName.split(' ').pop(); 
 
-            if (user.length > 0) {
-                customerProfile = `Khách hàng tên: ${user[0].ho_ten}. 
-                ${orders.length > 0 ? `Sản phẩm mua gần nhất: ${orders[0].ten_san_pham}.` : 'Chưa mua hàng lần nào.'}
-                ${cart.length > 0 ? `Trong giỏ hàng đang có: ${cart.map(c => c.ten_san_pham).join(', ')}.` : 'Giỏ hàng trống.'}`;
-            }
+            customerContext = `TÌNH TRẠNG: Khách VIP ĐÃ ĐĂNG NHẬP. Tên thật: ${fullName}. 
+            HÀNH ĐỘNG: Xưng "em" và gọi khách là "anh/chị ${shortName}". 
+            TUYỆT ĐỐI KHÔNG gọi đầy đủ cả họ và tên. KHÔNG chào hỏi lại dông dài nếu khách đang hỏi sản phẩm.`;
+        } else {
+            customerContext = `TÌNH TRẠNG: Khách vãng lai (CHƯA ĐĂNG NHẬP). 
+            HÀNH ĐỘNG: Xưng "em", gọi "anh/chị". BẮT BUỘC trả lời thẳng vào câu hỏi. Tư vấn xong nhớ nhắc nhẹ: "Đăng nhập ngay để nhận voucher giảm 500K nhé ạ".`;
         }
 
-        // 3. Tối ưu Prompt để AI "nhập vai" mượt mà hơn
-        const systemPrompt = `Bạn là nhân viên Sale xuất sắc nhất của "LinhLinh Store". Cực kỳ lanh lợi, dẻo miệng và biết cách giữ chân khách.
+        // 4. PROMPT "LUẬT THÉP VỀ KHO HÀNG - VÀO VIỆC LUÔN"
+        const systemPrompt = `Bạn là Top 1 Sale của LinhLinh Store - cửa hàng bán lẻ đồ công nghệ uy tín.
+        DANH SÁCH SẢN PHẨM ĐANG BÁN: \n${inventory}
+        
+        ${customerContext}
 
-        Thông tin khách hàng: ${customerProfile}
-        Kho hàng ĐANG CÓ SẴN (chỉ tư vấn trong danh sách này): \n${inventory}
+        LUẬT TƯ VẤN (TUYỆT ĐỐI TUÂN THỦ):
+        1. QUÉT KHO HÀNG LÀ SỐ 1: Khi khách hỏi về bất kỳ đồ công nghệ nào (điện thoại, laptop, chuột...), BẮT BUỘC phải tìm trong "DANH SÁCH SẢN PHẨM ĐANG BÁN" ở trên.
+        2. NẾU CÓ HÀNG: Kể tên ĐẦY ĐỦ các mã khớp nhu cầu và BÁO GIÁ luôn. (VD: "Dạ anh/chị ơi, em đang sẵn mã Laptop Asus TUF giá 20.490.000..."). KHÔNG chào hỏi suông rồi im lặng!
+        3. NẾU KHÔNG CÓ HÀNG: BẮT BUỘC phải nói lời xin lỗi, báo rõ là shop không kinh doanh món đó. SAU ĐÓ KHÉO LÉO GỢI Ý sang 1 món khác CÓ TRONG KHO. Tuyệt đối KHÔNG BỊA ra sản phẩm!
+        4. CẤM LAN MAN: Trả lời dứt khoát, trọn vẹn câu (khoảng 3-4 câu). Dùng emoji (🔥, 💻, 📱) cho sinh động, KHÔNG dùng dấu sao (**) để in đậm.
+        5. CHỐT SALE: Cuối tin nhắn LUÔN có 1 câu hỏi khơi gợi (VD: "Anh/chị ưng mã nào để em lên đơn ạ?", "Ngân sách mình tầm bao nhiêu ạ?").
 
-        NHIỆM VỤ TỐI THƯỢNG (TUYỆT ĐỐI TUÂN THỦ):
-        1. VÀO VIỆC LUÔN: Nếu khách hỏi sản phẩm (VD: "điện thoại giá rẻ", "laptop gaming"), PHẢI TÌM NGAY 1-2 sản phẩm khớp nhất trong "Kho hàng" để báo giá luôn. KHÔNG ĐƯỢC chỉ chào hỏi suông rồi im lặng!
-        2. XỬ LÝ TỪ CHỐI/HẾT HÀNG: Nếu khách hỏi món rẻ mà kho toàn đồ đắt, hãy khéo léo giới thiệu món rẻ nhất đang có (VD: "Dạ hiện bên em dòng rẻ nhất đang có mã này siêu ngon..."). 
-        3. GIỌNG VĂN CHỐT SALE: Dùng từ ngữ hấp dẫn (VD: "Deal hời", "Cực mượt", "Siêu phẩm"), kèm emoji (🔥, 📱, 👇). Xưng "em", gọi "anh/chị".
-        4. THỰC TẾ & NGẮN GỌN: Chỉ báo giá những món CÓ TRONG KHO HÀNG ở trên. Tuyệt đối không bịa sản phẩm. Trả lời dưới 80 chữ.
-        5. CÂU HỎI MỞ: Cuối câu trả lời LUÔN LUÔN phải có 1 câu hỏi để ép khách tương tác lại (VD: "Anh chị ưng mẫu này không để em lên đơn ạ?", "Ngân sách mình định đầu tư khoảng bao nhiêu ạ?").`;
+        Tin nhắn của khách: "${message}"`;
 
-        // 4. Giữ nguyên cấu hình Gemini này (Temperature 0.8 là chuẩn rồi)
+        // 5. Khởi tạo Gemini với cấu hình tối ưu
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ 
             model: "gemini-2.5-flash",
             generationConfig: {
-                temperature: 0.8, 
+                temperature: 0.7, // Nhiệt độ vừa đủ để tư vấn tự nhiên mà không bị "ngáo"
                 topP: 0.95,
                 topK: 64,
-                maxOutputTokens: 256,
+                maxOutputTokens: 500, // Đảm bảo AI nói hết câu, không bị cụt lủn
             }
         });
 
-        // 5. Gửi request và đo thời gian
-        console.log(`Đang gửi câu hỏi lên Gemini cho khách hàng ${userId || 'vãng lai'}...`);
-        const result = await model.generateContent(`${systemPrompt}\n\nKhách hàng hỏi: ${message}`);
+        // 6. Gửi request và trả kết quả
+        console.log(`[Chatbot] Đang xử lý tin nhắn của user ${userId || 'vãng lai'}...`);
+        const result = await model.generateContent(systemPrompt);
         
-        console.log("✅ Gemini đã trả lời thành công!");
+        console.log("[Chatbot] Đã trả lời thành công!");
         res.status(200).json({ reply: result.response.text() });
 
     } catch (error) {
-        // Bắt lỗi cực kỳ chi tiết để sau này có lỗi là biết ngay do đâu
         console.error("🔥 LỖI CHATBOT AI:", error);
         
-        // Phân tích mã lỗi của Google
         let errorMessage = "Dạ hệ thống bên em đang quá tải một chút, anh/chị nhắn lại sau vài giây nhé!";
         if (error.status === 429) {
-             console.error("-> Nguyên nhân: Hết quota (Rate Limit) của gói API Free.");
-             errorMessage = "Dạ hôm nay khách đông quá nên em hơi nghẽn, anh/chị nán lại 1 phút rồi nhắn lại em nha!";
-        } else if (error.message && error.message.includes("API key not valid")) {
-             console.error("-> Nguyên nhân: API Key bị sai hoặc đã hết hạn.");
+             errorMessage = "Dạ hôm nay khách đông quá nên em hơi nghẽn, anh/chị nán lại xíu rồi nhắn lại em nha!";
         }
-
         res.status(500).json({ reply: errorMessage });
     }
 };
