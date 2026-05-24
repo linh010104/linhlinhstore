@@ -26,6 +26,33 @@ function loadProductDetail() {
             document.getElementById("detail-name").innerText = data.name;
             if(document.getElementById("breadcrumb-name")) document.getElementById("breadcrumb-name").innerText = data.name;
             document.getElementById("detail-price").innerText = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data.price);
+            const btnBuyNow = document.querySelector(".btn-danger"); // Nút Mua Ngay (có class btn-danger)
+            const btnAddToCart = document.querySelector(".btn-outline-danger"); // Nút Thêm Vào Giỏ
+            const qtyControl = document.querySelector(".input-group"); // Khu vực tăng giảm số lượng
+
+            // Kiểm tra số lượng tồn kho (nếu <= 0 là hết hàng)
+            if (data.stock_quantity <= 0) {
+                // 1. Vô hiệu hóa nút MUA NGAY
+                if (btnBuyNow) {
+                    btnBuyNow.disabled = true;
+                    btnBuyNow.innerHTML = "ĐÃ HẾT HÀNG";
+                    btnBuyNow.classList.replace("btn-danger", "btn-secondary"); // Đổi sang màu xám
+                }
+                
+                // 2. Vô hiệu hóa nút THÊM VÀO GIỎ HÀNG
+                if (btnAddToCart) {
+                    btnAddToCart.disabled = true;
+                    btnAddToCart.innerHTML = '<i class="fa-solid fa-cart-shopping"></i> Tạm Hết Hàng';
+                    btnAddToCart.classList.replace("text-danger", "text-secondary");
+                    btnAddToCart.style.borderColor = "#6c757d";
+                }
+
+                // 3. Ẩn cục chọn số lượng đi cho đỡ ngứa mắt
+                if (qtyControl) {
+                    qtyControl.style.opacity = "0.5";
+                    qtyControl.style.pointerEvents = "none"; // Cấm bấm
+                }
+            }
             
             if (data.variants && data.variants.length > 0) renderVariants(data.variants, Number(data.price));
 
