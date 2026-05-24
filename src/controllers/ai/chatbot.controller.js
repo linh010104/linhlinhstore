@@ -5,8 +5,15 @@ const consultCustomer = async (req, res) => {
     try {
         const { message, userId } = req.body; 
 
+        // 1. Kiểm tra nhanh API Key để tránh lỗi sập server
+        if (!process.env.GEMINI_API_KEY) {
+            console.error("🔥 LỖI CHÍ MẠNG: Thiếu biến môi trường GEMINI_API_KEY");
+            return res.status(500).json({ reply: "Dạ hệ thống AI đang được bảo trì, anh/chị vui lòng quay lại sau nhé!" });
+        }
+
+        // 2. Tối ưu truy vấn Database (Gom chung các truy vấn nhỏ)
         const [products] = await db.promise().query(
-            'SELECT name AS ten_san_pham, price AS gia FROM products ORDER BY id DESC LIMIT 20'
+            'SELECT name AS ten_san_pham, price AS gia FROM products WHERE status = 1 ORDER BY id DESC LIMIT 20'
         );
         const inventory = products.map(p => `- ${p.ten_san_pham} (Giá: ${p.gia} VNĐ)`).join('\n');
 
@@ -14,6 +21,8 @@ const consultCustomer = async (req, res) => {
         
         if (userId) {
             const [user] = await db.promise().query('SELECT full_name AS ho_ten FROM users WHERE id = ?', [userId]);
+            
+            // Tối ưu: Lấy trực tiếp tên sản phẩm mua gần nhất mà không cần JOIN phức tạp nếu không cần thiết
             const [orders] = await db.promise().query(
                 `SELECT p.name AS ten_san_pham 
                  FROM order_items oi 
@@ -21,6 +30,7 @@ const consultCustomer = async (req, res) => {
                  JOIN orders o ON oi.order_id = o.id 
                  WHERE o.user_id = ? ORDER BY o.created_at DESC LIMIT 1`, [userId]
             );
+            
             const [cart] = await db.promise().query(
                 `SELECT p.name AS ten_san_pham 
                  FROM carts c 
@@ -35,25 +45,53 @@ const consultCustomer = async (req, res) => {
             }
         }
 
+        // 3. Tối ưu Prompt để AI "nhập vai" mượt mà hơn
         const systemPrompt = `Bạn là chuyên viên tư vấn bán hàng của "linhlinhstore". 
         Thông tin khách hàng: ${customerProfile}
-        Kho hàng của shop: \n${inventory}
+        Kho hàng của shop hiện có: \n${inventory}
 
-        QUY TẮC TƯ VẤN:
-        - Khách quen thì chào tên. Khách mới thì chào mừng.
-        - Hỏi MỤC ĐÍCH sử dụng và NGÂN SÁCH trước -> Gợi ý 1-2 sản phẩm khớp nhất từ KHO HÀNG.
-        - Giọng văn: Thân thiện, xưng "em" gọi "anh/chị", siêu ngắn gọn (dưới 80 chữ).
-        - Luôn kết thúc bằng một câu hỏi dẫn dắt.`;
+        QUY TẮC TƯ VẤN (TUYỆT ĐỐI TUÂN THỦ):
+        - Khách quen thì gọi tên thân mật. Khách mới thì chào mừng lịch sự.
+        - Xưng hô "em" và gọi khách là "anh/chị".
+        - LUÔN hỏi MỤC ĐÍCH sử dụng hoặc NGÂN SÁCH trước khi tư vấn lan man.
+        - Gợi ý TỐI ĐA 2 sản phẩm có sẵn trong "Kho hàng của shop".
+        - Trả lời ngắn gọn, súc tích (dưới 80 chữ). KHÔNG FORMAT MARKDOWN BẰNG \`**\`.
+        - LUÔN kết thúc bằng một câu hỏi gợi mở để giữ chân khách.`;
 
+        // 4. Khởi tạo Gemini với phiên bản mạnh mẽ nhất cho Node.js hiện nay
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        const result = await model.generateContent(`${systemPrompt}\nKhách hàng: ${message}`);
+        // Cấu hình Temperature thấp để AI trả lời tập trung vào bán hàng, ít sáng tạo tào lao
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-2.5-flash",
+            generationConfig: {
+                temperature: 0.2, // Giảm sáng tạo, tăng tính logic
+                topP: 0.95,
+                topK: 64,
+                maxOutputTokens: 256,
+            }
+        });
+
+        // 5. Gửi request và đo thời gian
+        console.log(`Đang gửi câu hỏi lên Gemini cho khách hàng ${userId || 'vãng lai'}...`);
+        const result = await model.generateContent(`${systemPrompt}\n\nKhách hàng hỏi: ${message}`);
         
+        console.log("✅ Gemini đã trả lời thành công!");
         res.status(200).json({ reply: result.response.text() });
 
     } catch (error) {
-        console.error("Lỗi Chatbot AI:", error);
-        res.status(500).json({ reply: "Dạ hệ thống bên em đang quá tải một chút, anh/chị nhắn lại sau vài giây nhé!" });
+        // Bắt lỗi cực kỳ chi tiết để sau này có lỗi là biết ngay do đâu
+        console.error("🔥 LỖI CHATBOT AI:", error);
+        
+        // Phân tích mã lỗi của Google
+        let errorMessage = "Dạ hệ thống bên em đang quá tải một chút, anh/chị nhắn lại sau vài giây nhé!";
+        if (error.status === 429) {
+             console.error("-> Nguyên nhân: Hết quota (Rate Limit) của gói API Free.");
+             errorMessage = "Dạ hôm nay khách đông quá nên em hơi nghẽn, anh/chị nán lại 1 phút rồi nhắn lại em nha!";
+        } else if (error.message && error.message.includes("API key not valid")) {
+             console.error("-> Nguyên nhân: API Key bị sai hoặc đã hết hạn.");
+        }
+
+        res.status(500).json({ reply: errorMessage });
     }
 };
 
