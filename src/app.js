@@ -7,7 +7,11 @@ const passport = require('./config/passport'); // Gọi cấu hình Passport ôn
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: ['https://linhlinhstore.shop', 'https://www.linhlinhstore.shop', 'http://localhost:3000'],
+    credentials: true
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -39,7 +43,6 @@ app.use('/api/vendors', require('./routes/VendorRoutes'));
 app.use('/api/brands', require('./routes/BrandRoutes'));
 app.use('/api/banners', require('./routes/BannerRoutes'));
 
-// --- 2. CÁC ROUTE AI (Đã tách khỏi Mongo, chạy độc lập) ---
 app.use('/api/ai', require('./routes/ai/ai.route'));
 app.use('/api/import', require('./routes/ai/import.route')); 
 app.use('/api/chatbot', require('./routes/ai/chatbot.route'));
