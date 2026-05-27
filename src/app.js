@@ -23,9 +23,7 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-// ------------------------------------------------------------------------
 
-// PHỤC VỤ WEB-CLIENT
 app.use('/uploads', express.static(path.join(__dirname, '..', 'web-client/uploads')));
 app.use(express.static(path.join(__dirname, '..', 'web-client')));
 
