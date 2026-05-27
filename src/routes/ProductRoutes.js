@@ -14,13 +14,13 @@ router.get('/', productController.getAll);
 
 // xóa ảnh 
 router.delete('/images/:imageId', authMiddleware, isAdmin, ProductImageController.deleteImage);
-
 router.post('/:id/images', authMiddleware, isAdmin, uploadProduct.array('images', 10), productController.uploadImage);
 
 // Thêm Xóa phiên bản
 router.post('/:id/variants', authMiddleware, isAdmin, productController.addVariant);
 router.delete('/:id/variants/:variantId', authMiddleware, isAdmin, productController.deleteVariant);
 
+router.post('/recommendations', productController.getRecommendations);
 router.get('/:id', productController.getDetail);
 
 router.post('/', authMiddleware, isAdmin, validateProduct, handleValidationErrors, productController.create);

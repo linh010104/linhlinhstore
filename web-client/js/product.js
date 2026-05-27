@@ -2,9 +2,49 @@ document.addEventListener("DOMContentLoaded", () => {
     loadCategories();
     // Thay loadProducts() bằng hàm Load phân lô CellphoneS
     loadHomeCategoryBlocks(); 
+    loadRecommendations();
 });
 
 let allCategoriesData = [];
+function loadRecommendations() {
+    const block = document.getElementById("recommendation-block");
+    const list = document.getElementById("recommended-list");
+    if (!block || !list) return;
+
+    // Ép luôn hiển thị ra màn hình
+    block.style.display = "block";
+
+    let viewedCats = JSON.parse(localStorage.getItem('viewed_categories')) || [];
+    let userId = null;
+    
+    if (typeof StorageHelper !== 'undefined' && StorageHelper.isLoggedIn()) {
+        userId = StorageHelper.getUser()?.id;
+    }
+
+    fetch(`${CONFIG.BASE_URL}/products/recommendations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ viewedCategories: viewedCats, userId: userId })
+    })
+    .then(res => res.json())
+    .then(products => {
+        list.innerHTML = "";
+        
+        if (!products || products.length === 0) {
+            list.innerHTML = "<div class='col-12 text-center py-4 text-muted'>Đang cập nhật thêm sản phẩm gợi ý...</div>";
+            return;
+        }
+        
+        // Đổ 4 sản phẩm đẹp nhất ra khung
+        products.slice(0, 4).forEach(p => {
+            list.appendChild(createProductCard(p));
+        });
+    })
+    .catch(err => {
+        console.error("Lỗi load gợi ý:", err);
+        list.innerHTML = "<div class='col-12 text-center text-danger py-4'>Hệ thống gợi ý đang bảo trì!</div>";
+    });
+}
 
 function loadCategories() {
     Promise.all([

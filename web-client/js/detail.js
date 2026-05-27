@@ -26,38 +26,43 @@ function loadProductDetail() {
             document.getElementById("detail-name").innerText = data.name;
             if(document.getElementById("breadcrumb-name")) document.getElementById("breadcrumb-name").innerText = data.name;
             document.getElementById("detail-price").innerText = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data.price);
-            const btnBuyNow = document.querySelector(".btn-danger"); // Nút Mua Ngay (có class btn-danger)
-            const btnAddToCart = document.querySelector(".btn-outline-danger"); // Nút Thêm Vào Giỏ
-            const qtyControl = document.querySelector(".input-group"); // Khu vực tăng giảm số lượng
+            
+            // 🔥 [THÊM MỚI] LƯU VẾT HÀNH VI KHÁCH HÀNG VÀO TRÌNH DUYỆT 🔥
+            if (data.category_id) {
+                let viewedCats = JSON.parse(localStorage.getItem('viewed_categories')) || [];
+                // Nếu danh mục này chưa có trong mảng lưu vết
+                if (!viewedCats.includes(data.category_id)) {
+                    viewedCats.unshift(data.category_id); // Đẩy lên đầu mảng (Mới nhất)
+                    if (viewedCats.length > 5) viewedCats.pop(); // Giữ tối đa 5 danh mục gần nhất để không bị rác
+                    localStorage.setItem('viewed_categories', JSON.stringify(viewedCats));
+                }
+            }
+            // ==============================================================
 
-            // Kiểm tra số lượng tồn kho (nếu <= 0 là hết hàng)
+            const btnBuyNow = document.querySelector(".btn-danger"); 
+            const btnAddToCart = document.querySelector(".btn-outline-danger"); 
+            const qtyControl = document.querySelector(".input-group"); 
+
             if (data.stock_quantity <= 0) {
-                // 1. Vô hiệu hóa nút MUA NGAY
                 if (btnBuyNow) {
                     btnBuyNow.disabled = true;
                     btnBuyNow.innerHTML = "ĐÃ HẾT HÀNG";
-                    btnBuyNow.classList.replace("btn-danger", "btn-secondary"); // Đổi sang màu xám
+                    btnBuyNow.classList.replace("btn-danger", "btn-secondary"); 
                 }
-                
-                // 2. Vô hiệu hóa nút THÊM VÀO GIỎ HÀNG
                 if (btnAddToCart) {
                     btnAddToCart.disabled = true;
                     btnAddToCart.innerHTML = '<i class="fa-solid fa-cart-shopping"></i> Tạm Hết Hàng';
                     btnAddToCart.classList.replace("text-danger", "text-secondary");
                     btnAddToCart.style.borderColor = "#6c757d";
                 }
-
-                // 3. Ẩn cục chọn số lượng đi cho đỡ ngứa mắt
                 if (qtyControl) {
                     qtyControl.style.opacity = "0.5";
-                    qtyControl.style.pointerEvents = "none"; // Cấm bấm
+                    qtyControl.style.pointerEvents = "none"; 
                 }
             }
             
             if (data.variants && data.variants.length > 0) renderVariants(data.variants, Number(data.price));
 
-            // XỬ LÝ ĐỔ MÔ TẢ (DESCRIPTION) TỪ DATABASE XUỐNG BÀI VIẾT
-            // Replace \n thành thẻ <br> để HTML hiểu và xuống dòng
             const descContainer = document.getElementById("detail-desc");
             if(descContainer) {
                 if(data.description && data.description.trim() !== "") {
@@ -70,7 +75,6 @@ function loadProductDetail() {
             const mainImgUrl = data.image_url ? `${CONFIG.IMAGE_BASE_URL}${data.image_url}` : "https://placehold.co/400x400/f8f9fa/a3a3a3?text=No+Image";
             document.getElementById("detail-img").src = mainImgUrl;
 
-            // Xử lý ảnh thumbnail
             const thumbContainer = document.getElementById("thumbnail-container");
             if (thumbContainer) {
                 thumbContainer.innerHTML = ""; 
@@ -82,7 +86,6 @@ function loadProductDetail() {
                 });
             }
 
-            // Xử lý thông số kỹ thuật
             const specTable = document.getElementById("spec-table");
             if (specTable && data.specifications) {
                 let htmlSpec = "<tbody>";

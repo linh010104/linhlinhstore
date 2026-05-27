@@ -141,3 +141,27 @@ const sqlVariants = `SELECT id, variant_group, variant_name, additional_price, i
     });
   });
 };
+exports.getRecommended = (categoryIds, callback) => {
+    let sql = `
+        SELECT p.*, c.name AS category_name, pi.image_url
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN (
+            SELECT product_id, image_url, ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY id DESC) as rn
+            FROM product_images
+        ) pi ON p.id = pi.product_id AND pi.rn = 1
+        WHERE p.status = 1
+    `;
+    let params = [];
+
+    // Lọc theo mảng ID danh mục (nếu có)
+    if (categoryIds && categoryIds.length > 0) {
+        sql += ` AND p.category_id IN (?)`;
+        params.push(categoryIds);
+    }
+
+    // Sắp xếp ngẫu nhiên để khách luôn thấy mới mẻ, lấy 8 cái
+    sql += ` ORDER BY RAND() LIMIT 8`; 
+
+    db.query(sql, params.length ? params : null, callback);
+};

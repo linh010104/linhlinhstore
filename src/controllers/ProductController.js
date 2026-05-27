@@ -113,3 +113,41 @@ exports.deleteVariant = (req, res) => {
     res.json({ message: 'Xóa phiên bản thành công' });
   });
 };
+exports.getRecommendations = (req, res) => {
+    // 1. Nhận mảng danh mục khách đã xem (từ Trình duyệt gửi lên)
+    let { viewedCategories, userId } = req.body;
+    let finalCategories = Array.isArray(viewedCategories) ? viewedCategories : [];
+
+    // 2. Nếu khách đã ĐĂNG NHẬP -> Chọc Database xem lịch sử đã mua cái gì
+    if (userId) {
+        const sqlHistory = `
+            SELECT DISTINCT p.category_id 
+            FROM orders o
+            JOIN orders_items oi ON o.id = oi.order_id
+            JOIN products p ON oi.product_id = p.id
+            WHERE o.user_id = ?
+        `;
+        
+        db.query(sqlHistory, [userId], (err, results) => {
+            if (!err && results) {
+                // Rút trích mảng các danh mục khách đã từng mua
+                const historyCats = results.map(r => r.category_id);
+                // Trộn chung "Gu xem" và "Gu mua" lại với nhau, loại bỏ các ID trùng lặp
+                finalCategories = [...new Set([...finalCategories, ...historyCats])];
+            }
+            // Đi bốc sản phẩm gợi ý
+            fetchAndReturnProducts(finalCategories, res);
+        });
+    } else {
+        // 3. Khách VÃNG LAI (Chưa đăng nhập) -> Chỉ dùng dữ liệu từ Trình duyệt
+        fetchAndReturnProducts(finalCategories, res);
+    }
+};
+
+// Hàm phụ trợ cho code nó gọn
+function fetchAndReturnProducts(categoryIds, res) {
+    Product.getRecommended(categoryIds, (err, products) => {
+        if (err) return res.status(500).json(err);
+        res.json(Array.isArray(products) ? products : []);
+    });
+}
