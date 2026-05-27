@@ -1,7 +1,11 @@
 let currentProductId = null;
-let basePrice = 0;               
 let currentVariants = [];        
 let selectedVariants = {};       
+
+// Đưa các biến giá trị ra toàn cục để dễ tính toán
+let globalOriginalPrice = 0;
+let globalDiscountPercent = 0;
+let currentFinalPrice = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
@@ -25,19 +29,23 @@ function loadProductDetail() {
 
             document.getElementById("detail-name").innerText = data.name;
             if(document.getElementById("breadcrumb-name")) document.getElementById("breadcrumb-name").innerText = data.name;
-            document.getElementById("detail-price").innerText = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data.price);
             
-            // 🔥 [THÊM MỚI] LƯU VẾT HÀNH VI KHÁCH HÀNG VÀO TRÌNH DUYỆT 🔥
+            // 🔥 LOGIC GIÁ KHUYẾN MÃI MỚI 🔥
+            globalOriginalPrice = Number(data.price);
+            globalDiscountPercent = data.discount_percent ? Number(data.discount_percent) : 0;
+            
+            // Gọi hàm tính tiền để nó tự động vẽ Giá gạch ngang và Badge giảm giá
+            updateTotalPrice();
+            
+            // 🔥 LƯU VẾT HÀNH VI KHÁCH HÀNG VÀO TRÌNH DUYỆT 🔥
             if (data.category_id) {
                 let viewedCats = JSON.parse(localStorage.getItem('viewed_categories')) || [];
-                // Nếu danh mục này chưa có trong mảng lưu vết
                 if (!viewedCats.includes(data.category_id)) {
-                    viewedCats.unshift(data.category_id); // Đẩy lên đầu mảng (Mới nhất)
-                    if (viewedCats.length > 5) viewedCats.pop(); // Giữ tối đa 5 danh mục gần nhất để không bị rác
+                    viewedCats.unshift(data.category_id); 
+                    if (viewedCats.length > 5) viewedCats.pop(); 
                     localStorage.setItem('viewed_categories', JSON.stringify(viewedCats));
                 }
             }
-            // ==============================================================
 
             const btnBuyNow = document.querySelector(".btn-danger"); 
             const btnAddToCart = document.querySelector(".btn-outline-danger"); 
@@ -61,7 +69,7 @@ function loadProductDetail() {
                 }
             }
             
-            if (data.variants && data.variants.length > 0) renderVariants(data.variants, Number(data.price));
+            if (data.variants && data.variants.length > 0) renderVariants(data.variants);
 
             const descContainer = document.getElementById("detail-desc");
             if(descContainer) {
@@ -106,8 +114,7 @@ function changeMainImage(url) {
     document.getElementById("detail-img").src = url;
 }
 
-function renderVariants(variants, defaultPrice) {
-    basePrice = defaultPrice;
+function renderVariants(variants) {
     currentVariants = variants;
     const container = document.getElementById("variants-container");
     const grouped = variants.reduce((acc, curr) => {
@@ -142,13 +149,34 @@ function renderVariants(variants, defaultPrice) {
 
 function selectVariant(group, variantId) {
     selectedVariants[group] = currentVariants.find(v => v.id === variantId);
-    renderVariants(currentVariants, basePrice); 
+    renderVariants(currentVariants); 
 }
 
 function updateTotalPrice() {
-    let finalPrice = basePrice;
-    for (const group in selectedVariants) finalPrice += Number(selectedVariants[group].additional_price);
-    document.getElementById("detail-price").innerText = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(finalPrice);
+    let addedVariantPrice = 0;
+    
+    // Cộng thêm tiền nếu khách chọn Option xịn hơn
+    for (const group in selectedVariants) {
+        if (selectedVariants[group]) {
+            addedVariantPrice += Number(selectedVariants[group].additional_price);
+        }
+    }
+    
+    // Giá trị thực (Giá gốc + Giá Option)
+    const finalOriginalPrice = globalOriginalPrice + addedVariantPrice;
+    
+    // Giá sau khi áp dụng % giảm giá
+    currentFinalPrice = finalOriginalPrice - (finalOriginalPrice * globalDiscountPercent / 100);
+
+    // Dựng cục HTML hiển thị cho Khách xem
+    let priceHtml = `${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(currentFinalPrice)}`;
+    
+    if (globalDiscountPercent > 0) {
+        priceHtml += ` <span class="text-muted text-decoration-line-through fs-5 fw-normal ms-3">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(finalOriginalPrice)}</span>`;
+        priceHtml += ` <span class="badge bg-danger ms-2 fs-6 mb-2 align-middle">Giảm ${globalDiscountPercent}%</span>`;
+    }
+    
+    document.getElementById("detail-price").innerHTML = priceHtml;
 }
 
 function loadRelatedProducts(catId) {
@@ -161,13 +189,20 @@ function loadRelatedProducts(catId) {
             container.innerHTML = "";
             related.forEach(p => {
                 const imgUrl = p.image_url ? `${CONFIG.IMAGE_BASE_URL}${p.image_url}` : "https://placehold.co/300x300";
+                
+                // Đồng bộ giá giảm cho danh sách Liên Quan
+                const oPrice = Number(p.price);
+                const dPercent = p.discount_percent ? Number(p.discount_percent) : 0;
+                const sPrice = oPrice - (oPrice * dPercent / 100);
+
                 container.innerHTML += `
                     <div class="col-6 col-md-3">
                         <div class="card h-100 shadow-sm border-0 bg-white p-2">
+                            ${dPercent > 0 ? `<div class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 fw-bold" style="font-size:10px; border-radius:5px 0 5px 0;">Giảm ${dPercent}%</div>` : ''}
                             <a href="detail.html?id=${p.id}"><img src="${imgUrl}" class="img-fluid" style="max-height: 160px; object-fit: contain;"></a>
                             <div class="card-body p-2 mt-2 text-center border-top">
                                 <a href="detail.html?id=${p.id}" class="text-decoration-none text-dark fw-bold small text-truncate d-block">${p.name}</a>
-                                <p class="text-danger fw-bold mb-0">${new Intl.NumberFormat('vi-VN').format(p.price)}đ</p>
+                                <p class="text-danger fw-bold mb-0">${new Intl.NumberFormat('vi-VN').format(sPrice)}đ</p>
                             </div>
                         </div>
                     </div>`;
@@ -182,9 +217,7 @@ function changeQty(amount) {
     input.value = val < 1 ? 1 : val;
 }
 
-// Hàm thêm vào giỏ hàng
 function addToCartFromDetail() {
-    // 1. Kiểm tra đăng nhập (Dùng SweetAlert cho đẹp giống nút Mua Ngay)
     if (!StorageHelper.isLoggedIn()) {
         Swal.fire({
             title: 'Chưa đăng nhập!',
@@ -201,24 +234,19 @@ function addToCartFromDetail() {
         return;
     }
 
-    // 2. Lấy số lượng và phân loại
     const qty = parseInt(document.getElementById("qty-input").value);
     let variantNames = [];
     for (const group in selectedVariants) {
         if (selectedVariants[group]) variantNames.push(selectedVariants[group].variant_name);
     }
 
-    // 3. Gửi API thêm vào giỏ
     API.post('/cart/add', { 
         productId: currentProductId, 
         quantity: qty, 
         variant_info: variantNames.join(" - ") || null 
     }, true)
     .then(data => { 
-        // 4. Báo thành công
         UIHelper.showSuccess('Thành công', 'Đã thêm sản phẩm vào giỏ hàng!');
-        
-        // Cập nhật lại số lượng trên cục icon giỏ hàng ở Header (nếu ông có viết hàm này)
         if(typeof window.updateCartCount === 'function') window.updateCartCount(); 
     })
     .catch(e => {
@@ -226,6 +254,7 @@ function addToCartFromDetail() {
         UIHelper.showError('Lỗi', 'Không thể thêm vào giỏ hàng, vui lòng thử lại.');
     });
 }
+
 function buyNowFromDetail() {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -244,7 +273,6 @@ function buyNowFromDetail() {
         return;
     }
     
-    // Tự động điền thông tin người dùng
     const user = StorageHelper.getUser();
     const nameInput = document.getElementById("checkout-name");
     const phoneInput = document.getElementById("checkout-phone");
@@ -252,7 +280,6 @@ function buyNowFromDetail() {
     if(nameInput) nameInput.value = user?.full_name || user?.username || "";
     if(phoneInput) phoneInput.value = user?.phone || "";
 
-    // Gọi form Modal thanh toán an toàn
     const modalEl = document.getElementById('checkoutModal');
     if (modalEl) {
         const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
@@ -267,7 +294,6 @@ function submitDirectBuy() {
     const name = document.getElementById("checkout-name").value.trim();
     const phone = document.getElementById("checkout-phone").value.trim();
     const address = document.getElementById("checkout-address").value.trim();
-    // 🔥 Lấy giá trị thanh toán thực tế khách chọn trên Modal (VNPAY hoặc CASH)
     const payment = document.getElementById("checkout-payment").value; 
     const note = document.getElementById("checkout-note").value.trim();
     const qty = parseInt(document.getElementById("qty-input").value);
@@ -283,14 +309,13 @@ function submitDirectBuy() {
     }
     const variantInfoString = variantNames.length > 0 ? variantNames.join(" - ") : null;
     
-    // Lấy giá tổng cộng đang hiển thị trên màn hình
-    const priceText = document.getElementById("detail-price").innerText.replace(/[^0-9]/g, '');
-    const finalPrice = parseInt(priceText) || basePrice; // Fallback về basePrice nếu lỗi
+    // Sử dụng currentFinalPrice (chuẩn từng xu) thay vì lọc số từ HTML dễ sinh lỗi
+    const finalPrice = currentFinalPrice || globalOriginalPrice; 
 
     const data = {
-        product_id: currentProductId, // Backend cần biến này
+        product_id: currentProductId, 
         quantity: qty,
-        price: finalPrice, // Gửi giá thực tế (đã cộng tiền variant)
+        price: finalPrice, 
         variant_info: variantInfoString, 
         name: name,
         phone: phone,
@@ -299,7 +324,6 @@ function submitDirectBuy() {
         note: note
     };
 
-    // Đổi nút thành Đang xử lý để tránh click nhiều lần
     const btnSubmit = document.querySelector("#checkoutModal .btn-danger");
     const originalText = btnSubmit.innerHTML;
     btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
@@ -319,12 +343,10 @@ function submitDirectBuy() {
         btnSubmit.disabled = false;
 
         if (d.success || d.orderId) {
-            // Tắt cái Modal đi
             const modalEl = document.getElementById('checkoutModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
             if(modal) modal.hide();
 
-            // Nếu Backend trả về link VNPay thì bay sang đó
             if (d.paymentUrl) {
                 Swal.fire({
                     icon: 'success',
@@ -336,7 +358,6 @@ function submitDirectBuy() {
                     window.location.href = d.paymentUrl;
                 });
             } else {
-                // Mua thành công nhưng bằng tiền mặt (COD)
                 UIHelper.showSuccess("Thành công!", "🎉 Đặt hàng thành công! Đã lên đơn tự động.", () => {
                     window.location.href = "orders.html";
                 });

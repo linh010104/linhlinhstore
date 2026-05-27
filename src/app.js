@@ -42,10 +42,12 @@ app.use('/api/inventory', require('./routes/InventoryRoutes'));
 app.use('/api/vendors', require('./routes/VendorRoutes'));
 app.use('/api/brands', require('./routes/BrandRoutes'));
 app.use('/api/banners', require('./routes/BannerRoutes'));
+app.use('/api/vouchers',require('./routes/VoucherRoutes'));
 
 app.use('/api/ai', require('./routes/ai/ai.route'));
 app.use('/api/import', require('./routes/ai/import.route')); 
 app.use('/api/chatbot', require('./routes/ai/chatbot.route'));
+
 
 // --- 3. ERROR HANDLER ---
 app.use((err, req, res, next) => {

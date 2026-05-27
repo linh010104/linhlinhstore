@@ -151,3 +151,18 @@ function fetchAndReturnProducts(categoryIds, res) {
         res.json(Array.isArray(products) ? products : []);
     });
 }
+exports.updateDiscount = (req, res) => {
+        const productId = req.params.id;
+        const discountPercent = req.body.discount_percent;
+
+        // Lưu ý: Đảm bảo bảng products dưới MySQL của sếp ĐÃ CÓ cột discount_percent nhé
+        const sql = "UPDATE products SET discount_percent = ? WHERE id = ?";
+        
+        db.query(sql, [discountPercent, productId], (err, result) => {
+            if (err) {
+                console.error("Lỗi cập nhật % giảm giá:", err);
+                return res.status(500).json({ success: false, message: "Lỗi Server!" });
+            }
+            res.json({ success: true, message: "Cập nhật giảm giá thành công!" });
+        });
+    };

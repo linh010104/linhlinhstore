@@ -135,16 +135,35 @@ function createProductCard(p) {
     // Chia 4 cột trên màn XL, 3 cột màn LG
     col.className = "col-6 col-md-4 col-lg-4 col-xl-3 mb-3"; 
     
-    const oldPrice = Number(p.price) * 1.15; 
+    // 🔥 LẤY GIÁ TRỊ TỪ DATABASE LÊN 🔥
+    const originalPrice = Number(p.price); // Giá gốc
+    const discountPercent = p.discount_percent ? Number(p.discount_percent) : 0; // % Giảm (nếu null thì mặc định 0)
+    const salePrice = originalPrice - (originalPrice * discountPercent / 100); // Giá sau khi trừ %
+
     const fallbackImg = "https://placehold.co/300x300/f8f9fa/a3a3a3?text=LinhLinh+Store";
     const imgUrl = p.image_url ? `${CONFIG.IMAGE_BASE_URL}${p.image_url}` : fallbackImg;
+
+    // 🔥 LOGIC HIỂN THỊ BADGE VÀ GIÁ GẠCH NGANG 🔥
+    let badgeHTML = "";
+    let priceHTML = `<span class="fw-bold text-danger mb-0" style="font-size: 16px;">${originalPrice.toLocaleString('vi-VN')}đ</span>`;
+
+    // Chỉ hiển thị nhãn giảm giá và giá gạch ngang KHI có % giảm giá > 0
+    if (discountPercent > 0) {
+        badgeHTML = `
+        <div class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 fw-bold shadow-sm" style="border-radius: 12px 0 10px 0; z-index: 2; font-size: 11px;">
+            Giảm ${discountPercent}%
+        </div>`;
+        
+        priceHTML = `
+        <span class="fw-bold text-danger mb-0" style="font-size: 16px;">${salePrice.toLocaleString('vi-VN')}đ</span>
+        <span class="text-muted text-decoration-line-through ms-2" style="font-size: 12px;">${originalPrice.toLocaleString('vi-VN')}đ</span>
+        `;
+    }
 
     col.innerHTML = `
         <div class="card h-100 border-0 shadow-sm cps-card bg-white" style="border-radius: 12px; overflow: hidden;">
             
-            <div class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 fw-bold shadow-sm" style="border-radius: 12px 0 10px 0; z-index: 2; font-size: 11px;">
-                Giảm 15%
-            </div>
+            ${badgeHTML}
             <div class="position-absolute top-0 end-0 px-2 py-1 fw-bold text-primary border border-primary bg-white shadow-sm" style="border-radius: 4px; z-index: 2; margin: 8px; font-size: 10px;">
                 Trả góp 0%
             </div>
@@ -159,9 +178,8 @@ function createProductCard(p) {
                 </h5>
 
                 <div class="mt-auto">
-                    <div class="d-flex align-items-end gap-2 mb-2">
-                        <span class="fw-bold text-danger mb-0" style="font-size: 16px;">${Number(p.price).toLocaleString('vi-VN')}đ</span>
-                        <span class="text-muted text-decoration-line-through" style="font-size: 12px;">${oldPrice.toLocaleString('vi-VN')}đ</span>
+                    <div class="d-flex align-items-end mb-2">
+                        ${priceHTML}
                     </div>
 
                     <div class="bg-light rounded p-2 mb-3 border" style="font-size: 11px; color: #444;">

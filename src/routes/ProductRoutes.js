@@ -19,7 +19,7 @@ router.post('/:id/images', authMiddleware, isAdmin, uploadProduct.array('images'
 // Thêm Xóa phiên bản
 router.post('/:id/variants', authMiddleware, isAdmin, productController.addVariant);
 router.delete('/:id/variants/:variantId', authMiddleware, isAdmin, productController.deleteVariant);
-
+router.patch('/:id/discount', productController.updateDiscount);
 router.post('/recommendations', productController.getRecommendations);
 router.get('/:id', productController.getDetail);
 
