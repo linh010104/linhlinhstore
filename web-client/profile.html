@@ -156,9 +156,6 @@
     <script src="js/auth.js"></script>
     
     <script>
-        // ==========================================
-        // QUẢN LÝ SẢN PHẨM YÊU THÍCH (WISHLIST)
-        // ==========================================
         function loadFavorites() {
             const favs = JSON.parse(localStorage.getItem('linhlinh_favorites')) || [];
             const container = document.getElementById('favorite-list');
@@ -176,7 +173,6 @@
                 return;
             }
 
-            // Nếu có dữ liệu, vẽ ra các thẻ card nhỏ y chang CellphoneS
             let html = '';
             favs.forEach(p => {
                 html += `
@@ -213,9 +209,6 @@
             }
         };
 
-        // ==========================================
-        // KHỞI TẠO DỮ LIỆU KHI TẢI TRANG
-        // ==========================================
         document.addEventListener("DOMContentLoaded", () => {
             const token = StorageHelper.getToken();
             if (!token) {
