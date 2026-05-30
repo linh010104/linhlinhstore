@@ -245,3 +245,49 @@ footer { width: 100%; clear: both; }
     70% { box-shadow: 0 0 0 15px rgba(0, 104, 255, 0); }
     100% { box-shadow: 0 0 0 0 rgba(0, 104, 255, 0); }
 }
+@keyframes pulse-wheel { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(255, 193, 7, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); } }
+        .wheel-container { width: 300px; height: 300px; margin: 0 auto; position: relative; }
+        .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); z-index: 10; width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 35px solid #000; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.5)); }
+        #the-wheel { width: 100%; height: 100%; border-radius: 50%; border: 6px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.4); transition: transform 4s cubic-bezier(0.17, 0.67, 0.1, 1);
+            background: conic-gradient( #ffc107 0deg 90deg, #17a2b8 90deg 180deg, #28a745 180deg 270deg, #dc3545 270deg 360deg ); 
+        }
+.wheel-container { 
+    width: 300px; 
+    height: 300px; 
+    margin: 0 auto; 
+    position: relative; 
+    padding: 8px; 
+    background: #111; 
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), inset 0 0 10px #000;
+}
+.wheel-pointer { 
+    position: absolute; top: -15px; left: 50%; transform: translateX(-50%); z-index: 20; 
+    width: 40px; height: 50px; 
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 100 L10 15 L90 15 Z" fill="%23dc3545" stroke="%23fff" stroke-width="5"/></svg>') no-repeat center;
+    background-size: contain; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); 
+}
+.wheel-center-dot {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 40px; height: 40px; background: radial-gradient(circle, #fff, #bbb);
+    border-radius: 50%; z-index: 15; border: 4px solid #333; box-shadow: 0 3px 6px rgba(0,0,0,0.6);
+}
+#the-wheel { 
+    width: 100%; height: 100%; border-radius: 50%; border: 3px solid #ffc107; 
+    background: conic-gradient( 
+        #dc3545 0deg 45deg, #6c757d 45deg 90deg, 
+        #28a745 90deg 135deg, #6c757d 135deg 180deg, 
+        #17a2b8 180deg 225deg, #6c757d 225deg 270deg, 
+        #ffc107 270deg 315deg, #6c757d 315deg 360deg 
+    ); 
+    transition: transform 4.5s cubic-bezier(0.1, 0.7, 0.1, 1);
+    position: relative;
+}
+/* Dóng text thẳng vào giữa từng múi */
+.wheel-text {
+    position: absolute; width: 100%; height: 100%; text-align: center;
+}
+.wheel-text span {
+    display: inline-block; padding-top: 20px; font-weight: 900; font-size: 13px;
+    color: white; text-shadow: 1px 1px 2px #000;
+}

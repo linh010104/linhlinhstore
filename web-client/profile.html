@@ -74,76 +74,96 @@
             <div class="col-lg-3 mb-4">
                 <div class="profile-card p-2 profile-sidebar">
                     <div class="list-group list-group-flush">
-                        <a href="profile.html" class="list-group-item list-group-item-action active"><i class="fa-solid fa-user-gear"></i> Thông tin tài khoản</a>
-                        <a href="orders.html" class="list-group-item list-group-item-action"><i class="fa-solid fa-clipboard-list"></i> Lịch sử mua hàng</a>
-                        <a href="#" class="list-group-item list-group-item-action text-danger mt-3" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+                        <a href="#" class="list-group-item list-group-item-action active" id="tab-info" onclick="switchTab('info'); return false;">
+                            <i class="fa-solid fa-user-gear"></i> Thông tin tài khoản
+                        </a>
+                        <a href="orders.html" class="list-group-item list-group-item-action">
+                            <i class="fa-solid fa-clipboard-list"></i> Lịch sử mua hàng
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" id="tab-vouchers" onclick="switchTab('vouchers'); return false;">
+                            <i class="fa-solid fa-ticket text-danger me-2"></i> Kho Voucher
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action text-danger mt-3" onclick="logout()">
+                            <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                        </a>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-9">
-                <div class="alert alert-promo d-flex justify-content-between align-items-center mb-3">
-                    <div><i class="fa-solid fa-circle-info me-2"></i> Cập nhật đầy đủ thông tin để mua hàng nhanh hơn.</div>
-                </div>
+                
+                <div id="content-info">
+                    <div class="alert alert-promo d-flex justify-content-between align-items-center mb-3">
+                        <div><i class="fa-solid fa-circle-info me-2"></i> Cập nhật đầy đủ thông tin để mua hàng nhanh hơn.</div>
+                    </div>
 
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="profile-card p-4 h-100">
-                            <h5 class="fw-bold mb-4 border-bottom pb-2"><i class="fa-solid fa-user-pen text-danger me-2"></i> Hồ sơ cá nhân</h5>
-                            <form id="profile-form">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold text-muted small">Tên đăng nhập</label>
-                                    <input type="text" id="username" class="form-control bg-light" disabled>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="profile-card p-4 h-100">
+                                <h5 class="fw-bold mb-4 border-bottom pb-2"><i class="fa-solid fa-user-pen text-danger me-2"></i> Hồ sơ cá nhân</h5>
+                                <form id="profile-form">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold text-muted small">Tên đăng nhập</label>
+                                        <input type="text" id="username" class="form-control bg-light" disabled>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small">Họ và tên</label>
+                                        <input type="text" id="fullname" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small">Email</label>
+                                        <input type="email" id="email" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small">Số điện thoại</label>
+                                        <input type="text" id="phone" class="form-control">
+                                    </div>
+                                    <button type="submit" class="btn btn-danger w-100 rounded-pill fw-bold py-2 mt-2">LƯU THAY ĐỔI</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="profile-card p-4 h-100">
+                                <h5 class="fw-bold mb-4 border-bottom pb-2"><i class="fa-solid fa-shield-halved text-danger me-2"></i> Đổi Mật Khẩu</h5>
+                                <div class="mb-3 mt-4">
+                                    <label class="form-label fw-bold small">Mật khẩu hiện tại</label>
+                                    <input type="password" id="old-password" class="form-control">
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold small">Họ và tên</label>
-                                    <input type="text" id="fullname" class="form-control">
+                                    <label class="form-label fw-bold small">Mật khẩu mới</label>
+                                    <input type="password" id="new-password" class="form-control">
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold small">Email</label>
-                                    <input type="email" id="email" class="form-control">
+                                    <label class="form-label fw-bold small">Xác nhận mật khẩu mới</label>
+                                    <input type="password" id="confirm-password" class="form-control">
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold small">Số điện thoại</label>
-                                    <input type="text" id="phone" class="form-control">
-                                </div>
-                                <button type="submit" class="btn btn-danger w-100 rounded-pill fw-bold py-2 mt-2">LƯU THAY ĐỔI</button>
-                            </form>
+                                <button type="button" class="btn btn-outline-danger w-100 rounded-pill fw-bold py-2 mt-4" onclick="updatePassword()">CẬP NHẬT MẬT KHẨU</button>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="profile-card p-4 h-100">
-                            <h5 class="fw-bold mb-4 border-bottom pb-2"><i class="fa-solid fa-shield-halved text-danger me-2"></i> Đổi Mật Khẩu</h5>
-                            <div class="mb-3 mt-4">
-                                <label class="form-label fw-bold small">Mật khẩu hiện tại</label>
-                                <input type="password" id="old-password" class="form-control">
+                    <div class="profile-card p-4 mt-4 mb-5">
+                        <h5 class="fw-bold mb-4 border-bottom pb-2">
+                            <i class="fa-solid fa-heart text-danger me-2"></i> Sản phẩm yêu thích
+                        </h5>
+                        <div class="row g-3" id="favorite-list">
+                            <div class="col-12 text-center py-4">
+                                <div class="spinner-border text-danger spinner-border-sm"></div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold small">Mật khẩu mới</label>
-                                <input type="password" id="new-password" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold small">Xác nhận mật khẩu mới</label>
-                                <input type="password" id="confirm-password" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-outline-danger w-100 rounded-pill fw-bold py-2 mt-4" onclick="updatePassword()">CẬP NHẬT MẬT KHẨU</button>
                         </div>
                     </div>
                 </div>
-
-                <div class="profile-card p-4 mt-4 mb-5">
-                    <h5 class="fw-bold mb-4 border-bottom pb-2">
-                        <i class="fa-solid fa-heart text-danger me-2"></i> Sản phẩm yêu thích
-                    </h5>
-                    <div class="row g-3" id="favorite-list">
-                        <div class="col-12 text-center py-4">
-                            <div class="spinner-border text-danger spinner-border-sm"></div>
-                        </div>
+                <div id="content-vouchers" style="display: none;">
+                    <div class="profile-card p-4 mb-5">
+                        <h5 class="fw-bold mb-4 border-bottom pb-2">
+                            <i class="fa-solid fa-ticket text-danger me-2"></i> Kho Voucher Của Tôi
+                        </h5>
+                        <div class="row g-3" id="voucher-list">
+                            </div>
                     </div>
                 </div>
-
-            </div>
+                </div>
         </div>
     </div>
 
@@ -156,12 +176,94 @@
     <script src="js/auth.js"></script>
     
     <script>
+        // HÀM CHUYỂN TAB VÀ RENDER VOUCHER
+        function switchTab(tabName) {
+            document.getElementById('content-info').style.display = (tabName === 'info') ? 'block' : 'none';
+            document.getElementById('content-vouchers').style.display = (tabName === 'vouchers') ? 'block' : 'none';
+            
+            if (tabName === 'info') {
+                document.getElementById('tab-info').classList.add('active');
+                document.getElementById('tab-vouchers').classList.remove('active');
+            } else {
+                document.getElementById('tab-vouchers').classList.add('active');
+                document.getElementById('tab-info').classList.remove('active');
+                renderVoucherWallet();
+            }
+        }
+
+        async function renderVoucherWallet() {
+            const userObj = typeof StorageHelper !== 'undefined' ? StorageHelper.getUser() : null;
+            const userId = userObj?.id;
+            const voucherList = document.getElementById('voucher-list');
+            
+            if (!userId) return;
+
+            // Hiệu ứng Loading mượt mà khi đổi tab
+            voucherList.innerHTML = `<div class="col-12 text-center py-5"><div class="spinner-border text-danger"></div><p class="text-muted mt-2">Đang tải kho mã...</p></div>`;
+
+            try {
+                // Gọi API lấy dữ liệu THẬT TỪ DATABASE
+                const res = await fetch(`${CONFIG.BASE_URL}/vouchers/my-vouchers/${userId}`);
+                const result = await res.json();
+
+                if (result.success && result.data.length > 0) {
+                    let html = '';
+                    result.data.forEach(v => {
+                        html += `
+                            <div class="col-md-7 mb-3">
+                                <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden; border: 1px solid #f8d7da !important;">
+                                    <div class="row g-0 h-100">
+                                        <div class="col-4 bg-danger text-white d-flex flex-column justify-content-center align-items-center p-3" style="border-right: 2px dashed #dc3545;">
+                                            <i class="fa-solid fa-gift fs-2 mb-2"></i>
+                                            <span class="fw-bold fs-5">${(v.discount_amount / 1000)}K</span>
+                                        </div>
+                                        <div class="col-8 bg-white d-flex align-items-center">
+                                            <div class="card-body py-2 pe-2">
+                                                <h6 class="card-title fw-bold text-danger mb-1">Mã Ưu Đãi Đặc Quyền</h6>
+                                                <p class="card-text small text-muted mb-2" style="font-size: 12px;">Đơn tối thiểu: ${Number(v.min_order_value).toLocaleString('vi-VN')}đ</p>
+                                                <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded border">
+                                                    <span class="fw-bold text-dark" style="letter-spacing: 1px;">${v.code}</span>
+                                                    <button class="btn btn-sm btn-danger py-0 px-3 rounded-pill" onclick="copyVoucherCode('${v.code}')">Sao chép</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    voucherList.innerHTML = html;
+                } else {
+                    voucherList.innerHTML = `
+                        <div class="col-12 text-center py-5 bg-light rounded-3">
+                            <i class="fa-solid fa-box-open fs-1 text-muted mb-3"></i>
+                            <p class="text-muted">Kho voucher của bạn đang trống rỗng.</p>
+                            <a href="index.html" class="btn btn-outline-danger mt-2">Ra trang chủ lấy mã ngay!</a>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                voucherList.innerHTML = `<div class="col-12 text-center py-5"><p class="text-danger">Lỗi kết nối máy chủ, vui lòng thử lại!</p></div>`;
+            }
+        }
+
+        // Truyền thẳng cái mã động vào hàm Copy
+        function copyVoucherCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                if (typeof UIHelper !== 'undefined') {
+                    UIHelper.showSuccess("Thành công", `Đã sao chép mã ${code}. Vui lòng dán vào giỏ hàng!`);
+                } else {
+                    alert(`Đã sao chép mã ${code}.`);
+                }
+            });
+        }
+
+        // CÁC HÀM CŨ GIỮ NGUYÊN HOÀN TOÀN
         function loadFavorites() {
             const favs = JSON.parse(localStorage.getItem('linhlinh_favorites')) || [];
             const container = document.getElementById('favorite-list');
             if(!container) return;
 
-            // Nếu trống
             if(favs.length === 0) {
                 container.innerHTML = `
                     <div class="col-12 text-center text-muted py-4">
@@ -197,12 +299,11 @@
             container.innerHTML = html;
         }
 
-        // Hàm xóa trực tiếp trên trang Profile
         window.removeFavorite = function(id) {
             let favs = JSON.parse(localStorage.getItem('linhlinh_favorites')) || [];
             favs = favs.filter(item => item.id !== id);
             localStorage.setItem('linhlinh_favorites', JSON.stringify(favs));
-            loadFavorites(); // Load lại danh sách ngay lập tức
+            loadFavorites(); 
             
             if(typeof UIHelper !== 'undefined') {
                 UIHelper.showSuccess('Đã bỏ thích', `Đã xóa sản phẩm khỏi danh sách yêu thích.`);
@@ -217,10 +318,8 @@
                 return;
             }
 
-            // Gọi hàm load sản phẩm yêu thích
             loadFavorites();
 
-            // 1. LẤY THÔNG TIN CÁ NHÂN
             fetch(`${CONFIG.BASE_URL}/auth/profile`, {
                 headers: { "Authorization": "Bearer " + token }
             })
@@ -228,18 +327,15 @@
             .then(user => {
                 if (user.message) return alert("Lỗi: " + user.message);
                 
-                // Điền vào Form
                 document.getElementById("username").value = user.username;
                 document.getElementById("fullname").value = user.full_name || "";
                 document.getElementById("email").value = user.email || "";
                 document.getElementById("phone").value = user.phone || "";
                 
-                // Đổ lên Giao diện Tổng quan
                 document.getElementById("overview-name").innerText = user.full_name || user.username;
                 document.getElementById("overview-phone").innerText = user.phone || "Chưa cập nhật";
             }).catch(err => console.error(err));
 
-            // 2. LẤY THỐNG KÊ ĐƠN HÀNG
             fetch(`${CONFIG.BASE_URL}/orders/my/stats`, {
                 headers: { "Authorization": "Bearer " + token }
             })
@@ -249,7 +345,6 @@
                 document.getElementById("overview-orders").innerText = stats.total_orders || 0;
                 document.getElementById("overview-spent").innerText = spent.toLocaleString('vi-VN') + "đ";
 
-                // Đổi màu Hạng thành viên cho xịn
                 const tierBadge = document.getElementById("overview-tier");
                 if (spent >= 10000000) {
                     tierBadge.innerText = "S-VIP";
@@ -260,7 +355,6 @@
                 }
             }).catch(err => console.error("Lỗi lấy stats:", err));
 
-            // 3. XỬ LÝ LƯU FORM HỒ SƠ
             document.getElementById("profile-form").addEventListener("submit", (e) => {
                 e.preventDefault();
                 const data = {

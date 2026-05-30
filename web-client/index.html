@@ -16,54 +16,46 @@
                 gap: 15px !important;
             }
             .category-menu, .right-promos {
-                display: none !important; /* Ẩn menu trái và khung ưu đãi phải trên điện thoại */
+                display: none !important;
             }
             .center-content {
-                width: 100% !important; /* Banner tràn viền 100% trên điện thoại */
+                width: 100% !important;
             }
         }
         .recommendation-wrapper {
-    /* Màu nền gradient pastel xịn sò giống ảnh */
-    background: linear-gradient(180deg, #e0c3fc 0%, #8ec5fc 100%);
-    border-radius: 20px;
-    padding: 30px 20px 25px 20px;
-    position: relative;
-    margin-top: 50px;
-    margin-bottom: 40px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-}
-
-/* Cục tiêu đề (Badge) nổi bồng bềnh bên trên */
-.recommendation-badge {
-    position: absolute;
-    top: -24px;
-    left: 50%;
-    transform: translateX(-50%);
-    /* Gradient xanh dương sáng chói */
-    background: linear-gradient(90deg, #74ebd5 0%, #9face6 100%);
-    color: white;
-    font-weight: 800;
-    font-size: 1.15rem;
-    padding: 10px 45px;
-    border-radius: 50px;
-    border: 4px solid white;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-    white-space: nowrap;
-}
-
-/* Làm cho các thẻ sản phẩm bên trong cũng bo góc mượt mà */
-.recommendation-wrapper .card {
-    border-radius: 16px !important;
-    border: none !important;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    transition: transform 0.3s ease;
-}
-
-/* Hiệu ứng nhấc sản phẩm lên khi di chuột vào */
-.recommendation-wrapper .card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 25px rgba(0,0,0,0.2);
-}
+            background: linear-gradient(180deg, #e0c3fc 0%, #8ec5fc 100%);
+            border-radius: 20px;
+            padding: 30px 20px 25px 20px;
+            position: relative;
+            margin-top: 50px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .recommendation-badge {
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, #74ebd5 0%, #9face6 100%);
+            color: white;
+            font-weight: 800;
+            font-size: 1.15rem;
+            padding: 10px 45px;
+            border-radius: 50px;
+            border: 4px solid white;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            white-space: nowrap;
+        }
+        .recommendation-wrapper .card {
+            border-radius: 16px !important;
+            border: none !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+        .recommendation-wrapper .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -92,7 +84,7 @@
                 </form>
 
                 <div class="d-flex align-items-center gap-3 text-white justify-content-end" id="authArea">
-                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -312,6 +304,32 @@
         </div>
     </footer>
 
+    <div style="position: fixed; bottom: 160px; right: 20px; z-index: 999;">
+        <button id="btn-open-wheel" class="btn btn-warning rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; border: 3px solid white; animation: pulse-wheel 1.5s infinite;">
+            <i class="fa-solid fa-dharmachakra fs-3 text-danger"></i>
+        </button>
+    </div>
+
+    <div id="wheel-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1050; align-items: center; justify-content: center;">
+        <div class="text-center position-relative" style="max-width: 450px; width: 90%; background: transparent;">
+            <button id="btn-close-wheel" class="btn btn-light rounded-circle position-absolute" style="top: -50px; right: 0; z-index: 100;"><i class="fa-solid fa-xmark"></i></button>
+            <h2 class="text-warning fw-bold mb-4" style="text-shadow: 0 3px 6px rgba(0,0,0,0.9);">🎁 VÒNG QUAY NHÂN PHẨM</h2>
+            
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel-center-dot"></div>
+                <div id="the-wheel"></div>
+            </div>
+
+            <div class="mt-4 bg-white p-3 rounded-4 shadow text-start">
+                <div class="row g-2 small fw-bold" id="wheel-prize-list">
+                    <div class="col-12 text-center text-muted py-2">Đang tải giải thưởng...</div>
+                </div>
+            </div>
+            <button id="btn-spin" class="btn btn-warning btn-lg rounded-pill fw-bold mt-4 px-5 shadow border border-2 border-white text-danger fs-4 text-uppercase">Thử vận may</button>
+        </div>
+    </div>
+
     <div class="zalo-btn-wrapper">
         <a href="https://zalo.me/0966694299" target="_blank" class="zalo-btn">
             <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo Chat">
@@ -418,8 +436,6 @@
                 }
             }
             updatePromoBox();
-
-            // LOGIC CHATBOT AI
             const btnOpen = document.getElementById('btn-open-chat');
             const btnClose = document.getElementById('btn-close-chat');
             const windowChat = document.getElementById('chat-window');
@@ -427,29 +443,75 @@
             const btnSend = document.getElementById('btn-send');
             const chatContent = document.getElementById('chat-content');
 
-            // 👇 THÊM MỚI TỪ ĐÂY: ĐOẠN CODE TỰ ĐỘNG CHÀO KHÁCH 👇
             setTimeout(() => {
-                let cauChaoTuDong = "Dạ LinhLinh Store xin chào anh/chị ạ! 🔥 Bên em đang có sẵn rất nhiều deal hời cho Laptop và Điện thoại. Anh/chị đang tìm dòng máy nào để em báo giá luôn ạ? ✨ (Đăng nhập ngay để nhận Voucher sinh viên giảm 500K nhé!)";
+                const isLoggedIn = typeof StorageHelper !== 'undefined' && StorageHelper.isLoggedIn();
+                let cauChaoTuDong = "";
 
-                // Tận dụng luôn StorageHelper của ông để lấy tên cho lẹ
-                if (typeof StorageHelper !== 'undefined' && StorageHelper.isLoggedIn()) {
+                if (!isLoggedIn) {
+                    cauChaoTuDong = `Dạ LinhLinh Store xin chào anh/chị ạ! 🔥 Bên em đang có sẵn rất nhiều deal hời cho Laptop và Điện thoại. Anh/chị đang tìm dòng máy nào để em báo giá luôn ạ? ✨ <br><br><i>(Đăng nhập ngay để nhận Voucher giảm 150K nhé!)</i>`;
+                    appendMessage(cauChaoTuDong, 'ai');
+                } else {
                     const userObj = StorageHelper.getUser();
-                    const fullName = userObj?.full_name || userObj?.username; 
-                    if (fullName) {
-                        const shortName = fullName.split(' ').pop();
-                        cauChaoTuDong = `Dạ em chào anh/chị ${shortName} ạ! 🔥 LinhLinh Store rất vui khi anh/chị quay trở lại. Hôm nay kho em đang sẵn nhiều deal công nghệ cực bốc, ${shortName} đang tìm máy nào để em tư vấn luôn ạ? 💻📱`;
+                    const userId = userObj?.id;
+                    const shortName = userObj?.full_name ? userObj.full_name.split(' ').pop() : "anh/chị";
+                    
+                    const storageKey = `daLayMa_DB_${userId}`; 
+                    const hasClaimedVoucher = localStorage.getItem(storageKey) === 'true';
+
+                    if (!hasClaimedVoucher) {
+                        cauChaoTuDong = `
+                            Dạ em chào ${shortName}! Chúc mừng ${shortName} đã đăng nhập thành công. 🎉<br>
+                            Như đã hứa, em gửi tặng ${shortName} mã Voucher giảm 150K ạ:<br>
+                            <button id="btnClaimVoucher" style="width: 100%; margin-top: 10px; background: #dc3545; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                                <i class="fa-solid fa-gift me-1"></i> LƯU MÃ NGAY
+                            </button>
+                        `;
+                        appendMessage(cauChaoTuDong, 'ai');
+
+                        setTimeout(() => {
+                            const btnClaim = document.getElementById('btnClaimVoucher');
+                            if (btnClaim) {
+                                btnClaim.addEventListener('click', async function() {
+                                    const btn = this;
+                                    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Đang lưu...`;
+                                    btn.disabled = true; 
+                                    
+                                    try {
+                                        const res = await fetch(`${CONFIG.BASE_URL}/vouchers/claim`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ userId: userId })
+                                        });
+                                        const data = await res.json();
+                                        
+                                        if (data.success) {
+                                            localStorage.setItem(storageKey, 'true'); 
+                                            btn.parentElement.innerHTML = `
+                                                Dạ em đã lưu mã <b style="color: #dc3545; font-size: 16px;">${data.code}</b> vào ví Voucher của ${shortName} rồi ạ! 💖<br>
+                                                ${shortName} có thể vào <b>Hồ sơ -> Kho Voucher</b> để xem lại mã, hoặc vào Giỏ Hàng thanh toán để sử dụng luôn nha!
+                                            `;
+                                        } else {
+                                            btn.innerHTML = data.message || "Lỗi, thử lại!";
+                                            btn.disabled = false;
+                                        }
+                                    } catch (e) {
+                                        console.error(e);
+                                        btn.innerHTML = "Lỗi mạng, thử lại!";
+                                        btn.disabled = false;
+                                    }
+                                });
+                            }
+                        }, 100);
+                    } else {
+                        cauChaoTuDong = `Dạ em chào ${shortName} ạ! 🔥 LinhLinh Store rất vui khi ${shortName} quay trở lại. Hôm nay kho em đang sẵn nhiều deal công nghệ cực bốc, ${shortName} đang tìm máy nào để em tư vấn luôn ạ? 💻📱`;
+                        appendMessage(cauChaoTuDong, 'ai');
                     }
                 }
 
-                // 1. Tự động bật popup khung chat lên cho khách thấy
                 if (windowChat && btnOpen) {
                     windowChat.style.display = 'flex';
                     btnOpen.style.display = 'none';
                 }
-                
-                // 2. Dùng hàm có sẵn của ông để in câu chào ra màn hình
-                appendMessage(cauChaoTuDong, 'ai');
-
             }, 1500);
 
             if(btnOpen && windowChat) {
@@ -505,6 +567,145 @@
 
             if(btnSend) btnSend.addEventListener('click', sendMessage);
             if(chatInput) chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendMessage(); });
+
+            // ==========================================
+            // LOGIC VÒNG QUAY NHÂN PHẨM (DYNAMIC TỪ DATABASE)
+            // ==========================================
+            const btnOpenWheel = document.getElementById('btn-open-wheel');
+            const btnCloseWheel = document.getElementById('btn-close-wheel');
+            const wheelModal = document.getElementById('wheel-modal');
+            const btnSpin = document.getElementById('btn-spin');
+            const theWheel = document.getElementById('the-wheel');
+            const prizeListDiv = document.getElementById('wheel-prize-list');
+
+            const colors = [
+                { name: "Vàng", hex: "#ffc107" },
+                { name: "Xanh dương", hex: "#17a2b8" },
+                { name: "Xanh lá", hex: "#28a745" },
+                { name: "Đỏ", hex: "#dc3545" }
+            ];
+
+            async function loadWheelPrizes() {
+                try {
+                    const res = await fetch(`${CONFIG.BASE_URL}/vouchers/wheel-prizes`);
+                    const result = await res.json();
+                    
+                    if (result.success && result.data.length > 0) {
+                        prizeListDiv.innerHTML = ''; 
+                        result.data.forEach((prize, index) => {
+                            if(index > 3) return; 
+                            const c = colors[index];
+                            prizeListDiv.innerHTML += `
+                                <div class="col-6 mb-2">
+                                    <span style="color: ${c.hex}; font-size: 1.2rem;">■</span> 
+                                    ${c.name}: <b>${(prize.discount_amount/1000)}K</b>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        prizeListDiv.innerHTML = '<div class="col-12 text-center text-muted py-2">Chưa có giải thưởng nào được cài đặt!</div>';
+                    }
+                } catch (e) {
+                    console.log("Lỗi load giải thưởng", e);
+                }
+            }
+
+            if(btnOpenWheel) {
+                btnOpenWheel.addEventListener('click', () => {
+                    wheelModal.style.display = 'flex';
+                    loadWheelPrizes(); 
+                });
+            }
+            
+            if(btnCloseWheel) {
+                btnCloseWheel.addEventListener('click', () => {
+                    wheelModal.style.display = 'none';
+                });
+            }
+
+            if(btnSpin) {
+                btnSpin.addEventListener('click', async () => {
+                    const isLoggedIn = typeof StorageHelper !== 'undefined' && StorageHelper.isLoggedIn();
+                    if (!isLoggedIn) {
+                        Swal.fire("Khoan đã!", "Bạn phải đăng nhập thì mới được tham gia quay số nhé!", "warning");
+                        return;
+                    }
+
+                    const userObj = StorageHelper.getUser();
+                    btnSpin.disabled = true;
+                    btnSpin.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Đang quay...`;
+
+                    try {
+                        const res = await fetch(`${CONFIG.BASE_URL}/vouchers/spin`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ userId: userObj.id })
+                        });
+                        const data = await res.json();
+
+                        if (data.success) {
+                            // Góc tính toán cho 8 múi (mỗi múi 45 độ, tâm của múi là 22.5 độ)
+                            const segmentAngles = [
+                                360 - 22.5,          // 0: Đỏ (Trúng)
+                                360 - (45 + 22.5),   // 1: Xám (Tạch)
+                                360 - (90 + 22.5),   // 2: Xanh lá (Trúng)
+                                360 - (135 + 22.5),  // 3: Xám (Tạch)
+                                360 - (180 + 22.5),  // 4: Xanh dương (Trúng)
+                                360 - (225 + 22.5),  // 5: Xám (Tạch)
+                                360 - (270 + 22.5),  // 6: Vàng (Trúng)
+                                360 - (315 + 22.5)   // 7: Xám (Tạch)
+                            ];
+
+                            const baseAngle = segmentAngles[data.prizeIndex];
+                            const extraSpins = 8 * 360; // Lần này cho xoay tít thò lò 8 vòng luôn
+                            const randomOffset = Math.floor(Math.random() * 30) - 15; 
+                            const totalRotation = extraSpins + baseAngle + randomOffset;
+
+                            theWheel.style.transform = `rotate(${totalRotation}deg)`;
+
+                            setTimeout(() => {
+                                if (data.isWin) {
+                                    // TRÚNG THƯỞNG
+                                    Swal.fire({
+                                        title: '🎉 THÁNH NHÂN PHẨM! 🎉',
+                                        html: `Bạn vừa vớ được Voucher <b>giảm ${(data.prizeAmount/1000)}K</b>.<br>Mã của bạn: <b class="text-danger fs-5">${data.code}</b><br>Hàng đã được cất vào ví!`,
+                                        icon: 'success',
+                                        confirmButtonColor: '#d70018',
+                                        confirmButtonText: 'Lụm ngay!'
+                                    });
+                                } else {
+                                    // TẠCH
+                                    Swal.fire({
+                                        title: 'Chúc bạn may mắn lần sau! 🥲',
+                                        text: 'Quay vào ô mất lượt mất rồi, nạp lần đầu để tăng nhân phẩm nhé!',
+                                        icon: 'error',
+                                        confirmButtonColor: '#6c757d',
+                                        confirmButtonText: 'Đen thôi!'
+                                    });
+                                }
+                                
+                                btnSpin.disabled = false;
+                                btnSpin.innerText = "THỬ LẠI LẦN NỮA";
+                                setTimeout(() => {
+                                    theWheel.style.transition = 'none';
+                                    const resetAngle = (baseAngle + randomOffset) % 360;
+                                    theWheel.style.transform = `rotate(${resetAngle}deg)`;
+                                    setTimeout(() => { theWheel.style.transition = 'transform 4.5s cubic-bezier(0.1, 0.7, 0.1, 1)'; }, 50);
+                                }, 500);
+
+                            }, 4600); // Đợi 4.6s cho bánh xe dừng
+                        } else {
+                            Swal.fire("Lỗi!", data.message, "error");
+                            btnSpin.disabled = false;
+                            btnSpin.innerText = "THỬ VẬN MAY";
+                        }
+                    } catch (e) {
+                        Swal.fire("Lỗi mạng!", "Hệ thống đang bảo trì giải thưởng, vui lòng thử lại sau!", "error");
+                        btnSpin.disabled = false;
+                        btnSpin.innerText = "THỬ VẬN MAY";
+                    }
+                });
+            }
         });
     </script>
 </body>

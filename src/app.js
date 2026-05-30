@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const session = require('express-session');    // Gọi thư viện Session
-const passport = require('./config/passport'); // Gọi cấu hình Passport ông đã tạo
+const session = require('express-session');
+const passport = require('./config/passport'); 
 
 const app = express();
 
@@ -15,7 +15,6 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- KÍCH HOẠT BỘ NHỚ SESSION VÀ PASSPORT (Phải nằm trước các Route API) ---
 app.use(session({
     secret: process.env.JWT_SECRET || 'linhlinhstore_secret_session', 
     resave: false,
@@ -27,7 +26,6 @@ app.use(passport.session());
 app.use('/uploads', express.static(path.join(__dirname, '..', 'web-client/uploads')));
 app.use(express.static(path.join(__dirname, '..', 'web-client')));
 
-// --- 1. CÁC ROUTE API CỐT LÕI (THUẦN MYSQL) ---
 app.use('/api/categories', require('./routes/CategoryRoutes'));
 app.use('/api/products', require('./routes/ProductRoutes'));
 app.use('/api/auth', require('./routes/AuthRoutes.js'));
