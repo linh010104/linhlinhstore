@@ -1,4 +1,5 @@
-// File: web-client/js/cart.js
+let cartTotalAmount = 0;
+let appliedVoucher = null;
 
 function loadCart() {
     if (!StorageHelper.isLoggedIn()) {
@@ -72,16 +73,33 @@ function loadCart() {
             if (tbody) tbody.appendChild(tr);
         });
 
-        renderSummary(total);
+        cartTotalAmount = total; // Lưu lại để tính giảm giá
+        renderSummary(); // Không cần truyền total nữa vì đã dùng biến toàn cục
     })
     .catch(err => console.error(err));
 }
 
-function renderSummary(total) {
+// Hàm vẽ lại Cục tính tiền bên tay phải
+function renderSummary() {
     const summaryEl = document.getElementById("cart-summary-area");
     if (!summaryEl) return;
 
-    // 🔥 FIX: Bổ sung Dropdown chọn phương thức thanh toán ngay trong bảng tính tiền
+    let discountHTML = "";
+    let finalTotal = cartTotalAmount;
+
+    // Nếu có mã đang áp dụng, tính toán lại tiền và hiển thị dòng Giảm Giá
+    if (appliedVoucher) {
+        finalTotal = cartTotalAmount - appliedVoucher.discount_amount;
+        if (finalTotal < 0) finalTotal = 0; // Đảm bảo không bị âm tiền
+        
+        discountHTML = `
+            <div class="d-flex justify-content-between mb-2 text-danger">
+                <span>Mã giảm giá (${appliedVoucher.code}):</span>
+                <span class="fw-bold">- ${UIHelper.formatPrice(appliedVoucher.discount_amount)}</span>
+            </div>
+        `;
+    }
+
     summaryEl.innerHTML = `
         <div class="card border-0 shadow-sm rounded-4 p-4 sticky-summary bg-white">
             <h5 class="fw-bold mb-4">Hóa đơn của bạn</h5>
@@ -89,15 +107,21 @@ function renderSummary(total) {
             <div class="coupon-box p-3 rounded-3 mb-4">
                 <label class="small fw-bold text-danger mb-2 d-block"><i class="fa-solid fa-ticket me-1"></i> Mã giảm giá / Voucher</label>
                 <div class="input-group input-group-sm">
-                    <input type="text" class="form-control border-0" placeholder="Nhập mã ưu đãi...">
-                    <button class="btn btn-danger px-3 fw-bold" onclick="UIHelper.showError('Mã không hợp lệ', 'Voucher này đã hết hạn hoặc không tồn tại!')">Áp dụng</button>
+                    <input type="text" id="voucher-input" class="form-control border-0" placeholder="Nhập mã ưu đãi..." value="${appliedVoucher ? appliedVoucher.code : ''}" ${appliedVoucher ? 'disabled' : ''}>
+                    ${appliedVoucher 
+                        ? `<button class="btn btn-secondary px-3 fw-bold" onclick="removeVoucher()">Hủy mã</button>`
+                        : `<button class="btn btn-danger px-3 fw-bold" onclick="applyVoucher()">Áp dụng</button>`
+                    }
                 </div>
             </div>
 
             <div class="d-flex justify-content-between mb-2 text-muted">
                 <span>Tạm tính:</span>
-                <span class="fw-bold text-dark">${UIHelper.formatPrice(total)}</span>
+                <span class="fw-bold text-dark">${UIHelper.formatPrice(cartTotalAmount)}</span>
             </div>
+            
+            ${discountHTML}
+            
             <div class="d-flex justify-content-between mb-3 text-muted">
                 <span>Giao hàng:</span>
                 <span class="text-success fw-bold">Miễn phí</span>
@@ -105,7 +129,7 @@ function renderSummary(total) {
             <hr class="my-3">
             <div class="d-flex justify-content-between mb-4 align-items-center">
                 <span class="fw-bold">Tổng thanh toán:</span>
-                <span class="fw-bold fs-4 text-danger">${UIHelper.formatPrice(total)}</span>
+                <span class="fw-bold fs-4 text-danger">${UIHelper.formatPrice(finalTotal)}</span>
             </div>
             
             <div class="mb-4">
@@ -126,11 +150,45 @@ function renderSummary(total) {
     `;
 }
 
+// 🔥 Hàm API kiểm tra và áp dụng mã Voucher 🔥
+function applyVoucher() {
+    const code = document.getElementById('voucher-input').value.trim();
+    if (!code) return UIHelper.showWarning("Thiếu thông tin", "Vui lòng nhập mã voucher trước khi áp dụng!");
+
+    // Chọc API xuống DB để kiểm tra mã
+    API.post('/vouchers/check', { code: code })
+    .then(res => {
+        if (res.success) {
+            const voucherData = res.data;
+            
+            // So sánh xem giỏ hàng đã đủ đơn tối thiểu chưa
+            if (cartTotalAmount < voucherData.min_order_value) {
+                UIHelper.showError("Chưa đủ điều kiện", `Đơn hàng tối thiểu để dùng mã này là ${UIHelper.formatPrice(voucherData.min_order_value)}.`);
+                return;
+            }
+
+            // Mọi thứ hoàn hảo -> Lưu mã và render lại
+            appliedVoucher = voucherData;
+            UIHelper.showSuccess("Thành công", "Áp dụng mã giảm giá thành công!");
+            renderSummary();
+        } else {
+            UIHelper.showError("Lỗi", res.message || "Mã không hợp lệ!");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        UIHelper.showError("Không hợp lệ", "Mã voucher này không tồn tại hoặc đã được sử dụng!");
+    });
+}
+
+// 🔥 Hàm hủy bỏ mã Voucher 🔥
+function removeVoucher() {
+    appliedVoucher = null;
+    renderSummary();
+}
+
 function processCheckout() {
-    // 🔥 Lấy phương thức thanh toán người dùng vừa chọn từ Dropdown
     const selectedPayment = document.getElementById("cart-payment-method") ? document.getElementById("cart-payment-method").value : "VNPAY";
-    
-    // Tùy chỉnh tin nhắn xác nhận dựa trên phương thức
     const confirmMsg = selectedPayment === "VNPAY" ? "Bạn sẽ được chuyển hướng sang cổng thanh toán VNPay." : "Đơn hàng sẽ được giao đến bạn và thanh toán bằng tiền mặt.";
 
     UIHelper.showConfirm(
@@ -145,7 +203,9 @@ function processCheckout() {
                 name: user?.full_name || "Khách hàng", 
                 phone: user?.phone || "0123456789",
                 address: user?.address || "Hà Nội",
-                note: "Đơn hàng từ giỏ"
+                note: "Đơn hàng từ giỏ",
+                voucher_code: appliedVoucher ? appliedVoucher.code : null, // Kẹp thêm mã Voucher gửi xuống cho Backend
+                discount_amount: appliedVoucher ? appliedVoucher.discount_amount : 0
             };
 
             API.post('/orders/checkout', checkoutData, true)
