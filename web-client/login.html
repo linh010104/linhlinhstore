@@ -59,7 +59,7 @@
                                 <input class="form-check-input" type="checkbox" id="rememberMe">
                                 <label class="form-check-label text-muted" for="rememberMe">Ghi nhớ tôi</label>
                             </div>
-                            <a href="#" class="text-decoration-none text-danger fw-bold">Quên mật khẩu?</a>
+                            <a href="#" class="text-decoration-none text-danger fw-bold" onclick="forgotPassword();">Quên mật khẩu?</a>
                         </div>
 
                         <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill py-3 fw-bold shadow-sm text-uppercase mb-3" style="letter-spacing: 1px;">
@@ -97,5 +97,55 @@
     <script src="js/api-helper.js"></script>
     <script src="js/ui-helper.js"></script>
     <script src="js/auth.js"></script>
+    <script>
+        function forgotPassword() {
+            Swal.fire({
+                title: 'Khôi phục mật khẩu',
+                text: "Vui lòng nhập Email bạn đã dùng để đăng ký. Hệ thống sẽ reset và gửi mật khẩu mới vào email này.",
+                input: 'email',
+                inputPlaceholder: 'Nhập email của bạn...',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#d70018',
+                cancelButtonColor: '#6c757d',
+                cancelButtonText: 'Hủy',
+                confirmButtonText: 'Gửi yêu cầu <i class="fa-solid fa-paper-plane ms-1"></i>',
+                showLoaderOnConfirm: true,
+                preConfirm: (emailInput) => {
+                    if (!emailInput) {
+                        Swal.showValidationMessage('Bạn chưa nhập email kìa!');
+                        return false;
+                    }
+                    
+                    // CHỌC API THẬT XUỐNG BACKEND (Nhớ truyền email đi!)
+                    return fetch(`${CONFIG.BASE_URL}/auth/forgot-password`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: emailInput })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.message || "Email không tồn tại trong hệ thống!");
+                        }
+                        return data;
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(error.message);
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Kiểm tra hộp thư!',
+                        text: result.value.message,
+                        icon: 'success',
+                        confirmButtonColor: '#d70018'
+                    });
+                }
+            });
+        }
+    </script>
 </body>
 </html>

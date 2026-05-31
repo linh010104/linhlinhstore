@@ -14,6 +14,8 @@ router.get('/profile', authMiddleware, authController.getProfile);
 router.put('/profile', authMiddleware, authController.updateProfile);
 router.put('/change-password', authMiddleware, authController.changePassword);
 
+router.post('/forgot-password', authController.forgotPassword);
+
 // ✅ GOOGLE OAUTH
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/login.html' }), (req, res) => {
