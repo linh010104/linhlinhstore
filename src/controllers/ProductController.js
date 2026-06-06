@@ -15,7 +15,6 @@ exports.getAll = (req, res) => {
 };
 
 exports.create = (req, res) => {
-  if (req.user.role_id !== 1) return res.status(403).json({ message: "Chỉ Admin mới có quyền thao tác sản phẩm!" });
   Product.create(req.body, (err, result) => {
     if (err) return res.status(500).json(err);
     res.json({
@@ -26,7 +25,6 @@ exports.create = (req, res) => {
 };
 
 exports.update = (req, res) => {
-  if (req.user.role_id !== 1) return res.status(403).json({ message: "Chỉ Admin mới có quyền thao tác sản phẩm!" });
   const id = req.params.id;
   const data = req.body;
 
@@ -37,7 +35,6 @@ exports.update = (req, res) => {
 };
 
 exports.delete = (req, res) => {
-  if (req.user.role_id !== 1) return res.status(403).json({ message: "Chỉ Admin mới có quyền thao tác sản phẩm!" });
   const id = req.params.id;
 
   Product.delete(id, (err) => {
@@ -48,7 +45,6 @@ exports.delete = (req, res) => {
 
 // 🔥 ĐÃ DỌN DẸP GỌN GÀNG NHỜ CLOUDINARY MIDDLEWARE
 exports.uploadImage = (req, res) => {
-  if (req.user.role_id !== 1) return res.status(403).json({ message: "Chỉ Admin mới có quyền thao tác sản phẩm!" });
   const productId = req.params.id;
 
   if (!req.files || req.files.length === 0) {
@@ -93,7 +89,6 @@ exports.checkExistence = (req, res) => {
 };
 
 exports.addVariant = (req, res) => {
-  if (req.user.role_id !== 1) return res.status(403).json({ message: "Chỉ Admin mới có quyền thao tác sản phẩm!" });
   const productId = req.params.id;
   const { variant_group, variant_name, additional_price, stock_quantity } = req.body;
   
@@ -110,7 +105,6 @@ exports.addVariant = (req, res) => {
 };
 
 exports.deleteVariant = (req, res) => {
-  if (req.user.role_id !== 1) return res.status(403).json({ message: "Chỉ Admin mới có quyền thao tác sản phẩm!" });
   const variantId = req.params.variantId;
   const sql = "DELETE FROM product_variants WHERE id = ?";
   
@@ -158,7 +152,6 @@ function fetchAndReturnProducts(categoryIds, res) {
     });
 }
 exports.updateDiscount = (req, res) => {
-  if (req.user.role_id !== 1) return res.status(403).json({ message: "Chỉ Admin mới có quyền thao tác sản phẩm!" });
         const productId = req.params.id;
         const discountPercent = req.body.discount_percent;
 

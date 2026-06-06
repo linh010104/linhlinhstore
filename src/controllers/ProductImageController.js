@@ -1,7 +1,6 @@
 const db = require('../config/db');
 
 exports.uploadImage = (req, res) => {
-  if (req.user.role_id !== 1) return res.status(403).json({ message: "Chỉ Admin mới có quyền xóa/thêm ảnh!" });
   const productId = req.params.productId;
 
   if (!req.file) return res.status(400).json({ message: 'Chưa chọn file ảnh' });
@@ -16,7 +15,6 @@ exports.uploadImage = (req, res) => {
   });
 };
 exports.deleteImage = (req, res) => {
-  if (req.user.role_id !== 1) return res.status(403).json({ message: "Chỉ Admin mới có quyền xóa/thêm ảnh!" });
   const imageId = req.params.imageId;
   
   const sql = "DELETE FROM product_images WHERE id = ?";
