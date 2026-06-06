@@ -1,6 +1,7 @@
 const Inventory = require('../models/InventoryModel');
 
 exports.getInventory = (req, res) => {
+    if (req.user.role_id !== 1) return res.status(403).json({ message: "Chỉ Admin mới có quyền quản lý kho!" });
     Inventory.getAll((err, result) => {
         if (err) return res.status(500).json({ error: "Lỗi Server" });
         res.json(result);
@@ -8,6 +9,7 @@ exports.getInventory = (req, res) => {
 };
 
 exports.importGoods = (req, res) => {
+    if (req.user.role_id !== 1) return res.status(403).json({ message: "Chỉ Admin mới có quyền quản lý kho!" });
     const { productId, amount } = req.body;
     const qty = parseInt(amount);
 

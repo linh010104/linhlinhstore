@@ -10,6 +10,7 @@ exports.getBannersByType = (req, res) => {
 };
 
 exports.createBanner = (req, res) => {
+    if (req.user.role_id !== 1) return res.status(403).json({ message: "Chỉ Admin mới có quyền!" });
     if (!req.body) req.body = {};
     if (!req.file) return res.status(400).json({ message: "Vui lòng chọn file ảnh!" });
     
@@ -26,6 +27,7 @@ exports.createBanner = (req, res) => {
 };
 
 exports.deleteBanner = (req, res) => {
+    if (req.user.role_id !== 1) return res.status(403).json({ message: "Chỉ Admin mới có quyền!" });
     const id = req.params.id;
     // Ảnh trên mây cứ kệ nó, chỉ cần xóa dữ liệu trong DB là banner biến mất khỏi web
     db.query("DELETE FROM banners WHERE id = ?", [id], (err) => {

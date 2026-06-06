@@ -1,6 +1,14 @@
 const db = require('../config/db');
 
 exports.getRevenue = (req, res) => {
+    // 🚨 BƯỚC KIỂM TRA QUYỀN LỰC: CHỈ ADMIN MỚI ĐƯỢC XEM DOANH THU 🚨
+    if (!req.user || req.user.role_id !== 1) {
+        return res.status(403).json({ 
+            success: false, 
+            message: "Cảnh báo bảo mật: Chỉ Admin mới có quyền truy cập dữ liệu thống kê!" 
+        });
+    }
+
     const { startDate, endDate } = req.query;
     if (!startDate || !endDate) return res.status(400).json({ message: "Vui lòng chọn ngày!" });
 
@@ -63,6 +71,14 @@ exports.getRevenue = (req, res) => {
 };
 
 exports.getDashboardOverview = async (req, res) => {
+    // 🚨 BƯỚC KIỂM TRA QUYỀN LỰC: BẢO VỆ LUÔN CÁI DASHBOARD TỔNG QUAN 🚨
+    if (!req.user || req.user.role_id !== 1) {
+        return res.status(403).json({ 
+            success: false, 
+            message: "Cảnh báo bảo mật: Chỉ Admin mới có quyền truy cập Dashboard!" 
+        });
+    }
+
     try {
         const revenueSql = `
             SELECT SUM(oi.quantity * p.price) as total_revenue 

@@ -6,6 +6,7 @@ let selectedVariants = {};
 let globalOriginalPrice = 0;
 let globalDiscountPercent = 0;
 let currentFinalPrice = 0;
+let globalStockQuantity = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
@@ -33,6 +34,7 @@ function loadProductDetail() {
             // 🔥 LOGIC GIÁ KHUYẾN MÃI MỚI 🔥
             globalOriginalPrice = Number(data.price);
             globalDiscountPercent = data.discount_percent ? Number(data.discount_percent) : 0;
+            globalStockQuantity = Number(data.stock_quantity);
             
             // Gọi hàm tính tiền để nó tự động vẽ Giá gạch ngang và Badge giảm giá
             updateTotalPrice();
@@ -214,7 +216,20 @@ function loadRelatedProducts(catId) {
 function changeQty(amount) {
     const input = document.getElementById("qty-input");
     let val = parseInt(input.value) + amount;
-    input.value = val < 1 ? 1 : val;
+    
+    // 1. Chặn không cho mua dưới 1 cái
+    if (val < 1) {
+        val = 1;
+    }
+    
+    // 2. Chặn không cho mua VƯỢT QUÁ SỐ LƯỢNG TRONG KHO (Lấy trực tiếp từ DB)
+    if (val > globalStockQuantity) {
+        // Tắt thông báo rườm rà, chỉ cần không tăng số lượng lên nữa là đủ hiểu
+        val = globalStockQuantity;
+        UIHelper.showWarning("Hết giới hạn", `Shop chỉ còn đúng ${globalStockQuantity} sản phẩm trong kho!`);
+    }
+    
+    input.value = val;
 }
 
 function addToCartFromDetail() {
