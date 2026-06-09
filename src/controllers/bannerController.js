@@ -13,7 +13,6 @@ exports.createBanner = (req, res) => {
     if (!req.body) req.body = {};
     if (!req.file) return res.status(400).json({ message: "Vui lòng chọn file ảnh!" });
     
-    // 🔥 Phép màu ở đây: multer-storage-cloudinary đã tự up ảnh và trả link mây vào req.file.path
     const { title, link_url, banner_type, sort_order } = req.body;
     const image_url = req.file.path; 
     

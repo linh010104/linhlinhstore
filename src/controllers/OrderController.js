@@ -20,51 +20,27 @@ exports.checkout = (req, res) => {
     const data = req.body;
     
     Order.createOrder(userId, data, (err, orderId, totalAmount) => {
-        if (err) {
-            // 🔥 Máy quét lỗi: In thẳng lỗi SQL ra Terminal để anh em mình soi
-            console.error("🔥 LỖI SQL HOẶC LOGIC KHI CHECKOUT:", err); 
-            return res.status(500).json({
-                success: false,
-                message: typeof err === 'string' ? err : 'Lỗi server khi đặt hàng',
-                error: err.message || err
-            });
-        }
+        if (err) return res.status(500).json({ success: false, message: 'Lỗi server', error: err.message || err });
         
         try {
-            // 💡 CHỈ TẠO LINK VNPay NẾU KHÁCH CHỌN PHƯƠNG THỨC 'VNPAY'
             if (data.payment_method === 'VNPAY') {
                 const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '127.0.0.1';
+                
+                // 🔥 SỬA MÃ ĐỘC NHẤT ĐỂ TRÁNH LỖI TRÙNG ĐƠN
+                const uniqueTxnRef = `${orderId}_${Date.now()}`;
+                
                 const paymentUrl = vnpayConfig.createPaymentUrl({
-                    orderId: orderId,
+                    orderId: uniqueTxnRef, 
                     amount: totalAmount,
-                    orderInfo: `Thanh toán đơn hàng #${orderId} tại LinhLinhStore`,
+                    orderInfo: `Thanh toan don hang ${orderId}`, // 🔥 VIẾT KHÔNG DẤU ĐỂ TRÁNH LỖI CHỮ KÝ
                     ipAddr: clientIp
                 });
                 
-                return res.json({
-                    success: true,
-                    message: 'Đơn hàng đã được tạo. Vui lòng thanh toán.',
-                    orderId: orderId,
-                    totalAmount: totalAmount,
-                    paymentUrl: paymentUrl // Trả về link để frontend tự nhảy
-                });
+                return res.json({ success: true, message: 'Đang chuyển hướng...', paymentUrl: paymentUrl });
             } else {
-                // 💡 NẾU LÀ COD HOẶC CHUYỂN KHOẢN THỦ CÔNG -> TRẢ VỀ THÀNH CÔNG LUÔN
-                return res.json({
-                    success: true,
-                    message: 'Đặt hàng thành công!',
-                    orderId: orderId,
-                    totalAmount: totalAmount
-                });
+                return res.json({ success: true, message: 'Đặt hàng thành công!', orderId: orderId });
             }
-        } catch (error) {
-            console.error("Lỗi tạo VNPay URL:", error);
-            res.status(500).json({
-                success: false,
-                message: 'Lỗi tạo liên kết thanh toán',
-                error: error.message
-            });
-        }
+        } catch (error) { res.status(500).json({ success: false, message: 'Lỗi tạo liên kết', error: error.message }); }
     });
 };
 /**
@@ -72,77 +48,41 @@ exports.checkout = (req, res) => {
  */
 exports.vnpayCallback = (req, res) => {
     try {
-        const vnp_Params = req.query || req.body;
+        const vnp_Params = req.query; // LUÔN LÀ req.query VÌ LÀ GET REQUEST
         
-        // ✅ BƯỚC 1: KIỂM TRA CHỮ KÝ
         if (!vnpayConfig.verifyPaymentHash(vnp_Params)) {
-            console.warn("⚠️ VNPay callback signature mismatch:", vnp_Params);
-            return res.status(400).json({
-                success: false,
-                message: 'Chữ ký không hợp lệ'
-            });
+            return res.status(400).json({ success: false, message: 'Chữ ký không hợp lệ' });
         }
         
         const vnp_ResponseCode = vnp_Params['vnp_ResponseCode'];
-        const vnp_TxnRef = vnp_Params['vnp_TxnRef']; // Order ID
+        const vnp_TxnRef = vnp_Params['vnp_TxnRef']; // Ví dụ: "15_1701234567"
         const vnp_TransactionNo = vnp_Params['vnp_TransactionNo'];
-        const vnp_Amount = vnp_Params['vnp_Amount'] / 100; // Convert từ xu sang VND
+        const vnp_Amount = vnp_Params['vnp_Amount'] / 100;
         
-        // ✅ BƯỚC 2: KIỂM TRA RESPONSE CODE
+        // 🔥 TÁCH LẤY LẠI ĐÚNG ID ĐƠN HÀNG TRONG DATABASE (Bỏ phần _170123...)
+        const realOrderId = vnp_TxnRef.split('_')[0];
+        
         if (vnp_ResponseCode === '00') {
-            // Thanh toán thành công
-            Order.updatePaymentStatus(vnp_TxnRef, 'PAID', vnp_TransactionNo, (err) => {
-                if (err) {
-                    console.error("Lỗi cập nhật payment status:", err);
-                    return res.status(500).json({ success: false, message: 'Lỗi server' });
-                }
+            Order.updatePaymentStatus(realOrderId, 'PAID', vnp_TransactionNo, (err) => {
+                if (err) return res.status(500).json({ success: false, message: 'Lỗi server DB' });
                 
-                // ✅ CẬP NHẬT STATUS ĐƠNHÀNG THÀNH CONFIRMED
-                db.query(
-                    "UPDATE orders SET status = 'CONFIRMED' WHERE id = ?",
-                    [vnp_TxnRef],
-                    (updateErr) => {
-                        if (updateErr) console.error("Lỗi cập nhật order status:", updateErr);
-                        
-                        // Xóa giỏ hàng của user này sau khi thanh toán thành công
-                        db.query("DELETE FROM carts WHERE user_id = (SELECT user_id FROM orders WHERE id = ?)", [vnp_TxnRef]);
-                        
-                        // Gửi email xác nhận
-                        sendOrderConfirmationEmail(vnp_TxnRef);
-                        
-                        res.json({
-                            success: true,
-                            message: 'Thanh toán thành công',
-                            orderId: vnp_TxnRef,
-                            amount: vnp_Amount,
-                            transactionNo: vnp_TransactionNo
-                        });
-                    }
-                );
-            });
-        } else {
-            // Thanh toán thất bại
-            Order.updatePaymentStatus(vnp_TxnRef, 'FAILED', null, (err) => {
-                if (err) console.error("Lỗi cập nhật FAILED status:", err);
-                
-                // ✅ CANCEL ORDER - CỘNG KHO LẠI
-                db.query("UPDATE orders SET status = 'CANCELLED' WHERE id = ?", [vnp_TxnRef]);
-                
-                res.json({
-                    success: false,
-                    message: `Thanh toán thất bại (Code: ${vnp_ResponseCode})`,
-                    orderId: vnp_TxnRef
+                db.query("UPDATE orders SET status = 'CONFIRMED' WHERE id = ?", [realOrderId], (updateErr) => {
+                    db.query("DELETE FROM carts WHERE user_id = (SELECT user_id FROM orders WHERE id = ?)", [realOrderId]);
+                    sendOrderConfirmationEmail(realOrderId);
+                    
+                    // 🔥 SỬA Ở ĐÂY: Đá khách hàng về lại trang Danh sách đơn hàng trên Web
+                    res.redirect('/orders.html?payment=success'); 
                 });
             });
+        } else {
+            Order.updatePaymentStatus(realOrderId, 'FAILED', null, (err) => {
+                db.query("UPDATE orders SET status = 'CANCELLED' WHERE id = ?", [realOrderId]);
+                
+                // 🔥 SỬA Ở ĐÂY: Đá khách hàng về trang Web kèm cờ báo lỗi
+                res.redirect('/orders.html?payment=failed');
+            });
         }
-    } catch (error) {
-        console.error("🔥 Lỗi VNPay callback:", error);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi xử lý callback',
-            error: error.message
-        });
-    }
+    } catch (error) { res.status(500).json({ success: false, message: 'Lỗi server', error: error.message }); }
 };
 
 exports.checkPaymentStatus = (req, res) => {
@@ -175,50 +115,25 @@ exports.directBuy = (req, res) => {
     const data = req.body;
     
     Order.createDirectOrder(userId, data, (err, orderId, totalAmount) => {
-        if (err) {
-            // 🔥 Máy quét lỗi: In thẳng lỗi SQL ra Terminal
-            console.error("🔥 LỖI SQL HOẶC LOGIC KHI MUA NGAY (DIRECT BUY):", err);
-            return res.status(500).json({
-                success: false,
-                message: typeof err === 'string' ? err : 'Lỗi server khi đặt hàng',
-                error: err.message || err
-            });
-        }
-        
+        if (err) return res.status(500).json({ success: false, message: 'Lỗi server', error: err.message || err });
         try {
-            // 💡 CHỈ TẠO LINK VNPay NẾU KHÁCH CHỌN PHƯƠNG THỨC 'VNPAY'
             if (data.payment_method === 'VNPAY') {
                 const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '127.0.0.1';
+                
+                // 🔥 SỬA MÃ ĐỘC NHẤT
+                const uniqueTxnRef = `${orderId}_${Date.now()}`;
+                
                 const paymentUrl = vnpayConfig.createPaymentUrl({
-                    orderId: orderId,
+                    orderId: uniqueTxnRef,
                     amount: totalAmount,
-                    orderInfo: `Thanh toán đơn hàng #${orderId} (Mua trực tiếp)`,
+                    orderInfo: `Thanh toan don hang ${orderId}`, // KHÔNG DẤU
                     ipAddr: clientIp
                 });
-                return res.json({
-                    success: true,
-                    message: 'Đơn hàng đã được tạo. Vui lòng thanh toán.',
-                    orderId: orderId,
-                    totalAmount: totalAmount,
-                    paymentUrl: paymentUrl
-                });
+                return res.json({ success: true, message: 'Đang chuyển hướng...', paymentUrl: paymentUrl });
             } else {
-                 // 💡 NẾU LÀ COD HOẶC CHUYỂN KHOẢN THỦ CÔNG
-                 return res.json({
-                    success: true,
-                    message: 'Đặt hàng thành công!',
-                    orderId: orderId,
-                    totalAmount: totalAmount
-                });
+                 return res.json({ success: true, message: 'Đặt hàng thành công!' });
             }
-        } catch (error) {
-            console.error("Lỗi tạo VNPay URL (directBuy):", error);
-            res.status(500).json({
-                success: false,
-                message: 'Lỗi tạo liên kết thanh toán',
-                error: error.message
-            });
-        }
+        } catch (error) { res.status(500).json({ success: false, message: 'Lỗi tạo liên kết', error: error.message }); }
     });
 };
 

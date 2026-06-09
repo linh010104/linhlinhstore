@@ -1,6 +1,10 @@
 let currentProductId = null;
 let currentVariants = [];        
-let selectedVariants = {};       
+let selectedVariants = {};   
+
+let currentCheckoutSubtotal = 0;
+let appliedVoucherCode = null;
+let appliedDiscountAmount = 0;    
 
 // Đưa các biến giá trị ra toàn cục để dễ tính toán
 let globalOriginalPrice = 0;
@@ -274,34 +278,153 @@ function buyNowFromDetail() {
     const token = localStorage.getItem("token");
     if (!token) {
         Swal.fire({
-            title: 'Chưa đăng nhập!',
-            text: "Bạn cần đăng nhập để tiến hành mua ngay.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d70018',
-            cancelButtonColor: '#6c757d',
-            cancelButtonText: 'Hủy',
-            confirmButtonText: 'Đăng nhập'
-        }).then((result) => {
-            if (result.isConfirmed) window.location.href = "login.html";
-        });
+            title: 'Chưa đăng nhập!', text: "Bạn cần đăng nhập để tiến hành mua ngay.", icon: 'warning',
+            showCancelButton: true, confirmButtonColor: '#d70018', cancelButtonColor: '#6c757d',
+            cancelButtonText: 'Hủy', confirmButtonText: 'Đăng nhập'
+        }).then((result) => { if (result.isConfirmed) window.location.href = "login.html"; });
         return;
     }
     
     const user = StorageHelper.getUser();
-    const nameInput = document.getElementById("checkout-name");
-    const phoneInput = document.getElementById("checkout-phone");
-    
-    if(nameInput) nameInput.value = user?.full_name || user?.username || "";
-    if(phoneInput) phoneInput.value = user?.phone || "";
+    if(document.getElementById("checkout-name")) document.getElementById("checkout-name").value = user?.full_name || user?.username || "";
+    if(document.getElementById("checkout-phone")) document.getElementById("checkout-phone").value = user?.phone || "";
+    if(document.getElementById("checkout-email")) document.getElementById("checkout-email").value = user?.email || "";
+
+    // Reset lại Voucher mỗi lần mở Form
+    appliedVoucherCode = null;
+    appliedDiscountAmount = 0;
+    document.getElementById("checkout-voucher-code").value = "";
+    document.getElementById("voucher-message").innerHTML = "";
+    document.getElementById("checkout-discount-row").classList.add("d-none");
+
+    // Tính toán Tạm tính
+    const qty = parseInt(document.getElementById("qty-input").value);
+    currentCheckoutSubtotal = currentFinalPrice * qty;
+
+    // Cập nhật lên Giao diện
+    document.getElementById("checkout-qty-display").innerText = qty;
+    document.getElementById("checkout-subtotal").innerText = UIHelper.formatPrice(currentCheckoutSubtotal);
+    document.getElementById("checkout-final-total").innerText = UIHelper.formatPrice(currentCheckoutSubtotal);
 
     const modalEl = document.getElementById('checkoutModal');
     if (modalEl) {
         const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
         modal.show();
-    } else {
-        UIHelper.showError("Lỗi", "Không tìm thấy Form thanh toán trên trang!");
     }
+}
+
+// 🔥 HÀM MỚI: XỬ LÝ KIỂM TRA MÃ VOUCHER
+function applyVoucher() {
+    const code = document.getElementById("checkout-voucher-code").value.trim().toUpperCase();
+    const msgBox = document.getElementById("voucher-message");
+
+    if (!code) {
+        msgBox.innerHTML = '<span class="text-danger"><i class="fa-solid fa-circle-xmark"></i> Vui lòng nhập mã Voucher!</span>';
+        return;
+    }
+
+    msgBox.innerHTML = '<span class="text-muted"><span class="spinner-border spinner-border-sm me-1"></span> Đang kiểm tra mã...</span>';
+
+    // Gọi API Backend để check mã có tồn tại và thỏa mãn điều kiện Min_Order không
+    API.post('/vouchers/check', { 
+        code: code, 
+        order_total: currentCheckoutSubtotal // Gửi tổng tiền lên để Backend so sánh với min_order_value
+    }, true)
+    .then(res => {
+        if (res.success || res.discount_amount) {
+            appliedVoucherCode = code;
+            appliedDiscountAmount = Number(res.discount_amount);
+
+            // Cập nhật giao diện khi áp mã thành công
+            msgBox.innerHTML = `<span class="text-success"><i class="fa-solid fa-circle-check"></i> Đã áp dụng mã giảm ${UIHelper.formatPrice(appliedDiscountAmount)}!</span>`;
+            document.getElementById("checkout-discount-row").classList.remove("d-none");
+            document.getElementById("checkout-discount-amount").innerText = `-${UIHelper.formatPrice(appliedDiscountAmount)}`;
+            
+            const finalPay = currentCheckoutSubtotal - appliedDiscountAmount;
+            document.getElementById("checkout-final-total").innerText = UIHelper.formatPrice(finalPay > 0 ? finalPay : 0);
+        } else {
+            // Xóa mã nếu báo lỗi (Đơn không đủ điều kiện)
+            appliedVoucherCode = null;
+            appliedDiscountAmount = 0;
+            document.getElementById("checkout-discount-row").classList.add("d-none");
+            document.getElementById("checkout-final-total").innerText = UIHelper.formatPrice(currentCheckoutSubtotal);
+            msgBox.innerHTML = `<span class="text-danger"><i class="fa-solid fa-circle-xmark"></i> ${res.message || 'Mã không hợp lệ hoặc đơn chưa đủ điều kiện!'}</span>`;
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        msgBox.innerHTML = '<span class="text-danger"><i class="fa-solid fa-circle-xmark"></i> Lỗi kiểm tra mã.</span>';
+    });
+}
+
+function submitDirectBuy() {
+    const name = document.getElementById("checkout-name").value.trim();
+    const phone = document.getElementById("checkout-phone").value.trim();
+    const address = document.getElementById("checkout-address").value.trim();
+    const payment = document.getElementById("checkout-payment").value; 
+    const note = document.getElementById("checkout-note").value.trim();
+    const qty = parseInt(document.getElementById("qty-input").value);
+
+    if (!name || !phone || !address) {
+        UIHelper.showWarning("Thiếu thông tin", "Vui lòng điền đầy đủ Tên, Số điện thoại và Địa chỉ nhận hàng!");
+        return;
+    }
+
+    let variantNames = [];
+    for (const group in selectedVariants) { variantNames.push(selectedVariants[group].variant_name); }
+    const variantInfoString = variantNames.length > 0 ? variantNames.join(" - ") : null;
+    
+    // Tổng tiền thanh toán cuối cùng gửi lên Backend
+    let finalPayForBackend = currentCheckoutSubtotal - appliedDiscountAmount;
+    if (finalPayForBackend < 0) finalPayForBackend = 0;
+
+    const data = {
+        product_id: currentProductId, 
+        quantity: qty,
+        price: finalPayForBackend, // Gửi giá đã trừ Voucher lên VNPay
+        variant_info: variantInfoString, 
+        name: name,
+        phone: phone,
+        address: address,
+        payment_method: payment, 
+        note: note,
+        voucher_code: appliedVoucherCode // Gửi kèm mã Voucher để Backend lưu vào DB
+    };
+
+    const btnSubmit = document.querySelector("#checkoutModal .btn-danger");
+    const originalText = btnSubmit.innerHTML;
+    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
+    btnSubmit.disabled = true;
+
+    API.post('/orders/direct-buy', data, true)
+    .then(d => {
+        btnSubmit.innerHTML = originalText;
+        btnSubmit.disabled = false;
+
+        if (d.success || d.orderId) {
+            const modalEl = document.getElementById('checkoutModal');
+            bootstrap.Modal.getInstance(modalEl).hide();
+
+            if (d.paymentUrl) {
+                Swal.fire({
+                    icon: 'success', title: 'Đang chuyển hướng...', text: 'Hệ thống đang đưa bạn đến cổng thanh toán VNPay!',
+                    showConfirmButton: false, timer: 2000
+                }).then(() => { window.location.href = d.paymentUrl; });
+            } else {
+                UIHelper.showSuccess("Thành công!", "🎉 Đặt hàng thành công! Đã lên đơn tự động.", () => {
+                    window.location.href = "orders.html";
+                });
+            }
+        } else {
+            UIHelper.showError("Lỗi", d.message || "Lỗi khi đặt hàng");
+        }
+    })
+    .catch(e => {
+        console.error(e);
+        btnSubmit.innerHTML = originalText;
+        btnSubmit.disabled = false;
+        UIHelper.showError("Lỗi", "Lỗi kết nối tới máy chủ.");
+    });
 }
 
 function submitDirectBuy() {

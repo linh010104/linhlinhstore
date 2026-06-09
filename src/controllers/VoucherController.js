@@ -36,21 +36,38 @@ const VoucherController = {
     },
 
     checkVoucher: (req, res) => {
-        const { code } = req.body;
+        const { code, order_total } = req.body;
+        
         if (!code) return res.status(400).json({ success: false, message: "Vui lòng nhập mã!" });
+        // Kiểm tra xem Frontend có gửi giá trị đơn hàng lên không, nếu không mặc định là 0
+        const currentTotal = order_total ? Number(order_total) : 0;
 
         const sql = `SELECT * FROM vouchers WHERE code = ? AND is_used = 0`;
         db.query(sql, [code], (err, results) => {
             if (err) return res.status(500).json({ success: false, message: "Lỗi Server!" });
             
             if (results.length === 0) {
-                return res.status(404).json({ success: false, message: "Mã không hợp lệ hoặc đã được sử dụng!" });
+                return res.json({ success: false, message: "Mã không hợp lệ hoặc đã được sử dụng!" });
             }
 
-            res.json({ success: true, message: "Áp dụng mã thành công!", data: results[0] });
+            const voucher = results[0];
+
+            // 🛑 CHẶN LỖI PHÁ SẢN: Kiểm tra xem đơn hàng có đủ điều kiện giá trị tối thiểu không
+            if (currentTotal < voucher.min_order_value) {
+                return res.json({ 
+                    success: false, 
+                    message: `Đơn hàng phải từ ${new Intl.NumberFormat('vi-VN').format(voucher.min_order_value)}đ mới được áp dụng mã này!` 
+                });
+            }
+
+            // ✅ TRẢ VỀ ĐÚNG CHUẨN FRONTEND YÊU CẦU ĐỂ HẾT LỖI NaN
+            res.json({ 
+                success: true, 
+                message: "Áp dụng mã thành công!",
+                discount_amount: Number(voucher.discount_amount) // Ép kiểu Số Nguyên, đẩy ra ngoài không bọc trong data
+            });
         });
     },
-
     claimVoucher: (req, res) => {
         const { userId } = req.body;
         if (!userId) return res.status(401).json({ success: false, message: "Vui lòng đăng nhập!" });
@@ -107,14 +124,6 @@ const VoucherController = {
         const sql = `SELECT id, discount_amount, min_order_value FROM vouchers WHERE user_id IS NULL ORDER BY id DESC LIMIT 4`;
         db.query(sql, (err, prizes) => {
             if (err || prizes.length === 0) return res.status(500).json({ success: false, message: "Hệ thống chưa cài đặt giải thưởng!" });
-
-            // THUẬT TOÁN BÀO TIỀN KHÁCH: 80% TRƯỢT, 20% TRÚNG
-            // Index trên bánh xe (8 múi):
-            // 0: Đỏ (Giải đặc biệt) -> 0.5%
-            // 1, 3, 5, 7: Ô Xám (Trượt) -> 80%
-            // 2: Xanh lá (Giải to) -> 2.5%
-            // 4: Xanh dương (Giải nhỡ) -> 5%
-            // 6: Vàng (Giải bèo) -> 12%
 
             const rand = Math.random() * 100; 
             let finalIndex = 1; // Mặc định là rơi ô Xám

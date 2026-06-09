@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const qs = require('qs');
 require('dotenv').config();
 
 const VNP_TMN_CODE = process.env.VNPAY_TMN_CODE || 'TMNCODE123';
@@ -7,26 +8,25 @@ const VNP_URL = process.env.VNPAY_URL || 'https://sandbox.vnpayment.vn/paymentv2
 const VNP_API_URL = process.env.VNPAY_API_URL || 'https://sandbox.vnpayment.vn/merchant_webapi/merchant_transaction';
 const VNP_RETURN_URL = process.env.VNPAY_RETURN_URL || 'http://localhost:3000/api/orders/vnpay-callback';
 
-// 🔥 HÀM SẮP XẾP CHUẨN THEO TÀI LIỆU VNPAY (QUAN TRỌNG NHẤT)
+// 🔥 HÀM SẮP XẾP CHUẨN THEO TÀI LIỆU VNPAY
 function sortObject(obj) {
     let sorted = {};
     let str = [];
     let key;
     for (key in obj){
         if (obj.hasOwnProperty(key)) {
-            str.push(encodeURIComponent(key)); // Mã hóa Key TRƯỚC khi sort
+            str.push(encodeURIComponent(key));
         }
     }
     str.sort();
     for (key = 0; key < str.length; key++) {
-        // Mã hóa Value và thay thế khoảng trắng thành +
         sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, "+");
     }
     return sorted;
 }
 
 /**
- * Tạo URL thanh toán VNPay
+ * 1. TẠO URL THANH TOÁN VNPAY (LUỒNG ĐI)
  */
 function createPaymentUrl(orderData) {
     const { orderId, amount, orderInfo, ipAddr } = orderData;
@@ -50,63 +50,53 @@ function createPaymentUrl(orderData) {
         'vnp_OrderType': 'other',
         'vnp_Amount': amount * 100, 
         'vnp_ReturnUrl': VNP_RETURN_URL,
-        'vnp_IpAddr': ipAddr,
+        'vnp_IpAddr': ipAddr || '127.0.0.1', // Đề phòng IP rỗng vnpay báo lỗi
         'vnp_CreateDate': createDate,
     };
 
-    // 1. Sắp xếp params theo chuẩn VNPay
+    // 1. Sắp xếp params
     vnp_Params = sortObject(vnp_Params);
 
-    // 2. Tạo chuỗi ký (signData) bằng cách nối thủ công
-    const signData = Object.keys(vnp_Params).map(key => `${key}=${vnp_Params[key]}`).join('&');
+    // 2. Tạo chuỗi ký bằng qs (Cực kỳ an toàn)
+    const signData = qs.stringify(vnp_Params, { encode: false });
 
-    // 3. Băm chuỗi ký với HashSecret
+    // 3. Băm chuỗi ký
     const hmac = crypto.createHmac('sha512', VNP_HASH_SECRET);
     const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
 
     // 4. Ghép chữ ký vào URL
     vnp_Params['vnp_SecureHash'] = signed;
-    const finalUrl = `${VNP_URL}?${Object.keys(vnp_Params).map(key => `${key}=${vnp_Params[key]}`).join('&')}`;
+    const finalUrl = `${VNP_URL}?${qs.stringify(vnp_Params, { encode: false })}`;
     
     return finalUrl;
 }
 
 /**
- * Xác minh chữ ký từ callback của VNPay
+ * 2. XÁC MINH CHỮ KÝ TỪ CALLBACK CỦA VNPAY (LUỒNG VỀ)
  */
 function verifyPaymentHash(vnp_Params) {
-    let vnp_SecureHash = vnp_Params['vnp_SecureHash'];
+    const secureHash = vnp_Params['vnp_SecureHash'];
 
-    // 1. Clone object và xóa 2 trường Hash để chuẩn bị tính toán
-    let params = Object.assign({}, vnp_Params);
+    // 🔥 CHỈ LẤY CÁC THAM SỐ CỦA VNPAY (Bỏ qua rác)
+    let params = {};
+    for (let key in vnp_Params) {
+        if (key.startsWith('vnp_')) {
+            params[key] = vnp_Params[key];
+        }
+    }
+    
     delete params['vnp_SecureHash'];
     delete params['vnp_SecureHashType'];
 
-    // 2. Dùng lại hàm sortObject (Cực kỳ quan trọng: Nó sẽ mã hóa lại tiếng Việt và đổi dấu cách thành dấu +)
     params = sortObject(params);
-
-    // 3. Nối chuỗi signData theo đúng chuẩn key=value&key=value
-    let signData = "";
-    let keys = Object.keys(params);
-    for (let i = 0; i < keys.length; i++) {
-        signData += keys[i] + '=' + params[keys[i]];
-        if (i < keys.length - 1) signData += '&';
-    }
-
-    // 4. Băm với Hash Secret
-    const crypto = require('crypto');
+    const signData = qs.stringify(params, { encode: false });
     const hmac = crypto.createHmac('sha512', VNP_HASH_SECRET);
     const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
 
-    // 5. So sánh (VNPay dặn là nên so sánh không phân biệt hoa/thường)
-    return vnp_SecureHash.toLowerCase() === signed.toLowerCase();
+    return secureHash === signed;
 }
 
-/**
- * Query transaction status từ VNPay API
- */
 async function queryTransaction(orderId, transactionDate) {
-    const crypto = require('crypto');
     const https = require('https');
 
     let requestData = {
