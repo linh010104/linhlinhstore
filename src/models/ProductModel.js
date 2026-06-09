@@ -31,9 +31,14 @@ exports.getAll = (filters, callback) => {
     params.push(`%${filters.keyword}%`, `%${filters.keyword}%`);
   }
 
+  // 🔥 ĐOẠN CODE "BẮT TẬN Ổ" (Dán đè vào đây)
   if (filters && filters.categoryId) {
-    sql += " AND p.category_id = ?";
-    params.push(filters.categoryId);
+    // Tìm sản phẩm thuộc danh mục hiện tại HOẶC thuộc các danh mục con của nó
+    sql += ` AND p.category_id IN (
+                SELECT id FROM categories 
+                WHERE id = ? OR parent_id = ?
+             )`;
+    params.push(filters.categoryId, filters.categoryId);
   }
 
   sql += " ORDER BY p.created_at DESC";
