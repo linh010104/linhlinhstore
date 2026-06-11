@@ -39,6 +39,7 @@ app.use('/api/vendors', require('./routes/VendorRoutes'));
 app.use('/api/brands', require('./routes/BrandRoutes'));
 app.use('/api/banners', require('./routes/BannerRoutes'));
 app.use('/api/vouchers',require('./routes/VoucherRoutes'));
+app.use('/api/addresses', require('./routes/AddressRoutes'));
 
 app.use('/api/ai', require('./routes/ai/ai.route'));
 app.use('/api/import', require('./routes/ai/import.route')); 
