@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chính sách bảo hành - LINHLINH Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css"> 
+</head>
+<body>
+<nav class="navbar navbar-expand-lg sticky-top shadow-sm" style="background-color: var(--primary-color); padding: 12px 0;">
+        <div class="container align-items-center">
+            <a class="navbar-brand fw-bold d-flex align-items-center text-white" href="index.html">
+                <i class="fa-solid fa-laptop-code me-2 fs-3"></i>
+                <div class="lh-1">
+                    <div class="fs-5">LINHLINH</div>
+                    <div class="fs-6 fw-normal" style="font-size: 0.8rem !important; letter-spacing: 2px;">STORE</div>
+                </div>
+            </a>
+            
+            <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="fa-solid fa-bars fs-3"></i>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <form class="d-flex mx-auto w-50 px-lg-4 my-3 my-lg-0" onsubmit="event.preventDefault(); searchProduct();">
+                    <div class="input-group search-box" style="border-radius: 25px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                        <input id="search-input" class="form-control border-0 ps-4 py-2" type="search" placeholder="Bạn cần tìm gì hôm nay?" style="font-size: 0.95rem;">
+                        <button class="btn bg-white border-0 text-dark px-4" type="button" onclick="searchProduct()">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="d-flex align-items-center gap-3 text-white justify-content-end" id="authArea">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5" style="max-width: 900px;">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html" class="text-danger text-decoration-none"><i class="fa-solid fa-house"></i> Trang chủ</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Chính sách bảo hành</li>
+            </ol>
+        </nav>
+
+        <h1 class="text-danger text-center text-uppercase fw-bold mb-5">TRUNG TÂM BẢO HÀNH CHÍNH HÃNG</h1>
+
+        <div class="content-policy lh-lg text-dark">
+            <h4 class="fw-bold mb-3">1. THỜI GIAN BẢO HÀNH</h4>
+            <p>Tất cả các sản phẩm công nghệ (Laptop, Điện thoại, Phụ kiện cao cấp) được bán ra tại LINHLINH Store đều là hàng chính hãng 100% và được hưởng chế độ bảo hành tiêu chuẩn của hãng sản xuất, thường từ <strong>12 đến 24 tháng</strong> tùy vào từng mã sản phẩm cụ thể.</p>
+
+            <h4 class="fw-bold mb-3 mt-4">2. ĐIỀU KIỆN ĐƯỢC BẢO HÀNH MIỄN PHÍ</h4>
+            <ul>
+                <li>Sản phẩm còn trong thời hạn bảo hành (Kiểm tra dễ dàng qua số điện thoại mua hàng trong phần <strong>Hồ sơ</strong>).</li>
+                <li>Tem bảo hành, mã vạch, Serial Number/IMEI của sản phẩm phải còn nguyên vẹn, không có dấu hiệu cạo sửa, chắp vá.</li>
+                <li>Sản phẩm phát sinh lỗi kỹ thuật từ phía nhà sản xuất (như lỗi mainboard, lỗi hiển thị màn hình do linh kiện...).</li>
+            </ul>
+
+            <h4 class="fw-bold mb-3 mt-4">3. CÁC TRƯỜNG HỢP TỪ CHỐI BẢO HÀNH</h4>
+            <ul>
+                <li>Sản phẩm hết hạn bảo hành.</li>
+                <li>Sản phẩm bị hư hỏng do tác động cơ học: Rơi vỡ, va đập, trầy xước, móp méo, ẩm ướt, hoen rỉ, chảy nước.</li>
+                <li>Sản phẩm có dấu hiệu bị tháo dỡ, sửa chữa bởi kỹ thuật viên không thuộc LINHLINH Store hoặc không thuộc Trung tâm bảo hành chính hãng.</li>
+                <li>Màn hình hiển thị bị chảy mực, nứt vỡ kính do lực tì đè.</li>
+            </ul>
+        </div>
+    </div>
+<footer style="background-color: #f8f9fa; border-top: 1px solid #e5e5e5; padding-top: 40px; margin-top: 50px; color: #444; width: 100%; clear: both;">
+        <div class="container">
+            <div class="row text-start" style="font-size: 0.85rem;">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h6 class="fw-bold text-dark mb-3">Tổng đài hỗ trợ miễn phí</h6>
+                    <ul class="list-unstyled mb-4 lh-lg">
+                        <li>Mua hàng: <span class="fw-bold text-dark">1800.6969</span> (7h30 - 22h00)</li>
+                        <li>Bảo hành: <span class="fw-bold text-dark">1800.6970</span> (8h00 - 21h30)</li>
+                        <li>Khiếu nại: <span class="fw-bold text-dark">1800.6971</span> (8h00 - 21h30)</li>
+                    </ul>
+                    <h6 class="fw-bold text-dark mb-3">Phương thức thanh toán</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <span class="badge bg-white border text-dark p-2 fs-6 shadow-sm"><i class="fa-brands fa-apple"></i> Pay</span>
+                        <span class="badge bg-white border text-primary p-2 fs-6 shadow-sm">VNPAY</span>
+                        <span class="badge bg-white border text-danger p-2 fs-6 shadow-sm">MoMo</span>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-4 footer-links">
+                    <h6 class="fw-bold text-dark mb-3">Thông tin và chính sách</h6>
+                    <ul class="list-unstyled lh-lg">
+                        <li><a href="mua-tra-gop.html" class="text-decoration-none text-muted footer-hover">Mua hàng trả góp </a></li>
+                        <li><a href="chinh-sach-giao-hang.html" class="text-decoration-none text-muted footer-hover">Chính sách giao hàng </a></li>
+                        <li><a href="chinh-sach-doi-tra.html" class="text-decoration-none text-muted footer-hover">Chính sách đổi trả </a></li>
+                        <li><a href="chinh-sach-bao-mat.html" class="text-decoration-none text-muted footer-hover">Bảo mật thông tin cá nhân</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-4 footer-links">
+                    <h6 class="fw-bold text-dark mb-3">Dịch vụ và thông tin khác</h6>
+                    <ul class="list-unstyled lh-lg">
+                        <li><a href="khach-hang-b2b.html" class="text-decoration-none text-muted footer-hover">Khách hàng doanh nghiệp (B2B)</a></li>
+        <li><a href="chinh-sach-bao-mat.html" class="text-decoration-none text-muted footer-hover">Chính sách bảo mật thông tin cá nhân</a></li>
+        <li><a href="lien-he-hop-tac.html" class="text-decoration-none text-muted footer-hover">Liên hệ hợp tác kinh doanh</a></li>
+        <li><a href="tuyen-dung.html" class="text-decoration-none text-muted footer-hover">Tuyển dụng</a></li>
+    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h6 class="fw-bold text-dark mb-3">Kết nối với LINHLINH Store</h6>
+                    <div class="d-flex gap-3 mb-4">
+                        <a href="https://www.youtube.com/channel/UCpGrk7ie4kpLWMhsnorI1Bg" class="text-danger fs-3 hover-scale"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="#" class="text-primary fs-3 hover-scale"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" class="text-dark fs-3 hover-scale"><i class="fa-brands fa-tiktok"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row border-top pt-3 pb-4 mt-3" style="font-size: 0.75rem;">
+                <div class="col-12 text-muted text-center">
+                    <p class="mb-1">©LINHLINH Store. Tất cả bản quyền được bảo lưu. Đồ án Tốt Nghiệp của Linh.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
