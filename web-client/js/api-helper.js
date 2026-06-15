@@ -42,6 +42,13 @@ class APIHelper {
             });
             
             if (!response.ok) {
+                // XỬ LÝ LỖI 401 TOÀN CỤC Ở ĐÂY
+                if (response.status === 401) {
+                    console.warn("Phát hiện token hết hạn qua API! Tự động dọn dẹp...");
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("user");
+                    window.location.href = "login.html";
+                }
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
@@ -76,6 +83,13 @@ class APIHelper {
             });
             
             if (!response.ok) {
+                // XỬ LÝ LỖI 401 TOÀN CỤC Ở ĐÂY
+                if (response.status === 401) {
+                    console.warn("Phát hiện token hết hạn qua API! Tự động dọn dẹp...");
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("user");
+                    window.location.href = "login.html";
+                }
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
@@ -110,6 +124,13 @@ class APIHelper {
             });
             
             if (!response.ok) {
+                // XỬ LÝ LỖI 401 TOÀN CỤC Ở ĐÂY
+                if (response.status === 401) {
+                    console.warn("Phát hiện token hết hạn qua API! Tự động dọn dẹp...");
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("user");
+                    window.location.href = "login.html";
+                }
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
@@ -142,6 +163,13 @@ class APIHelper {
             });
             
             if (!response.ok) {
+                // XỬ LÝ LỖI 401 TOÀN CỤC Ở ĐÂY
+                if (response.status === 401) {
+                    console.warn("Phát hiện token hết hạn qua API! Tự động dọn dẹp...");
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("user");
+                    window.location.href = "login.html";
+                }
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
