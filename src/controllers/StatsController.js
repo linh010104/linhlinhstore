@@ -14,7 +14,12 @@ exports.getRevenue = (req, res) => {
             b.name as brand_name,
             SUM(oi.quantity) as sold_quantity,
             SUM(oi.quantity * p.price) as total_revenue,
-            SUM(oi.quantity * (p.price - p.import_price)) as total_profit
+            -- Tính riêng Tổng vốn nhập của mặt hàng này
+            SUM(oi.quantity * p.import_price) as total_cost,
+            -- Tính riêng Tiền thuế VAT (10% của vốn)
+            SUM(oi.quantity * p.import_price * 0.1) as total_vat,
+            -- Lợi nhuận = Doanh Thu - (Vốn + Thuế VAT)
+            SUM(oi.quantity * p.price) - SUM(oi.quantity * p.import_price * 1.1) as total_profit
         FROM order_items oi
         JOIN orders o ON oi.order_id = o.id
         JOIN products p ON oi.product_id = p.id
@@ -29,25 +34,28 @@ exports.getRevenue = (req, res) => {
     db.query(sql, [start, end], async (err, productStats) => {
         if (err) return res.status(500).json({ error: err.message });
 
+        // let totalRev = 0;
+        // let totalProf = 0;
+        // productStats.forEach(p => {
+        //     totalRev += parseFloat(p.total_revenue);
+        //     totalProf += parseFloat(p.total_profit);
+        // });
+
+        // Lấy chi phí nhập kho từ MySQL
         let totalRev = 0;
         let totalProf = 0;
+        let totalImportCost = 0; // Thêm cái này
+        let totalVatPaid = 0;    // Thêm cái này
+
         productStats.forEach(p => {
             totalRev += parseFloat(p.total_revenue);
             totalProf += parseFloat(p.total_profit);
+            totalImportCost += parseFloat(p.total_cost); // Cộng dồn tiền vốn
+            totalVatPaid += parseFloat(p.total_vat);     // Cộng dồn tiền VAT
         });
 
-        // Lấy chi phí nhập kho từ MySQL
-        let totalImportCost = 0;
-        let totalVatPaid = 0; 
+        // XÓA cái khối try...catch lấy totalImportCost từ purchase_orders đi (vì mình đã tính chính xác theo lượng bán ra ở trên rồi).
         
-        try {
-            const importSql = "SELECT SUM(total_amount) as total_import FROM purchase_orders WHERE created_at BETWEEN ? AND ?";
-            const [importResult] = await db.promise().query(importSql, [start, end]);
-            totalImportCost = importResult[0].total_import || 0;
-        } catch (mErr) { 
-            console.error("Lỗi tính tổng vốn từ MySQL:", mErr); 
-        }
-
         res.json({
             success: true,
             summary: {
