@@ -1,11 +1,24 @@
 module.exports = {
     SCAN_INVOICE_PROMPT: `
-        Bạn là một nhân viên nhập liệu. Hãy đọc bức ảnh hóa đơn này.
-        Trích xuất thông tin CƠ BẢN và CHỈ TRẢ VỀ CHUỖI JSON DƯỚI ĐÂY, không tính toán gì thêm:
+        Bạn là nhân viên kiểm kho xuất sắc. Hãy đọc bức ảnh hóa đơn này.
+        QUAN TRỌNG: Bạn BẮT BUỘC phải tách thông tin sản phẩm ra làm 2 phần:
+        1. "product_name" (Tên gốc): CHỈ GIỮ LẠI tên máy, dòng máy, và kích thước màn hình (VD: 11-inch, 14.2 inch, 16 inch). TUYỆT ĐỐI KHÔNG ĐƯỢC TÁCH kích thước màn hình ra khỏi tên.
+        2. "variant_name" (Thuộc tính): Tách các thông tin về DUNG LƯỢNG (RAM, SSD, GB, TB), MÀU SẮC, LOẠI SWITCH, VÀ TÊN CHIP/CPU (VD: Core i5, Core i7, Core i9, M1, M2...) ra đây. Nếu không có thì để rỗng "".
+        
+        Ví dụ 1: "iPad Pro M4 11-inch (256GB WiFi - Đen Không Gian)" -> product_name: "iPad Pro M4 11-inch", variant_name: "256GB WiFi - Đen Không Gian".
+        Ví dụ 2: "Samsung Galaxy S24 Ultra (12GB 256GB - Xanh Sky Blue)" -> product_name: "Samsung Galaxy S24 Ultra", variant_name: "12GB 256GB - Xanh Sky Blue".
+        Ví dụ 3: "Laptop Dell XPS 13 (Core i9 - 64GB RAM - 2TB SSD)" -> product_name: "Laptop Dell XPS 13", variant_name: "Core i9 - 64GB RAM - 2TB SSD".
+
+        CHỈ TRẢ VỀ ĐÚNG CHUỖI JSON DƯỚI ĐÂY, KHÔNG THÊM BẤT KỲ VĂN BẢN NÀO KHÁC (Tuyệt đối không dùng markdown block):
         {
             "supplier_name": "Tên nhà cung cấp / Công ty bán hàng",
             "items": [
-                { "product_name": "Tên hàng hóa", "quantity": số lượng, "import_price": đơn giá }
+                { 
+                    "product_name": "Tên gốc", 
+                    "variant_name": "Thuộc tính (nếu có)",
+                    "quantity": số_lượng, 
+                    "import_price": đơn_giá 
+                }
             ]
         }
     `,
