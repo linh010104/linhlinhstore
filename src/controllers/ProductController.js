@@ -103,6 +103,24 @@ exports.addVariant = (req, res) => {
     res.json({ message: 'Thêm phiên bản thành công', id: result ? result.insertId : null });
   });
 };
+exports.updateVariant = (req, res) => {
+  const variantId = req.params.variantId;
+  const { variant_group, variant_name, additional_price } = req.body;
+  
+  const sql = `
+    UPDATE product_variants 
+    SET variant_group = ?, variant_name = ?, additional_price = ? 
+    WHERE id = ?
+  `;
+  
+  db.query(sql, [variant_group, variant_name, additional_price || 0, variantId], (err, result) => {
+    if (err) {
+        console.error("Lỗi khi sửa mẫu mã:", err);
+        return res.status(500).json(err);
+    }
+    res.json({ success: true, message: 'Cập nhật phiên bản thành công!' });
+  });
+};
 
 exports.deleteVariant = (req, res) => {
   const variantId = req.params.variantId;
