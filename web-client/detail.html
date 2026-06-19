@@ -220,6 +220,9 @@
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-bold small text-muted mb-1">Địa chỉ giao hàng <span class="text-danger">*</span></label>
+                                    <select id="savedAddressSelect" class="form-select bg-light mb-2 shadow-sm border-danger border-opacity-25" onchange="handleAddressSelect()" style="cursor: pointer;">
+                                        <option value="custom">-- Nhập địa chỉ khác (Tự gõ) --</option>
+                                    </select>
                                     <textarea class="form-control bg-light" id="checkout-address" rows="2" placeholder="Số nhà, ngõ ngách, tên đường..."></textarea>
                                 </div>
                                 <div class="col-12">
